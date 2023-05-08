@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32804.467
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerWater2", "ServerWater2\ServerWater2.csproj", "{55B100B9-F014-4037-9EBD-9B766726AE8E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{55B100B9-F014-4037-9EBD-9B766726AE8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55B100B9-F014-4037-9EBD-9B766726AE8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55B100B9-F014-4037-9EBD-9B766726AE8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55B100B9-F014-4037-9EBD-9B766726AE8E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {86A34ADA-4E63-44C8-910A-9B41CD6084F5}
+	EndGlobalSection
+EndGlobal
