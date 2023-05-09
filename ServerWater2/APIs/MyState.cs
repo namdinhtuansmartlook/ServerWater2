@@ -41,8 +41,8 @@ namespace ServerWater2.APIs
                     SqlState item = new SqlState();
                     item.ID = DateTime.Now.Ticks;
                     item.code = 2;
-                    item.name = "Phân công khảo sát";
-                    item.des = "Phân công khảo sát";
+                    item.name = "Đã phân công việc";
+                    item.des = "Đã phân công việc";
                     item.isdeleted = false;
                     context.states!.Add(item);
                 }

@@ -1,30 +1,34 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using static ServerWater2.APIs.MyCustomer;
 
 namespace ServerWater2.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CustomerController : ControllerBase
+    public class ActionController : ControllerBase
     {
-        private readonly ILogger<CustomerController> _logger;
+        private readonly ILogger<ActionController> _logger;
 
-        public CustomerController(ILogger<CustomerController> logger)
+        public ActionController(ILogger<ActionController> logger)
         {
             _logger = logger;
         }
 
+        public class ItemHttpAction
+        {
+            public string code { get; set; } = "";
+            public string name { get; set; } = "";
+            public string des { get; set; } = "";
+        }
 
         [HttpPost]
-        [Route("createCustomer")]
-        public async Task<IActionResult> createCustomerAsync([FromHeader] string token, ItemCustomer customer)
+        [Route("createAction")]
+        public async Task<IActionResult> CreateActionAsync([FromHeader] string token, ItemHttpAction action)
         {
-
             long id = Program.api_user.checkAdmin(token);
             if (id >= 0)
             {
-                bool flag = await Program.api_customer.createCustomerAsync(customer.maDB, customer.sdt, customer.tenkh, customer.diachi,customer.note, customer.x, customer.y);
+                bool flag = await Program.api_action.createAsync(action.code, action.name, action.des);
                 if (flag)
                 {
                     return Ok();
@@ -33,23 +37,23 @@ namespace ServerWater2.Controllers
                 {
                     return BadRequest();
                 }
+
             }
             else
             {
                 return Unauthorized();
             }
-
 
         }
-        [HttpPut]
-        [Route("editCustomer")]
-        public async Task<IActionResult> editCustomerAsync([FromHeader] string token, ItemCustomer customer)
-        {
 
+        [HttpPost]
+        [Route("editAction")]
+        public async Task<IActionResult> EditActionAsync([FromHeader] string token, ItemHttpAction action)
+        {
             long id = Program.api_user.checkAdmin(token);
-            if(id >= 0)
+            if (id >= 0)
             {
-                bool flag = await Program.api_customer.editCustomerAsync(customer.maDB, customer.sdt, customer.tenkh, customer.diachi,customer.note,customer.x, customer.y);
+                bool flag = await Program.api_action.editAsync(action.code, action.name, action.des);
                 if (flag)
                 {
                     return Ok();
@@ -58,23 +62,23 @@ namespace ServerWater2.Controllers
                 {
                     return BadRequest();
                 }
+
             }
             else
             {
                 return Unauthorized();
             }
-
 
         }
 
         [HttpDelete]
-        [Route("{maDB}/deleteCustomer")]
-        public async Task<IActionResult> deleteCustomerAsync([FromHeader] string token, string maDB)
+        [Route("{code}/deleteAction")]
+        public async Task<IActionResult> DeleteActionAsync([FromHeader] string token, string code)
         {
             long id = Program.api_user.checkAdmin(token);
             if (id >= 0)
             {
-                bool flag = await Program.api_customer.deleteCustomerAsync(maDB);
+                bool flag = await Program.api_action.deleteAsync(code);
                 if (flag)
                 {
                     return Ok();
@@ -83,6 +87,7 @@ namespace ServerWater2.Controllers
                 {
                     return BadRequest();
                 }
+
             }
             else
             {
@@ -91,18 +96,19 @@ namespace ServerWater2.Controllers
         }
 
         [HttpGet]
-        [Route("getListCustomer")]
-        public IActionResult GetListCustomer([FromHeader] string token)
+        [Route("getListAction")]
+        public IActionResult getListAction([FromHeader] string token)
         {
             long id = Program.api_user.checkAdmin(token);
             if (id >= 0)
             {
-                return Ok(Program.api_customer.listCustomer());
+                return Ok(Program.api_action.getListAction());
             }
             else
             {
                 return Unauthorized();
             }
+
         }
     }
 }

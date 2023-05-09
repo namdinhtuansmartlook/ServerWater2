@@ -1,11 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
+
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ServerWater2.Models
 {
-    [Table("Type")]
-    public class SqlType
+    [Table("Action")]
+    public class SqlAction
     {
+
         [Key]
         public long ID { get; set; }
         public string code { get; set; } = "";

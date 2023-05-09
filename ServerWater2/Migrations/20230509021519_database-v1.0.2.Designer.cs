@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ServerWater2.Models;
@@ -12,9 +13,11 @@ using ServerWater2.Models;
 namespace ServerWater2.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20230509021519_database-v1.0.2")]
+    partial class databasev102
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,34 +25,6 @@ namespace ServerWater2.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("ServerWater2.Models.SqlAction", b =>
-                {
-                    b.Property<long>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("ID"));
-
-                    b.Property<string>("code")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("des")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("isdeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("ID");
-
-                    b.ToTable("Action");
-                });
 
             modelBuilder.Entity("ServerWater2.Models.SqlCustomer", b =>
                 {
@@ -59,16 +34,21 @@ namespace ServerWater2.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("ID"));
 
-                    b.Property<string>("address")
+                    b.Property<string>("diachiLD")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("code")
+                    b.Property<string>("diachiLH")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<List<string>>("images")
-                        .HasColumnType("text[]");
+                    b.Property<string>("diachiTT")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("idKH")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<bool>("isdeleted")
                         .HasColumnType("boolean");
@@ -81,15 +61,15 @@ namespace ServerWater2.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("name")
+                    b.Property<string>("maDB")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("note")
+                    b.Property<string>("sdt")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("phone")
+                    b.Property<string>("tenKH")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -126,7 +106,7 @@ namespace ServerWater2.Migrations
                     b.ToTable("File");
                 });
 
-            modelBuilder.Entity("ServerWater2.Models.SqlLogOrder", b =>
+            modelBuilder.Entity("ServerWater2.Models.SqlLogAction", b =>
                 {
                     b.Property<long>("ID")
                         .ValueGeneratedOnAdd()
@@ -134,16 +114,43 @@ namespace ServerWater2.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("ID"));
 
-                    b.Property<long?>("actionID")
+                    b.Property<string>("note")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long?>("orderID")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("latitude")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<long?>("stateID")
+                        .HasColumnType("bigint");
 
-                    b.Property<string>("longitude")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<DateTime>("time")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long?>("userID")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("orderID");
+
+                    b.HasIndex("stateID");
+
+                    b.HasIndex("userID");
+
+                    b.ToTable("LogAction");
+                });
+
+            modelBuilder.Entity("ServerWater2.Models.SqlLogRequest", b =>
+                {
+                    b.Property<long>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("ID"));
+
+                    b.Property<long?>("customerID")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("note")
                         .IsRequired()
@@ -160,13 +167,13 @@ namespace ServerWater2.Migrations
 
                     b.HasKey("ID");
 
-                    b.HasIndex("actionID");
+                    b.HasIndex("customerID");
 
                     b.HasIndex("orderID");
 
                     b.HasIndex("userID");
 
-                    b.ToTable("LogOrder");
+                    b.ToTable("LogRequest");
                 });
 
             modelBuilder.Entity("ServerWater2.Models.SqlOrder", b =>
@@ -176,18 +183,6 @@ namespace ServerWater2.Migrations
                         .HasColumnType("bigint");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("ID"));
-
-                    b.Property<string>("addressContract")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("addressCustomer")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("addressWater")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<string>("code")
                         .IsRequired()
@@ -199,24 +194,27 @@ namespace ServerWater2.Migrations
                     b.Property<long?>("customerID")
                         .HasColumnType("bigint");
 
+                    b.Property<List<string>>("images")
+                        .HasColumnType("text[]");
+
                     b.Property<bool>("isDelete")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime>("lastestTime")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("latitude")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("longitude")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<long?>("managerID")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("note")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("phone")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -422,11 +420,47 @@ namespace ServerWater2.Migrations
                     b.ToTable("User");
                 });
 
-            modelBuilder.Entity("ServerWater2.Models.SqlLogOrder", b =>
+            modelBuilder.Entity("SqlCustomerSqlUser", b =>
                 {
-                    b.HasOne("ServerWater2.Models.SqlAction", "action")
+                    b.Property<long>("customersID")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("usersID")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("customersID", "usersID");
+
+                    b.HasIndex("usersID");
+
+                    b.ToTable("SqlCustomerSqlUser");
+                });
+
+            modelBuilder.Entity("ServerWater2.Models.SqlLogAction", b =>
+                {
+                    b.HasOne("ServerWater2.Models.SqlOrder", "order")
                         .WithMany()
-                        .HasForeignKey("actionID");
+                        .HasForeignKey("orderID");
+
+                    b.HasOne("ServerWater2.Models.SqlState", "state")
+                        .WithMany()
+                        .HasForeignKey("stateID");
+
+                    b.HasOne("ServerWater2.Models.SqlUser", "user")
+                        .WithMany()
+                        .HasForeignKey("userID");
+
+                    b.Navigation("order");
+
+                    b.Navigation("state");
+
+                    b.Navigation("user");
+                });
+
+            modelBuilder.Entity("ServerWater2.Models.SqlLogRequest", b =>
+                {
+                    b.HasOne("ServerWater2.Models.SqlCustomer", "customer")
+                        .WithMany()
+                        .HasForeignKey("customerID");
 
                     b.HasOne("ServerWater2.Models.SqlOrder", "order")
                         .WithMany()
@@ -436,7 +470,7 @@ namespace ServerWater2.Migrations
                         .WithMany()
                         .HasForeignKey("userID");
 
-                    b.Navigation("action");
+                    b.Navigation("customer");
 
                     b.Navigation("order");
 
@@ -446,7 +480,7 @@ namespace ServerWater2.Migrations
             modelBuilder.Entity("ServerWater2.Models.SqlOrder", b =>
                 {
                     b.HasOne("ServerWater2.Models.SqlCustomer", "customer")
-                        .WithMany("orders")
+                        .WithMany()
                         .HasForeignKey("customerID");
 
                     b.HasOne("ServerWater2.Models.SqlUser", "manager")
@@ -497,9 +531,19 @@ namespace ServerWater2.Migrations
                     b.Navigation("role");
                 });
 
-            modelBuilder.Entity("ServerWater2.Models.SqlCustomer", b =>
+            modelBuilder.Entity("SqlCustomerSqlUser", b =>
                 {
-                    b.Navigation("orders");
+                    b.HasOne("ServerWater2.Models.SqlCustomer", null)
+                        .WithMany()
+                        .HasForeignKey("customersID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ServerWater2.Models.SqlUser", null)
+                        .WithMany()
+                        .HasForeignKey("usersID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ServerWater2.Models.SqlUser", b =>

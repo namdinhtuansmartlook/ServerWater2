@@ -31,18 +31,50 @@ namespace ServerWater2.APIs
                     context.users!.Add(item);
                 }
 
-                user = context.users!.Where(s => s.user.CompareTo("manager") == 0).FirstOrDefault();
+                user = context.users!.Where(s => s.user.CompareTo("QL") == 0).FirstOrDefault();
                 if (user == null)
                 {
                     SqlUser item = new SqlUser();
                     item.ID = DateTime.Now.Ticks;
-                    item.user = "manager";
-                    item.username = "manager";
+                    item.user = "QL";
+                    item.username = "quanly";
                     item.password = "123456";
                     item.role = context.roles!.Where(s => s.isdeleted == false && s.code.CompareTo("manager") == 0).FirstOrDefault();
                     item.token = createToken();
-                    item.displayName = "manager";
-                    item.des = "manager";
+                    item.displayName = "Quản lý vùng";
+                    item.des = "Quản lý vùng";
+                    item.phoneNumber = "123456789";
+                    item.isdeleted = false;
+                    context.users!.Add(item);
+                }
+                user = context.users!.Where(s => s.user.CompareTo("CT") == 0).FirstOrDefault();
+                if (user == null)
+                {
+                    SqlUser item = new SqlUser();
+                    item.ID = DateTime.Now.Ticks;
+                    item.user = "CT";
+                    item.username = "chuanthu";
+                    item.password = "123456";
+                    item.role = context.roles!.Where(s => s.isdeleted == false && s.code.CompareTo("survey") == 0).FirstOrDefault();
+                    item.token = createToken();
+                    item.displayName = "Chuẩn thu";
+                    item.des = "Chuẩn thu";
+                    item.phoneNumber = "123456789";
+                    item.isdeleted = false;
+                    context.users!.Add(item);
+                }
+                user = context.users!.Where(s => s.user.CompareTo("CS") == 0).FirstOrDefault();
+                if (user == null)
+                {
+                    SqlUser item = new SqlUser();
+                    item.ID = DateTime.Now.Ticks;
+                    item.user = "CS";
+                    item.username = "cskh";
+                    item.password = "123456";
+                    item.role = context.roles!.Where(s => s.isdeleted == false && s.code.CompareTo("reciever") == 0).FirstOrDefault();
+                    item.token = createToken();
+                    item.displayName = "Chăm sóc khách hàng";
+                    item.des = "Chăm sóc khách hàng";
                     item.phoneNumber = "123456789";
                     item.isdeleted = false;
                     context.users!.Add(item);
@@ -58,8 +90,8 @@ namespace ServerWater2.APIs
                     item.password = "123456";
                     item.role = context.roles!.Where(s => s.isdeleted == false && s.code.CompareTo("staff") == 0).FirstOrDefault();
                     item.token = createToken();
-                    item.displayName = "staff";
-                    item.des = "staff";
+                    item.displayName = "Nhân viên";
+                    item.des = "Nhân viên";
                     item.phoneNumber = "123456789";
                     item.isdeleted = false;
                     context.users!.Add(item);
@@ -197,7 +229,6 @@ namespace ServerWater2.APIs
                 new_user.isdeleted = false;
                 new_user.displayName = displayName;
                 new_user.phoneNumber = phoneNumber;
-                new_user.customers = null;
                 new_user.token = createToken();
                 context.users!.Add(new_user);
                 int rows = await context.SaveChangesAsync();
@@ -436,7 +467,6 @@ namespace ServerWater2.APIs
 
             SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0)
                                             .Include(s => s.role)
-                                            .Include(s => s.customers!)
                                             .FirstOrDefault();
 
             if (m_user == null)
@@ -453,60 +483,10 @@ namespace ServerWater2.APIs
             temp.avatar = m_user.avatar;
             temp.role = m_user.role!.name;
 
-            if (m_user.customers != null)
-            {
-                foreach (SqlCustomer customer in m_user.customers)
-                {
-                    if (customer.isdeleted == false)
-                    {
-                        ItemCustomer item = new ItemCustomer();
-
-                        item.idkh = customer.idKH;
-                        item.danhbo = customer.maDB;
-                        item.sdt = customer.sdt;
-                        item.tenkh = customer.tenKH;
-                        item.diachiTT = customer.diachiTT;
-                        item.diachiLH = customer.diachiLH;
-                        item.diachiLD = customer.diachiLD;
-                        item.latidude = customer.latitude;
-                        item.longitude = customer.longitude;
-                        temp.customers.Add(item);
-                    }
-                }
-
-            }
-
             return temp;
         }
 
-        public class ItemType
-        {
-            public string code { get; set; } = "";
-            public string name { get; set; } = "";
-            public string des { get; set; } = "";
-        }
-
-        public List<ItemType> getListType()
-        {
-            List<ItemType> list = new List<ItemType>();
-            using (DataContext context = new DataContext())
-            {
-                List<SqlType>? types = context.types!.Where(s => s.isdeleted == false).ToList();
-                if (types.Count > 0)
-                {
-                    foreach (SqlType item in types)
-                    {
-                        ItemType tmp = new ItemType();
-                        tmp.code = item.code;
-                        tmp.name = item.name;
-                        tmp.des = item.des;
-
-                        list.Add(tmp);
-                    }
-                }
-                return list;
-            }
-        }
+       
 
     }
 }

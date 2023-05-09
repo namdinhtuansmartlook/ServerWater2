@@ -38,7 +38,33 @@ namespace ServerWater2.APIs
                     context.roles!.Add(role);
                 }
 
-                roles = context.roles!.Where(s => s.code.CompareTo("staff") == 0 && s.isdeleted == false).ToList();
+				roles = context.roles!.Where(s => s.code.CompareTo("survey") == 0 && s.isdeleted == false).ToList();
+				if (roles.Count <= 0)
+				{
+					SqlRole role = new SqlRole();
+					role.ID = DateTime.Now.Ticks;
+					role.code = "survey";
+					role.name = "survey";
+					role.des = "survey";
+					role.isdeleted = false;
+					role.note = "survey";
+					context.roles!.Add(role);
+				}
+
+				roles = context.roles!.Where(s => s.code.CompareTo("receiver") == 0 && s.isdeleted == false).ToList();
+				if (roles.Count <= 0)
+				{
+					SqlRole role = new SqlRole();
+					role.ID = DateTime.Now.Ticks;
+					role.code = "receiver";
+					role.name = "receiver";
+					role.des = "receiver";
+					role.isdeleted = false;
+					role.note = "receiver";
+					context.roles!.Add(role);
+				}
+
+				roles = context.roles!.Where(s => s.code.CompareTo("staff") == 0 && s.isdeleted == false).ToList();
                 if (roles.Count <= 0)
                 {
                     SqlRole role = new SqlRole();

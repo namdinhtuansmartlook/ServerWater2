@@ -41,5 +41,92 @@ namespace ServerWater2.Controllers
                 return Ok(order);
             }
         }
+
+        [HttpGet]
+        [Route("getListOrder")]
+        public IActionResult GetListNewOrder([FromHeader] string token)
+        {
+            return Ok(Program.api_order.getListOrder(token));
+        }
+
+        [HttpPut]
+        [Route("{code}/confirmOrder")]
+        public async Task<IActionResult> receiveOrder([FromHeader] string token, string code)
+        {
+            bool flag = await Program.api_order.confirmOrder(token, code);
+            if (flag)
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+        [HttpPut]
+        [Route("{code}/setCustomer")]
+        public async Task<IActionResult> setCustomer([FromHeader] string token, string maDB, string code)
+        {
+            bool flag = await Program.api_order.addCustomer(token, maDB, code);
+            if (flag)
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+       /* [HttpPut]
+        [Route("{code}/receiveOrderManager")]
+        public async Task<IActionResult> recieveOrderByManager([FromHeader] string token, string code)
+        {
+            long id = Program.api_user.checkManager(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_order.managerReceiveOrder(token, code);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+            
+        }
+
+        [HttpPut]
+        [Route("{code}/setWorker")]
+        public async Task<IActionResult> setWorkerOrder([FromHeader] string token, string code, string user)
+        {
+            long id = Program.api_user.checkManager(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_order.setWorkerOrder(token, code, user);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }*/
+        
     }
 }

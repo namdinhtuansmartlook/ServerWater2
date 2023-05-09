@@ -14,9 +14,10 @@ public class Program
     public static MyUser api_user = new MyUser();
     public static MyFile api_file = new MyFile();
     public static MyOrder api_order = new MyOrder();
-    public static MyService api_service = new MyService();
-    public static MyState api_state = new MyState();
     public static MyType api_type = new MyType();
+    public static MyState api_state = new MyState();
+    public static MyService api_service = new MyService();
+    public static MyAction api_action = new MyAction();
     
     public static MyCustomer api_customer = new MyCustomer();
 
@@ -80,12 +81,13 @@ public class Program
 
 
             app.MapControllers();
-            app.MapGet("/", () => string.Format("GIS of STVG - {0}", DateTime.Now));
+            app.MapGet("/", () => string.Format("ServerWater2 of STVG - {0}", DateTime.Now));
             await api_role.initAsync();
             await api_user.initAsync();
             await api_service.initAsync();
             await api_state.initAsync();
             await api_type.initAsync();
+            await api_action.initAsync();
 
             app.Run();
         }

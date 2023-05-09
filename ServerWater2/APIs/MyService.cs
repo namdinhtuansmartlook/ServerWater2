@@ -12,106 +12,62 @@ namespace ServerWater2.APIs
         {
             using (DataContext context = new DataContext())
             {
-                SqlService? service = context.services!.Where(s => s.code.CompareTo("service1") == 0).FirstOrDefault();
+                SqlService? service = context.services!.Where(s => s.code.CompareTo("LM") == 0).FirstOrDefault();
                 if (service == null)
                 {
                     SqlService item = new SqlService();
                     item.ID = DateTime.Now.Ticks;
-                    item.code = "service1";
-                    item.name = "Nước sinh hoạt hộ gia đình";
-                    item.des = "Nước sinh hoạt hộ gia đình";
+                    item.code = "LM";
+                    item.name = "Lắp mới";
+                    item.des = "Lắp mới";
+                    item.isdeleted = false;
+                    context.services!.Add(item);
+                }
+                service = context.services!.Where(s => s.code.CompareTo("SC") == 0).FirstOrDefault();
+                if (service == null)
+                {
+                    SqlService item = new SqlService();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = "SC";
+                    item.name = "Sửa chữa";
+                    item.des = "Sửa chữa";
+                    item.isdeleted = false;
+                    context.services!.Add(item);
+                }
+                service = context.services!.Where(s => s.code.CompareTo("TT") == 0).FirstOrDefault();
+                if (service == null)
+                {
+                    SqlService item = new SqlService();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = "TT";
+                    item.name = "Thay thế";
+                    item.des = "Thay thế";
+                    item.isdeleted = false;
+                    context.services!.Add(item);
+                }
+                service = context.services!.Where(s => s.code.CompareTo("ST") == 0).FirstOrDefault();
+                if (service == null)
+                {
+                    SqlService item = new SqlService();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = "ST";
+                    item.name = "Sang tên";
+                    item.des = "Sang tên";
+                    item.isdeleted = false;
+                    context.services!.Add(item);
+                }
+                service = context.services!.Where(s => s.code.CompareTo("DKDM") == 0).FirstOrDefault();
+                if (service == null)
+                {
+                    SqlService item = new SqlService();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = "DKDM";
+                    item.name = "Đăng kí định mức";
+                    item.des = "Đăng kí định mức";
                     item.isdeleted = false;
                     context.services!.Add(item);
                 }
                 int rows = await context.SaveChangesAsync();
-            }
-        }
-
-        public async Task<bool> createAsync(string code, string name, string des)
-        {
-            if (string.IsNullOrEmpty(code) || string.IsNullOrEmpty(name))
-            {
-                return false;
-            }
-            using (DataContext context = new DataContext())
-            {
-                SqlService? service = context.services!.Where(s => s.isdeleted == false && (s.code.CompareTo(code) == 0)).FirstOrDefault();
-                if (service != null)
-                {
-                    return false;
-                }
-
-                SqlService item = new SqlService();
-                item.ID = DateTime.Now.Ticks;
-                item.code = code;
-                item.name = name;
-                item.des = des;
-                context.services!.Add(item);
-
-                int rows = await context.SaveChangesAsync();
-                if (rows > 0)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-        }
-
-        public async Task<bool> editAsync(string code, string name, string des)
-        {
-            using (DataContext context = new DataContext())
-            {
-                SqlService? service = context.services!.Where(s => s.isdeleted == false && (s.code.CompareTo(code) == 0)).FirstOrDefault();
-                if (service == null)
-                {
-                    return false;
-                }
-                if (!string.IsNullOrEmpty(des))
-                {
-                    service.des = des;
-                }
-                if (!string.IsNullOrEmpty(name))
-                {
-                    service.name = name;
-                }
-               
-
-                int rows = await context.SaveChangesAsync();
-                if (rows > 0)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-        }
-
-        public async Task<bool> deleteAsync(string code)
-        {
-            using (DataContext context = new DataContext())
-            {
-                SqlService? service = context.services!.Where(s => s.isdeleted == false && (s.code.CompareTo(code) == 0)).FirstOrDefault();
-                if (service == null)
-                {
-                    return false;
-                }
-
-                service.isdeleted = true;
-
-                int rows = await context.SaveChangesAsync();
-                if (rows > 0)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
             }
         }
         public class ItemService
@@ -142,6 +98,5 @@ namespace ServerWater2.APIs
                 return list;
             }
         }
-
     }
 }

@@ -1,5 +1,10 @@
 ﻿using ServerWater2.Models;
 using Newtonsoft.Json;
+using static ServerWater2.APIs.MyCustomer;
+using static ServerWater2.APIs.MyState;
+using Microsoft.EntityFrameworkCore;
+using static ServerWater2.APIs.MyType;
+using static ServerWater2.APIs.MyService;
 
 namespace ServerWater2.APIs  
 {
@@ -24,6 +29,53 @@ namespace ServerWater2.APIs
                 }
             }
         }
+        public async Task<bool> setStateOrder(long idUser, string code, int state, string note, string latitude, string longitude)
+        {
+            using (DataContext context = new DataContext())
+            {
+                SqlState? m_state = context.states!.Where(s => s.isdeleted == false && s.code == state).FirstOrDefault();
+                if (m_state == null)
+                {
+                    return false;
+                }
+                SqlUser? user = context.users!.Where(s => s.isdeleted == false && s.ID == idUser).FirstOrDefault();
+                if (user == null)
+                {
+                    return false;
+                }
+                SqlOrder? order = context.orders!.Where(s => s.isDelete == false&& s.code.CompareTo(code) == 0)
+                                                    .Include(s => s.state)
+                                                    .FirstOrDefault();
+                if (order == null)
+                {
+                    return false;
+                }
+
+                order.state = m_state;
+               
+
+               
+                SqlLogOrder log = new SqlLogOrder();
+                log.ID = DateTime.Now.Ticks;
+                log.order = order;
+                log.note = note;
+                log.time = order.lastestTime;
+                log.user = context.users!.Where(s => s.ID == idUser).FirstOrDefault();
+                log.latitude = latitude;
+                log.longitude = longitude;
+                context.logs!.Add(log);
+
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
         public async Task<string> createOrderAsync(string customer, string phone,string addressCustomer,string addressWater, string addressContract, string service, string type, string note)
         {
             if (string.IsNullOrEmpty(customer) || string.IsNullOrEmpty(phone) || string.IsNullOrEmpty(addressCustomer) || string.IsNullOrEmpty(addressWater) || string.IsNullOrEmpty(addressContract) || string.IsNullOrEmpty(service) || string.IsNullOrEmpty(type))
@@ -33,44 +85,29 @@ namespace ServerWater2.APIs
             using (DataContext context = new DataContext())
             {
 
-                SqlCustomer? m_customer = context.customers!.Where(s => s.isdeleted == false && s.tenKH.CompareTo(customer) == 0 && s.sdt.CompareTo(phone) == 0).FirstOrDefault();
-                if (m_customer == null)
-                {
-                    SqlCustomer tmp = new SqlCustomer();
+               
 
-                    tmp.ID = DateTime.Now.Ticks;
-                    tmp.idKH = "stvg_"+ DateTime.Now.Ticks;
-                    tmp.maDB = "";
-                    tmp.sdt = phone;
-                    tmp.tenKH = customer;
-                    tmp.diachiTT = addressCustomer;
-                    tmp.diachiLH = addressContract;
-                    tmp.diachiLD = addressWater;
-                    tmp.latitude = "";
-                    tmp.longitude = "";
-                    tmp.isdeleted = false;
-                    context.customers!.Add(tmp);
-
-                    await context.SaveChangesAsync();
-                }
-
-                SqlService? m_service = context.services!.Where(s => s.isdeleted == false && s.code.CompareTo(service) == 0).FirstOrDefault();
-                if (m_service == null)
+                SqlType? m_type = context.types!.Where(s => s.isdeleted == false && s.code.CompareTo(type) == 0).FirstOrDefault();
+                if (m_type == null)
                 {
                     return "";
                 }
-                SqlType? m_request = context.types!.Where(s => s.isdeleted == false && s.code.CompareTo(type) == 0).FirstOrDefault();
-                if(m_request == null)
+                SqlService? m_service = context.services!.Where(s => s.isdeleted == false && s.code.CompareTo(service) == 0).FirstOrDefault();
+                if(m_service == null)
                 {
                     return "";
                 }
 
                 SqlOrder order = new SqlOrder();
                 order.ID = DateTime.Now.Ticks;
-                order.customer = m_customer;
                 order.code = generatorcode();
+                order.name = customer;
+                order.addressCustomer = addressCustomer;
+                order.addressWater = addressWater;
+                order.addressContract = addressContract;
+                order.phone = phone;
                 order.note = note;
-                order.type = m_request;
+                order.type = m_type;
                 order.service = m_service;
                 order.lastestTime = DateTime.Now.ToUniversalTime();
                 order.createdTime = DateTime.Now.ToUniversalTime();
@@ -79,13 +116,12 @@ namespace ServerWater2.APIs
                 context.orders!.Add(order);
                 await context.SaveChangesAsync();
 
-                SqlLogRequest log_request= new SqlLogRequest();
-                log_request.ID = DateTime.Now.Ticks;
-                log_request.order = order; 
-                log_request.customer = m_customer;
-                log_request.time = DateTime.Now.ToUniversalTime();
-                log_request.note = "New Order";
-                context.logRequests!.Add(log_request);
+                SqlLogOrder log= new SqlLogOrder();
+                log.ID = DateTime.Now.Ticks;
+                log.order = order;
+                log.time = DateTime.Now.ToUniversalTime();
+                log.note = "New Order";
+                context.logs!.Add(log);
 
                 int rows = await context.SaveChangesAsync();
                 if (rows > 0)
@@ -98,12 +134,346 @@ namespace ServerWater2.APIs
                 }
             }
         }
+      
 
-       
+        public async Task<bool> confirmOrder(string token, string code)
+        {
+            using(DataContext context = new DataContext())
+            {
+                SqlUser? m_user = context.users!.Include(s => s.role).Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).FirstOrDefault();
+                if(m_user == null)
+                {
+                    return false;
+                }
+                SqlOrder? order = context.orders!.Include(s => s.state).Where(s => s.isDelete == false && s.code.CompareTo(code) == 0 && s.state!.code == 0).Include(s => s.receiver).FirstOrDefault();
+                if(order == null)
+                {
+                    return false;
+                }
+                if(order.receiver != null)
+                {
+                    return false;
+                }
+                SqlState? state = context.states!.Where(s => s.isdeleted == false && s.code == 1).FirstOrDefault();
+                if(state == null)
+                {
+                    return false;
+                }
 
-       
+                order.receiver = m_user;
+                order.state = state;
+                order.lastestTime = DateTime.Now.ToUniversalTime();
+
+                int rows = await context.SaveChangesAsync();
+                if(rows > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public async Task<bool> addCustomer(string token,string maDB, string code)
+        {
+            using(DataContext context = new DataContext())
+            {
+                SqlUser? user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role).FirstOrDefault();
+                if(user == null)
+                {
+                    return false;
+                }
+                SqlCustomer? m_customer = context.customers!.Where(s => s.code.CompareTo(maDB) == 0 && s.isdeleted == false).Include(s => s.orders).FirstOrDefault();
+                if(m_customer == null)
+                {
+                    return false;
+                }
+                //if(m_customer.orders == null)
+                //{
+                //    m_customer.orders = new List<SqlOrder>();
+                //}
+                //SqlOrder? tmp = m_customer.orders.Where(s => s.code.CompareTo(order) == 0 && s.isDelete == false).FirstOrDefault();
+                //if(tmp != null)
+                //{
+                //    return false;
+                //}
+
+                SqlOrder? m_order = context.orders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).Include(s => s.customer).FirstOrDefault();
+                if(m_order == null)
+                {
+                    return false;
+                }
+
+                m_order.customer = m_customer;
+                
+
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+
+            }
+        }
+        public async Task<bool> managerReceiveOrder(string token, string code)
+        {
+            using (DataContext context = new DataContext())
+            {
+                SqlUser? m_user = context.users!.Include(s => s.role).Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).FirstOrDefault();
+                if (m_user == null)
+                {
+                    return false;
+                }
+                SqlOrder? order = context.orders!.Include(s => s.state).Where(s => s.isDelete == false && s.code.CompareTo(code) == 0 && s.state!.code == 1).Include(s => s.manager).FirstOrDefault();
+                if (order == null)
+                {
+                    return false;
+                }
+                if (order.manager != null)
+                {
+                    return false;
+                }
+
+                order.manager = m_user;
+                order.lastestTime = DateTime.Now.ToUniversalTime();
+
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+        public async Task<bool> setWorkerOrder(string token, string code, string user)
+        {
+            using (DataContext context = new DataContext())
+            {
+                SqlUser? m_user = context.users!.Include(s => s.role).Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).FirstOrDefault();
+                if (m_user == null)
+                {
+                    return false;
+                }
+                SqlUser? worker = context.users!.Include(s => s.role).Where(s => s.isdeleted == false && s.user.CompareTo(user) == 0 && s.role!.code.CompareTo("staff") == 0).FirstOrDefault();
+                if (worker == null)
+                {
+                    return false;
+                }
+                SqlOrder? order = context.orders!.Include(s => s.state).Where(s => s.isDelete == false && s.code.CompareTo(code) == 0 && s.state!.code == 1).Include(s => s.worker).FirstOrDefault();
+                if (order == null)
+                {
+                    return false;
+                }
+                if (order.worker != null)
+                {
+                    return false;
+                }
+                SqlState? state = context.states!.Where(s => s.isdeleted == false && s.code == 2).FirstOrDefault();
+                if(state == null)
+                {
+                    return false;
+                }
+                order.worker = worker;
+                order.state = state;
+                order.lastestTime = DateTime.Now.ToUniversalTime();
 
 
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+        public async Task<bool> workingJob(string token, string code)
+        {
+            using(DataContext context = new DataContext())
+            {
+                SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).FirstOrDefault();
+                if(m_user == null)
+                {
+                    return false;
+                }
+                SqlOrder? m_order = context.orders!.Include(s => s.worker).Where(s => s.isDelete == false && s.code.CompareTo(code) == 0 && s.worker!.token.CompareTo(m_user.token) == 0).FirstOrDefault();
+                if(m_order == null)
+                {
+                    return false;
+                }
+                SqlState? state = context.states!.Where(s => s.isdeleted == false && s.code == 3).FirstOrDefault();
+                if (state == null)
+                {
+                    return false;
+                }
+                m_order.state = state;
+                m_order.lastestTime = DateTime.Now.ToUniversalTime();
+
+
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+        public class ItemUser
+        {
+            public string user { get; set; } = "";
+            public string displayName { get; set; } = "";
+            public string numberPhone { get; set; } = "";
+        }
+      
+        public class ItemOrder
+        {
+            public string id { get; set; } = "";
+            public string code { get; set; } = "";
+            public string name { get; set; } = "";
+            public string phone { get; set; } = "";
+            public string addressCustomer { get; set; } = "";
+            public string addressWater { get; set; } = "";
+            public string addressContract { get; set; } = "";
+            public ItemUser reciver { get; set; } = new ItemUser();
+            public ItemUser manager { get; set; } = new ItemUser();
+            public ItemUser worker { get; set; } = new ItemUser();
+            public ItemCustomer customer  { get; set; } = new ItemCustomer();
+            public string note { get; set; } = "";
+            public ItemType type { get; set; } = new ItemType();
+            public ItemService service { get; set; } = new ItemService();
+            public ItemStateOrder state { get; set; } = new ItemStateOrder();
+            public string createTime { get; set; } = "";
+            public string lastestTime { get; set; } = "";
+
+        }
+
+
+        public List<ItemOrder> getListOrder(string token)
+        {
+            List<ItemOrder> list = new List<ItemOrder>();
+            using(DataContext context = new DataContext())
+            {
+                SqlUser? m_user = context.users!.Include(s => s.role).Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).FirstOrDefault();
+                if (m_user == null)
+                {
+                    return new List<ItemOrder>();
+                }
+
+                List<SqlOrder>? orders = context.orders!.Where(s => s.isDelete == false).Include(s => s.customer).Include(s => s.type).Include(s => s.service).Include(s => s.state).Include(s => s.receiver).Include(s => s.manager).Include(s => s.worker).ToList();
+                if(orders == null)
+                {
+                    return new List<ItemOrder>();
+                }
+
+                foreach (SqlOrder item in orders)
+                {
+                    ItemOrder tmp = new ItemOrder();
+                    tmp.id = item.ID.ToString();
+                    tmp.code = item.code;
+                    tmp.name = item.name;
+                    tmp.phone = item.phone;
+                    tmp.addressCustomer = item.addressCustomer;
+                    tmp.addressWater = item.addressWater;
+                    tmp.addressContract = item.addressContract;
+                    if (item.customer != null)
+                    {
+                        if (item.customer.isdeleted == false)
+                        {
+                            ItemCustomer customer = new ItemCustomer();
+                            customer.maDB = item.customer.code;
+                            customer.sdt = item.customer.phone;
+                            customer.tenkh = item.customer.name;
+                            customer.diachi = item.customer.address;
+                            customer.x = item.customer.latitude;
+                            customer.y = item.customer.longitude;
+
+                            tmp.customer = customer;
+                        }
+
+                    }
+
+                    if (item.receiver != null)
+                    {
+                        ItemUser receiver = new ItemUser();
+                        receiver.user = item.receiver.user;
+                        receiver.displayName = item.receiver.displayName;
+                        receiver.numberPhone = item.receiver.phoneNumber;
+
+                        tmp.reciver = receiver;
+                    }
+
+                    if (item.manager != null)
+                    {
+                        ItemUser manager = new ItemUser();
+                        manager.user = item.manager.user;
+                        manager.displayName = item.manager.displayName;
+                        manager.numberPhone = item.manager.phoneNumber;
+
+                        tmp.manager = manager;
+                    }
+
+                    if (item.worker != null)
+                    {
+                        ItemUser worker = new ItemUser();
+                        worker.user = item.worker.user;
+                        worker.displayName = item.worker.displayName;
+                        worker.numberPhone = item.worker.phoneNumber;
+
+                        tmp.worker = worker;
+                    }
+
+                    tmp.note = item.note;
+                    if (item.type != null)
+                    {
+                        ItemType type = new ItemType();
+
+                        type.code = item.type.code;
+                        type.name = item.type.name;
+                        type.des = item.type.des;
+                        tmp.type = type;
+                    }
+
+                    if (item.service != null)
+                    {
+                        ItemService service = new ItemService();
+                        service.code = item.service.code;
+                        service.name = item.service.name;
+                        service.des = item.service.des;
+                        tmp.service = service;
+                    }
+                    if (item.state != null)
+                    {
+                        ItemStateOrder state = new ItemStateOrder();
+                        state.code = item.state.code;
+                        state.name = item.state.name;
+                        state.des = item.state.des;
+                        tmp.state = state;
+                    }
+                    tmp.createTime = item.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
+                    tmp.lastestTime = item.lastestTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
+
+                    list.Add(tmp);
+                }
+            }
+            return list;
+        }
+
+      
+        
 
         //public async Task<bool> removeImageBeforeAsync(string token, string code, string image)
         //{

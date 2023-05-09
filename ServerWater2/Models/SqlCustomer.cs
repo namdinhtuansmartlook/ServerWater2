@@ -8,20 +8,15 @@ namespace ServerWater2.Models
     {
         [Key]
         public long ID { get; set; }
-        public string idKH { get; set; } = "";
-        public string maDB { get; set; } = "";
-        public string sdt { get; set; } = "";
-        public string tenKH { get; set; } = "";
-        public string diachiTT { get; set; } = "";
-        public string diachiLH { get; set; } = "";
-        public string diachiLD { get; set; } = "";
-        //public int sonk { get; set; } = 0;
-        //public string serialmodule { get; set; } = "";
-        //public string serialdh { get; set; } = "";
+        public string code { get; set; } = "";
+        public string phone { get; set; } = "";
+        public string name { get; set; } = "";
+        public string address { get; set; } = "";
+        public string note { get; set; } = "";
+        public List<string>? images { get; set; }
         public string longitude { get; set; } = "";
         public string latitude { get; set; } = "";
-       // public SqlArea? area { get; set; }
-       public List<SqlUser>? users { get; set; }
+       public List<SqlOrder>? orders { get; set; }
         public bool isdeleted { get; set; } = false;
     }
 }

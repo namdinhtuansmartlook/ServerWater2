@@ -1,15 +1,15 @@
 ﻿using ServerWater2.Models;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace ServerWater2.APIs
 {
     public class MyCustomer
     {
         public MyCustomer() { }
-       
-        public async Task<bool> editCustomerAsync(string idkh, string danhbo, string sdt, string tenkh, string diachiTT, string diachiLH, string diachiLD, string latidude, string longitude)
+        public async Task<bool> createCustomerAsync(string code, string phone, string name, string address, string note, string latidude, string longitude)
         {
-            if (string.IsNullOrEmpty(idkh))
+            if (string.IsNullOrEmpty(code)|| string.IsNullOrEmpty(name))
             {
                 return false;
             }
@@ -17,36 +17,67 @@ namespace ServerWater2.APIs
             using (DataContext context = new DataContext())
             {
 
-                SqlCustomer? m_customer = context.customers!.Where(s => s.isdeleted == false && s.idKH.CompareTo(idkh) == 0).FirstOrDefault();
+                SqlCustomer? m_customer = context.customers!.Where(s => s.isdeleted == false && s.code.CompareTo(code) == 0).FirstOrDefault();
+                if (m_customer != null)
+                {
+                    return false;
+                }
+
+                SqlCustomer customer = new SqlCustomer();
+                customer.ID = DateTime.Now.Ticks;
+                customer.code = code;
+                customer.phone = phone;
+                customer.name = name;
+                customer.address = address;
+                customer.note = note;
+                customer.latitude = latidude;
+                customer.longitude = longitude;
+
+                context.customers!.Add(customer);
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+        public async Task<bool> editCustomerAsync( string code, string phone, string name, string address,string note, string latidude, string longitude)
+        {
+            if (string.IsNullOrEmpty(code))
+            {
+                return false;
+            }
+
+            using (DataContext context = new DataContext())
+            {
+
+                SqlCustomer? m_customer = context.customers!.Where(s => s.isdeleted == false && s.code.CompareTo(code) == 0).FirstOrDefault();
                 if (m_customer == null)
                 {
                     return false;
                 }
 
 
-                if (!string.IsNullOrEmpty(danhbo))
+                
+                if (!string.IsNullOrEmpty(phone))
                 {
-                    m_customer.maDB = danhbo;
+                    m_customer.phone = phone;
                 }
-                if (!string.IsNullOrEmpty(sdt))
+                if (!string.IsNullOrEmpty(name))
                 {
-                    m_customer.sdt = sdt;
+                    m_customer.name = name;
                 }
-                if (!string.IsNullOrEmpty(tenkh))
+                if (!string.IsNullOrEmpty(address))
                 {
-                    m_customer.tenKH = tenkh;
+                    m_customer.address = address;
                 }
-                if (!string.IsNullOrEmpty(diachiTT))
+                if (!string.IsNullOrEmpty(note))
                 {
-                    m_customer.diachiTT = diachiTT;
-                }
-                if (!string.IsNullOrEmpty(diachiLH))
-                {
-                    m_customer.diachiLH = diachiLH;
-                }
-                if (!string.IsNullOrEmpty(diachiLD))
-                {
-                    m_customer.diachiLD = diachiLD;
+                    m_customer.note = note;
                 }
                 if (!string.IsNullOrEmpty(latidude))
                 {
@@ -70,9 +101,9 @@ namespace ServerWater2.APIs
         }
 
 
-        public async Task<bool> deleteCustomerAsync(string idkh)
+        public async Task<bool> deleteCustomerAsync(string code)
         {
-            if (string.IsNullOrEmpty(idkh))
+            if (string.IsNullOrEmpty(code))
             {
                 return false;
             }
@@ -80,13 +111,14 @@ namespace ServerWater2.APIs
             using (DataContext context = new DataContext())
             {
 
-                SqlCustomer? mcustomer = context.customers!.Where(s => s.isdeleted == false && s.idKH.CompareTo(idkh) == 0).FirstOrDefault();
+                SqlCustomer? mcustomer = context.customers!.Where(s => s.isdeleted == false && s.code.CompareTo(code) == 0).FirstOrDefault();
                 if (mcustomer == null)
                 {
                     return false;
                 }
 
                 mcustomer.isdeleted = true;
+
 
                 int rows = await context.SaveChangesAsync();
                 if (rows > 0)
@@ -99,18 +131,101 @@ namespace ServerWater2.APIs
                 }
             }
         }
+        public async Task<string> addImageCustomer(string token, string code, byte[] image)
+        {
+            try
+            {
+                using (DataContext context = new DataContext())
+                {
+                    SqlUser? user = context.users!.Where(s => s.token.CompareTo(token) == 0 && s.isdeleted == false).FirstOrDefault();
+                    if (user == null)
+                    {
+                        return "Error user";
+                    }
+                    SqlCustomer? customer = context.customers!.Where(s => s.code.CompareTo(code) == 0 && s.isdeleted == false).FirstOrDefault();
+                    if (customer == null)
+                    {
+                        return "Error customer";
+                    }
+                    string m_file = "";
+                    Console.WriteLine(image.Length);
+                    byte[]? tmp = await Program.api_file.getImageChanged(image);
+                    if (tmp != null)
+                    {
+                        m_file = await Program.api_file.saveFileAsync(DateTime.Now.Ticks.ToString(), tmp);
+                        if (string.IsNullOrEmpty(m_file))
+                        {
+                            return "Error file";
+                        }
+                        if (customer.images == null)
+                        {
+                            customer.images = new List<string>();
+                        }
 
+                        customer.images.Add(m_file);
+                    }
+                    else
+                    {
+                        return "Code file empty";
+                    }
+
+                    int rows = await context.SaveChangesAsync();
+                    if (rows > 0)
+                    {
+                        return m_file;
+                    }
+                    else
+                    {
+                        return "null";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.ToString());
+                return ex.Message;
+            }
+        }
+
+        public async Task<bool> removeImagePoint(string token, string code, string image)
+        {
+            using (DataContext context = new DataContext())
+            {
+                SqlUser? user = context.users!.Where(s => s.token.CompareTo(token) == 0 && s.isdeleted == false).FirstOrDefault();
+                if (user == null)
+                {
+                    return false;
+                }
+                SqlCustomer? customer = context.customers!.Where(s => s.code.CompareTo(code) == 0 && s.isdeleted == false).FirstOrDefault();
+                if (customer == null)
+                {
+                    return false;
+                }
+                if (customer.images != null)
+                {
+                    customer.images.Remove(image);
+                }
+               
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
         public class ItemCustomer
         {
-            public string idkh { get; set; } = "";
-            public string danhbo { get; set; } = "";
+            public string maDB { get; set; } = "";
             public string sdt { get; set; } = "";
             public string tenkh { get; set; } = "";
-            public string diachiTT { get; set; } = "";
-            public string diachiLH { get; set; } = "";
-            public string diachiLD { get; set; } = "";
-            public string latidude { get; set; } = "";
-            public string longitude { get; set; } = "";
+            public string diachi { get; set; } = "";
+            public string note { get; set; } = "";
+            public string x { get; set; } = "";
+            public string y { get; set; } = "";
         }
 
         public List<ItemCustomer> listCustomer()
@@ -128,15 +243,13 @@ namespace ServerWater2.APIs
                 {
                     ItemCustomer tmp = new ItemCustomer();
 
-                    tmp.idkh = item.idKH;
-                    tmp.danhbo = item.maDB;
-                    tmp.sdt = item.sdt;
-                    tmp.tenkh = item.tenKH;
-                    tmp.diachiTT = item.diachiTT;
-                    tmp.diachiLH = item.diachiLH;
-                    tmp.diachiLD = item.diachiLD;
-                    tmp.latidude = item.latitude;
-                    tmp.longitude = item.longitude;
+                    tmp.maDB = item.code;
+                    tmp.sdt = item.phone;
+                    tmp.tenkh = item.name;
+                    tmp.diachi = item.address;
+                    tmp.note = item.note;
+                    tmp.x = item.latitude;
+                    tmp.y = item.longitude;
 
                     lists.Add(tmp);
                 }

@@ -2,27 +2,24 @@
 
 namespace ServerWater2.APIs
 {
-    public class MyType
+    public class MyAction
     {
-        public MyType()
-        {
-
-        }
         public async Task initAsync()
         {
             using (DataContext context = new DataContext())
             {
-                SqlType? type = context.types!.Where(s => s.code.CompareTo("type1") == 0).FirstOrDefault();
-                if (type == null)
+                SqlAction? action = context.actions!.Where(s => s.code.CompareTo("action1") == 0 && s.isdeleted == false).FirstOrDefault();
+                if (action == null)
                 {
-                    SqlType item = new SqlType();
+                    SqlAction item = new SqlAction();
                     item.ID = DateTime.Now.Ticks;
-                    item.code = "type1";
-                    item.name = "Nước sinh hoạt hộ gia đình";
-                    item.des = "Nước sinh hoạt hộ gia đình";
+                    item.code = "action1";
+                    item.name = "Hành động 1";
+                    item.des = "Hành động 1";
                     item.isdeleted = false;
-                    context.types!.Add(item);
+                    context.actions!.Add(item);
                 }
+               
                 int rows = await context.SaveChangesAsync();
             }
         }
@@ -35,18 +32,18 @@ namespace ServerWater2.APIs
             }
             using (DataContext context = new DataContext())
             {
-                SqlType? type = context.types!.Where(s => s.isdeleted == false && (s.code.CompareTo(code) == 0)).FirstOrDefault();
-                if (type != null)
+                SqlAction? action = context.actions!.Where(s => s.code.CompareTo(code) == 0 && s.isdeleted == false).FirstOrDefault();
+                if (action != null)
                 {
                     return false;
                 }
 
-                SqlType item = new SqlType();
+                SqlAction item = new SqlAction();
                 item.ID = DateTime.Now.Ticks;
                 item.code = code;
                 item.name = name;
                 item.des = des;
-                context.types!.Add(item);
+                context.actions!.Add(item);
 
                 int rows = await context.SaveChangesAsync();
                 if (rows > 0)
@@ -64,20 +61,20 @@ namespace ServerWater2.APIs
         {
             using (DataContext context = new DataContext())
             {
-                SqlType? type = context.types!.Where(s => s.isdeleted == false && (s.code.CompareTo(code) == 0)).FirstOrDefault();
-                if (type == null)
+                SqlAction? action = context.actions!.Where(s => s.code.CompareTo(code) == 0 && s.isdeleted == false).FirstOrDefault();
+                if (action == null)
                 {
                     return false;
                 }
                 if (!string.IsNullOrEmpty(des))
                 {
-                    type.des = des;
+                    action.des = des;
                 }
                 if (!string.IsNullOrEmpty(name))
                 {
-                    type.name = name;
+                    action.name = name;
                 }
-               
+
 
                 int rows = await context.SaveChangesAsync();
                 if (rows > 0)
@@ -95,13 +92,13 @@ namespace ServerWater2.APIs
         {
             using (DataContext context = new DataContext())
             {
-                SqlType? type = context.types!.Where(s => s.isdeleted == false && (s.code.CompareTo(code) == 0)).FirstOrDefault();
-                if (type == null)
+                SqlAction? action = context.actions!.Where(s => s.code.CompareTo(code) == 0 && s.isdeleted == false).FirstOrDefault();
+                if (action == null)
                 {
                     return false;
                 }
 
-                type.isdeleted = true;
+                action.isdeleted = true;
 
                 int rows = await context.SaveChangesAsync();
                 if (rows > 0)
@@ -114,24 +111,24 @@ namespace ServerWater2.APIs
                 }
             }
         }
-        public class ItemType
+        public class ItemAction
         {
             public string code { get; set; } = "";
             public string name { get; set; } = "";
             public string des { get; set; } = "";
         }
 
-        public List<ItemType> getListType()
+        public List<ItemAction> getListAction()
         {
-            List<ItemType> list = new List<ItemType>();
+            List<ItemAction> list = new List<ItemAction>();
             using (DataContext context = new DataContext())
             {
-                List<SqlType>? types = context.types!.Where(s => s.isdeleted == false).ToList();
-                if (types.Count > 0)
+                List<SqlAction>? actions = context.actions!.Where(s => s.isdeleted == false).ToList();
+                if (actions.Count > 0)
                 {
-                    foreach (SqlType item in types)
+                    foreach (SqlAction item in actions)
                     {
-                        ItemType tmp = new ItemType();
+                        ItemAction tmp = new ItemAction();
                         tmp.code = item.code;
                         tmp.name = item.name;
                         tmp.des = item.des;
@@ -142,6 +139,5 @@ namespace ServerWater2.APIs
                 return list;
             }
         }
-
     }
 }

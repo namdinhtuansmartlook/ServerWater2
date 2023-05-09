@@ -9,14 +9,20 @@ namespace ServerWater2.Models
     {
         [Key]
         public long ID { get; set; }
-        public SqlUser? user { get; set; }
+        public SqlUser? receiver { get; set; }
+        public SqlUser? manager { get; set; }
+        public SqlUser? worker { get; set; }
         public SqlCustomer? customer { get; set; }
         public string code { get; set; } = "";
-        public string note { get; set; } = "";
-        public List<string>? images { get; set; }
-        public SqlType? type { get; set; }
+        public string name { get; set; } = "";
+        public string phone { get; set; } = "";
+        public string addressCustomer { get; set; } = "";
+        public string addressWater { get; set; } = "";
+        public string addressContract { get; set; } = "";
         public SqlService? service { get; set; }
+        public SqlType? type { get; set; }
         public SqlState? state { get; set; }
+        public string note { get; set; } = "";
         public DateTime createdTime { get; set; }
         public DateTime lastestTime { get; set; }
         public bool isDelete { get; set; } = false;

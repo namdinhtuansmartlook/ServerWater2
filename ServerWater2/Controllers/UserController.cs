@@ -112,8 +112,8 @@ namespace ServerWater2.Controllers
             }
         }
         [HttpPut]
-        [Route("addAvatar")]
-        public async Task<IActionResult> addAvatarAsync([FromHeader] string token, IFormFile image)
+        [Route("setAvatar")]
+        public async Task<IActionResult> setAvatarAsync([FromHeader] string token, IFormFile image)
         {
 
             using (MemoryStream ms = new MemoryStream())
@@ -152,22 +152,6 @@ namespace ServerWater2.Controllers
         public IActionResult getInfoUser([FromHeader] string token)
         {
             return Ok(Program.api_user.getInfoUser(token));
-        }
-
-        [HttpGet]
-        [Route("getListType")]
-        public IActionResult getListType([FromHeader] string token)
-        {
-            long id = Program.api_user.checkAdmin(token);
-            if (id >= 0)
-            {
-                return Ok(Program.api_user.getListType());
-            }
-            else
-            {
-                return Unauthorized();
-            }
-
         }
     }
 }
