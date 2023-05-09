@@ -1,0 +1,200 @@
+﻿using ServerWater2.Models;
+
+namespace ServerWater2.APIs
+{
+    public class MyState
+    {
+        public MyState()
+        {
+
+        }
+        public async Task initAsync()
+        {
+            using (DataContext context = new DataContext())
+            {
+                SqlState? type = context.states!.Where(s => s.code == 0).FirstOrDefault();
+                if (type == null)
+                {
+                    SqlState item = new SqlState();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = 0;
+                    item.name = "Mới";
+                    item.des = "Mới";
+                    item.isdeleted = false;
+                    context.states!.Add(item);
+                }
+                type = context.states!.Where(s => s.code == 1).FirstOrDefault();
+                if (type == null)
+                {
+                    SqlState item = new SqlState();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = 1;
+                    item.name = "Xác Nhận";
+                    item.des = "Xác Nhận";
+                    item.isdeleted = false;
+                    context.states!.Add(item);
+                }
+
+                type = context.states!.Where(s => s.code == 2).FirstOrDefault();
+                if (type == null)
+                {
+                    SqlState item = new SqlState();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = 2;
+                    item.name = "Phân công khảo sát";
+                    item.des = "Phân công khảo sát";
+                    item.isdeleted = false;
+                    context.states!.Add(item);
+                }
+               
+
+                type = context.states!.Where(s => s.code == 3).FirstOrDefault();
+                if (type == null)
+                {
+                    SqlState item = new SqlState();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = 3;
+                    item.name = "Thực Hiện";
+                    item.des = "Thực Hiện";
+                    item.isdeleted = false;
+                    context.states!.Add(item);
+                }
+
+                type = context.states!.Where(s => s.code == 4).FirstOrDefault();
+                if (type == null)
+                {
+                    SqlState item = new SqlState();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = 4;
+                    item.name = "Kết Thúc";
+                    item.des = "Kết Thúc";
+                    item.isdeleted = false;
+                    context.states!.Add(item);
+                }
+
+                
+
+                type = context.states!.Where(s => s.code == 5).FirstOrDefault();
+                if (type == null)
+                {
+                    SqlState item = new SqlState();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = 5;
+                    item.name = "Hủy";
+                    item.des = "Hủy";
+                    item.isdeleted = false;
+                    context.states!.Add(item);
+                }
+
+                int rows = await context.SaveChangesAsync();
+            }
+        }
+
+       /* public async Task<bool> createAsync(int code, string name, string des)
+        {
+            if (string.IsNullOrEmpty(code.ToString()) || string.IsNullOrEmpty(name))
+            {
+                return false;
+            }
+            using (DataContext context = new DataContext())
+            {
+                SqlState? type = context.states!.Where(s => s.isdeleted == false && (s.code.CompareTo(code) == 0 || s.name.CompareTo(name) == 0)).FirstOrDefault();
+                if (type != null)
+                {
+                    return false;
+                }
+
+                SqlState item = new SqlState();
+                item.ID = DateTime.Now.Ticks;
+                item.code = code;
+                item.name = name;
+                item.des = des;
+                context.sqlStates!.Add(item);
+
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public async Task<bool> editAsync(int code, string des, string name)
+        {
+            using (DataContext context = new DataContext())
+            {
+                SqlState? type = context.sqlStates!.Where(s => s.isdeleted == false && s.code.CompareTo(code) == 0).FirstOrDefault();
+                if (type == null)
+                {
+                    return false;
+                }
+                type.name = name;
+                type.des = des;
+
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public async Task<bool> deleteAsync(int code)
+        {
+            using (DataContext context = new DataContext())
+            {
+                SqlState? type = context.sqlStates!.Where(s => s.isdeleted == false && s.code == code).FirstOrDefault();
+                if (type == null)
+                {
+                    return false;
+                }
+
+                type.isdeleted = true;
+
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }*/
+
+        public class ItemStateOrder
+        {
+            public int code { get; set; } = 0;
+            public string name { get; set; } = "";
+            public string des { get; set; } = "";
+        }
+
+        public List<ItemStateOrder> getList()
+        {
+            using (DataContext context = new DataContext())
+            {
+                List<SqlState> states = context.states!.Where(s => s.isdeleted == false).OrderBy(s => s.code).ToList();
+                List<ItemStateOrder> items = new List<ItemStateOrder>();
+                foreach (SqlState state in states)
+                {
+                    ItemStateOrder item = new ItemStateOrder();
+                    item.code = state.code;
+                    item.name = state.name;
+                    item.des = state.des;
+                    items.Add(item);
+                }
+                return items;
+            }
+        }
+    }
+
+}
