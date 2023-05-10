@@ -70,21 +70,6 @@ namespace ServerWater2.Controllers
                 return Ok(order);
             }
         }
-
-        [HttpGet]
-        [Route("getListService")]
-        public IActionResult GetListService()
-        {
-            return Ok(Program.api_service.getListService());
-        }
-
-        [HttpGet]
-        [Route("getListOrder")]
-        public IActionResult GetListNewOrder([FromHeader] string token)
-        {
-            return Ok(Program.api_order.getListOrder(token));
-        }
-
         [HttpPut]
         [Route("{code}/confirmOrder")]
         public async Task<IActionResult> ReceiveOrder([FromHeader] string token, string code)
@@ -114,14 +99,14 @@ namespace ServerWater2.Controllers
             }
         }
 
-       /* [HttpPut]
+        [HttpPut]
         [Route("{code}/receiveOrderManager")]
         public async Task<IActionResult> recieveOrderByManager([FromHeader] string token, string code)
         {
             long id = Program.api_user.checkManager(token);
             if (id >= 0)
             {
-                bool flag = await Program.api_order.managerReceiveOrder(token, code);
+                bool flag = await Program.api_order.setConfirmedOrder(token, code);
                 if (flag)
                 {
                     return Ok();
@@ -136,7 +121,7 @@ namespace ServerWater2.Controllers
             {
                 return Unauthorized();
             }
-            
+
         }
 
         [HttpPut]
@@ -146,7 +131,7 @@ namespace ServerWater2.Controllers
             long id = Program.api_user.checkManager(token);
             if (id >= 0)
             {
-                bool flag = await Program.api_order.setWorkerOrder(token, code, user);
+                bool flag = await Program.api_order.setAssginOrder(token, code, user);
                 if (flag)
                 {
                     return Ok();
@@ -162,7 +147,34 @@ namespace ServerWater2.Controllers
                 return Unauthorized();
             }
 
+        }
+
+        [HttpGet]
+        [Route("getListService")]
+        public IActionResult GetListService()
+        {
+            return Ok(Program.api_service.getListService());
+        }
+
+        [HttpGet]
+        [Route("getListOrder")]
+        public IActionResult GetListNewOrder([FromHeader] string token)
+        {
+            return Ok(Program.api_order.getListOrder(token));
+        }
+        /*[HttpGet]
+        [Route("getListOrderForManager")]
+        public IActionResult GetListOrderManager([FromHeader] string token)
+        {
+            return Ok(Program.api_order.getListOrderForManager(token));
         }*/
-        
+        [HttpGet]
+        [Route("getFindOrder")]
+        public IActionResult SearchingOrder( string code)
+        {
+            return Ok(Program.api_order.getFindOrder(code));
+        }
+
+
     }
 }

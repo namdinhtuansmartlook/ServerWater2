@@ -36,7 +36,7 @@ namespace ServerWater2.Controllers
             public string des { get; set; } = "";
             public string role { get; set; } = "";
             public string displayName { get; set; } = "";
-            public string phoneNumber { get; set; } = "";
+            public string numberPhone { get; set; } = "";
         }
 
         public class ItemUserV2
@@ -46,7 +46,7 @@ namespace ServerWater2.Controllers
             public string des { get; set; } = "";
             public string role { get; set; } = "";
             public string displayName { get; set; } = "";
-            public string phoneNumber { get; set; } = "";
+            public string numberPhone { get; set; } = "";
         }
 
         [HttpPost]
@@ -56,7 +56,7 @@ namespace ServerWater2.Controllers
             long id = Program.api_user.checkAdmin(token);
             if (id >= 0)
             {
-                bool flag = await Program.api_user.createUserAsync(token, user.user, user.username, user.password, user.displayName, user.phoneNumber, user.des, user.role);
+                bool flag = await Program.api_user.createUserAsync(token, user.user, user.username, user.password, user.displayName, user.numberPhone, user.des, user.role);
                 if (flag)
                 {
                     return Ok();
@@ -77,7 +77,7 @@ namespace ServerWater2.Controllers
         public async Task<IActionResult> editUserAsync([FromHeader] string token, ItemUserV2 user)
         {
 
-            bool flag = await Program.api_user.editUserAsync(token, user.user, user.password, user.displayName, user.phoneNumber, user.des, user.role);
+            bool flag = await Program.api_user.editUserAsync(token, user.user, user.password, user.displayName, user.numberPhone, user.des, user.role);
             if (flag)
             {
                 return Ok();

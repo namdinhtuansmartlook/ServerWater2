@@ -67,8 +67,9 @@ namespace ServerWater2.APIs
             }
         }
 
-        public async Task<byte[]>? getImageChanged(byte[] data)
+        public async Task<byte[]?> getImageChanged(byte[] data)
         {
+            //Console.WriteLine("getImageChanged");
             var client = new RestClient("http://office.stvg.vn:59073/image");
             var request = new RestRequest();
             request.Method = Method.Post;
@@ -76,13 +77,14 @@ namespace ServerWater2.APIs
             request.AddFile("file", data, String.Format("{0}.jpg", DateTime.Now.Ticks));
             request.Timeout = 10000;
             RestResponse response = await client.ExecuteAsync(request);
-
+            //Console.WriteLine(response.StatusCode.ToString());
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 return response.RawBytes;
             }
             else
             {
+                /*Console.Write(response.StatusCode.ToString());*/
                 return null;
             }
         }

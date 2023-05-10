@@ -147,27 +147,17 @@ namespace ServerWater2.APIs
                     {
                         return "Error customer";
                     }
-                    string m_file = "";
-                    Console.WriteLine(image.Length);
-                    byte[]? tmp = await Program.api_file.getImageChanged(image);
-                    if (tmp != null)
+                    string m_file = await Program.api_file.saveFileAsync(string.Format("{0}.jpg", DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")), image);
+                    if (string.IsNullOrEmpty(m_file))
                     {
-                        m_file = await Program.api_file.saveFileAsync(DateTime.Now.Ticks.ToString(), tmp);
-                        if (string.IsNullOrEmpty(m_file))
-                        {
-                            return "Error file";
-                        }
-                        if (customer.images == null)
-                        {
-                            customer.images = new List<string>();
-                        }
+                        return "Error file";
+                    }
+                    if (customer.images == null)
+                    {
+                        customer.images = new List<string>();
+                    }
 
-                        customer.images.Add(m_file);
-                    }
-                    else
-                    {
-                        return "Code file empty";
-                    }
+                    customer.images.Add(m_file);
 
                     int rows = await context.SaveChangesAsync();
                     if (rows > 0)
@@ -187,7 +177,7 @@ namespace ServerWater2.APIs
             }
         }
 
-        public async Task<bool> removeImagePoint(string token, string code, string image)
+        public async Task<bool> removeImageCustomer(string token, string code, string image)
         {
             using (DataContext context = new DataContext())
             {
@@ -226,6 +216,7 @@ namespace ServerWater2.APIs
             public string note { get; set; } = "";
             public string x { get; set; } = "";
             public string y { get; set; } = "";
+            public List<string> images { get; set; } = new List<string>();
         }
 
         public List<ItemCustomer> listCustomer()
@@ -250,6 +241,11 @@ namespace ServerWater2.APIs
                     tmp.note = item.note;
                     tmp.x = item.latitude;
                     tmp.y = item.longitude;
+                    if(item.images != null)
+                    {
+                        tmp.images = item.images;
+                    }
+                   
 
                     lists.Add(tmp);
                 }

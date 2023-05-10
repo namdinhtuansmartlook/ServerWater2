@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using static ServerWater2.APIs.MyCustomer;
 
 namespace ServerWater2.Controllers
 {
@@ -15,7 +14,16 @@ namespace ServerWater2.Controllers
             _logger = logger;
         }
 
-
+        public class ItemCustomer
+        {
+            public string maDB { get; set; } = "";
+            public string sdt { get; set; } = "";
+            public string tenkh { get; set; } = "";
+            public string diachi { get; set; } = "";
+            public string note { get; set; } = "";
+            public string x { get; set; } = "";
+            public string y { get; set; } = "";
+        }
         [HttpPost]
         [Route("createCustomer")]
         public async Task<IActionResult> createCustomerAsync([FromHeader] string token, ItemCustomer customer)
@@ -87,6 +95,45 @@ namespace ServerWater2.Controllers
             else
             {
                 return Unauthorized();
+            }
+        }
+
+        [HttpPut]
+        [Route("{maDB}/addImageCustomer")]
+        public async Task<IActionResult> addImageCustomer([FromHeader] string token, string maDB, IFormFile image)
+        {
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                image.CopyTo(ms);
+                string temp = await Program.api_customer.addImageCustomer(token, maDB, ms.ToArray());
+                /*if (!string.IsNullOrEmpty(temp))
+                {
+                    return Ok(temp);
+                   
+                }
+                else
+                {
+                    return BadRequest();
+                }*/
+                //Console.WriteLine(temp);
+                return Ok(temp);
+
+            }
+        }
+
+        [HttpDelete]
+        [Route("{maDB}/removeImageCustomer")]
+        public async Task<IActionResult> removeImageCustomer([FromHeader] string token, string maDB, string image)
+        {
+            bool flag = await Program.api_customer.removeImageCustomer(token, maDB, image);
+            if (flag)
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
             }
         }
 

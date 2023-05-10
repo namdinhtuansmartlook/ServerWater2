@@ -14,12 +14,55 @@ namespace ServerWater2.APIs
                     SqlAction item = new SqlAction();
                     item.ID = DateTime.Now.Ticks;
                     item.code = "action1";
-                    item.name = "Hành động 1";
-                    item.des = "Hành động 1";
+                    item.name = "Xác nhận";
+                    item.des = "Xác nhận";
                     item.isdeleted = false;
                     context.actions!.Add(item);
                 }
-               
+                action = context.actions!.Where(s => s.code.CompareTo("action2") == 0 && s.isdeleted == false).FirstOrDefault();
+                if (action == null)
+                {
+                    SqlAction item = new SqlAction();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = "action2";
+                    item.name = "Đã phân công";
+                    item.des = "Đã phân công";
+                    item.isdeleted = false;
+                    context.actions!.Add(item);
+                }
+                action = context.actions!.Where(s => s.code.CompareTo("action3") == 0 && s.isdeleted == false).FirstOrDefault();
+                if (action == null)
+                {
+                    SqlAction item = new SqlAction();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = "action3";
+                    item.name = "Đang thực hiện";
+                    item.des = "Đang thực hiện";
+                    item.isdeleted = false;
+                    context.actions!.Add(item);
+                }
+                action = context.actions!.Where(s => s.code.CompareTo("action4") == 0 && s.isdeleted == false).FirstOrDefault();
+                if (action == null)
+                {
+                    SqlAction item = new SqlAction();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = "action4";
+                    item.name = "Đã hoàn thành";
+                    item.des = "Đã hoàn thành";
+                    item.isdeleted = false;
+                    context.actions!.Add(item);
+                }
+                action = context.actions!.Where(s => s.code.CompareTo("action5") == 0 && s.isdeleted == false).FirstOrDefault();
+                if (action == null)
+                {
+                    SqlAction item = new SqlAction();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = "action5";
+                    item.name = "Đã hủy";
+                    item.des = "Đã hủy";
+                    item.isdeleted = false;
+                    context.actions!.Add(item);
+                }
                 int rows = await context.SaveChangesAsync();
             }
         }

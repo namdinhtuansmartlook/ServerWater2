@@ -14,7 +14,7 @@ namespace ServerWater2.APIs
         {
             using (DataContext context = new DataContext())
             {
-                SqlUser? user = context.users!.Where(s => s.user.CompareTo("admin") == 0).FirstOrDefault();
+                SqlUser? user = context.users!.Where(s => s.user.CompareTo("admin") == 0 && s.isdeleted == false).FirstOrDefault();
                 if (user == null)
                 {
                     SqlUser item = new SqlUser();
@@ -71,7 +71,7 @@ namespace ServerWater2.APIs
                     item.user = "CS";
                     item.username = "cskh";
                     item.password = "123456";
-                    item.role = context.roles!.Where(s => s.isdeleted == false && s.code.CompareTo("reciever") == 0).FirstOrDefault();
+                    item.role = context.roles!.Where(s => s.isdeleted == false && s.code.CompareTo("receiver") == 0).FirstOrDefault();
                     item.token = createToken();
                     item.displayName = "Chăm sóc khách hàng";
                     item.des = "Chăm sóc khách hàng";
@@ -126,14 +126,45 @@ namespace ServerWater2.APIs
                 {
                     return -1;
                 }
-                if (user.role!.code.CompareTo("staff") == 0)
+                if (user.role!.code.CompareTo("admin") == 0 || user.role!.code.CompareTo("manager") == 0 )
+                {
+                    return 0;
+                }
+                return -1;
+            }
+        }
+        public long checkSurvey(string token)
+        {
+            using (DataContext context = new DataContext())
+            {
+                SqlUser? user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role).FirstOrDefault();
+                if (user == null)
                 {
                     return -1;
                 }
-                return 0;
+                if (user.role!.code.CompareTo("admin") == 0 || user.role!.code.CompareTo("survey") == 0)
+                {
+                    return 0;
+                }
+                return -1;
             }
         }
-
+        public long checkCS(string token)
+        {
+            using (DataContext context = new DataContext())
+            {
+                SqlUser? user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role).FirstOrDefault();
+                if (user == null)
+                {
+                    return -1;
+                }
+                if (user.role!.code.CompareTo("admin") == 0 || user.role!.code.CompareTo("receiver") == 0)
+                {
+                    return 0;
+                }
+                return -1;
+            }
+        }
         public long checkUser(string token)
         {
             using (DataContext context = new DataContext())
@@ -249,10 +280,7 @@ namespace ServerWater2.APIs
                 {
                     return false;
                 }
-                if (own_user.role == null)
-                {
-                    return false;
-                }
+              
                 if (own_user.role!.code.CompareTo("admin") != 0)
                 {
                     if (user.CompareTo(own_user.user) != 0)
@@ -278,7 +306,7 @@ namespace ServerWater2.APIs
                 }
                 else
                 {
-                    SqlUser? tmp = context.users!.Where(s => s.user.CompareTo(user) == 0 && s.isdeleted == false).FirstOrDefault();
+                    SqlUser? tmp = context.users!.Where(s => s.user.CompareTo(user) == 0 && s.isdeleted == false).Include(s => s.role).FirstOrDefault();
                     if (tmp == null)
                     {
                         return false;
@@ -293,14 +321,17 @@ namespace ServerWater2.APIs
                     }
                     if (!string.IsNullOrEmpty(password))
                     {
+                        if (tmp.role!.code.CompareTo("admin") == 0)
+                        {
+                            tmp.token = "1234567890";
+                        }
+                        else
+                        {
+                            tmp.token = createToken();
+                        }
                         tmp.password = password;
-                        tmp.token = createToken();
                     }
-                    if (!string.IsNullOrEmpty(password))
-                    {
-                        own_user.password = password;
-                        own_user.token = createToken();
-                    }
+                    
                     if (!string.IsNullOrEmpty(displayName))
                     {
                         own_user.displayName = displayName;
@@ -459,7 +490,6 @@ namespace ServerWater2.APIs
             public string avatar { get; set; } = "";
             public string des { get; set; } = "";
             public string role { get; set; } = "";
-            public List<ItemCustomer> customers { get; set; } = new List<ItemCustomer>();
         }
         public infoUser getInfoUser(string token)
         {
