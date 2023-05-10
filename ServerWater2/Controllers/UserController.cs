@@ -119,7 +119,7 @@ namespace ServerWater2.Controllers
             using (MemoryStream ms = new MemoryStream())
             {
                 image.CopyTo(ms);
-                string code = await Program.api_user.addAvatarAsync(token, ms.ToArray());
+                string code = await Program.api_user.setAvatar(token, ms.ToArray());
                 if (string.IsNullOrEmpty(code))
                 {
                     return BadRequest();

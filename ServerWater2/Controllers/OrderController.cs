@@ -31,7 +31,7 @@ namespace ServerWater2.Controllers
         {
            
 
-            string order = await Program.api_order.createOrderAsync(item.customer, item.phone, item.addressCustomer, item.addressWater, item.addressContract, item.service, item.type,item.note);
+            string order = await Program.api_order.createUpdateOrderAsync(item.customer, item.phone, item.addressCustomer, item.addressWater, item.addressContract, item.service, item.type,item.note);
             if (string.IsNullOrEmpty(order))
             {
                 return BadRequest();
@@ -43,6 +43,13 @@ namespace ServerWater2.Controllers
         }
 
         [HttpGet]
+        [Route("getListService")]
+        public IActionResult GetListService()
+        {
+            return Ok(Program.api_service.getListService());
+        }
+
+        [HttpGet]
         [Route("getListOrder")]
         public IActionResult GetListNewOrder([FromHeader] string token)
         {
@@ -51,7 +58,7 @@ namespace ServerWater2.Controllers
 
         [HttpPut]
         [Route("{code}/confirmOrder")]
-        public async Task<IActionResult> receiveOrder([FromHeader] string token, string code)
+        public async Task<IActionResult> ReceiveOrder([FromHeader] string token, string code)
         {
             bool flag = await Program.api_order.confirmOrder(token, code);
             if (flag)
@@ -65,9 +72,9 @@ namespace ServerWater2.Controllers
         }
         [HttpPut]
         [Route("{code}/setCustomer")]
-        public async Task<IActionResult> setCustomer([FromHeader] string token, string maDB, string code)
+        public async Task<IActionResult> SetCustomer([FromHeader] string token, string maDB, string code)
         {
-            bool flag = await Program.api_order.addCustomer(token, maDB, code);
+            bool flag = await Program.api_order.setCustomer(token, maDB, code);
             if (flag)
             {
                 return Ok();

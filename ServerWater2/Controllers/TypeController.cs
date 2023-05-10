@@ -97,18 +97,9 @@ namespace ServerWater2.Controllers
 
         [HttpGet]
         [Route("getListType")]
-        public IActionResult getListType([FromHeader] string token)
+        public IActionResult getListType()
         {
-            long id = Program.api_user.checkAdmin(token);
-            if (id >= 0)
-            {
-                return Ok(Program.api_type.getListType());
-            }
-            else
-            {
-                return Unauthorized();
-            }
-
+            return Ok(Program.api_type.getListType());
         }
     }
 }

@@ -414,7 +414,7 @@ namespace ServerWater2.APIs
 
 
 
-        public async Task<string> addAvatarAsync(string token, byte[] file)
+        public async Task<string> setAvatar(string token, byte[] file)
         {
             if (string.IsNullOrEmpty(token))
             {

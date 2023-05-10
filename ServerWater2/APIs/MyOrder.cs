@@ -76,7 +76,7 @@ namespace ServerWater2.APIs
                 }
             }
         }
-        public async Task<string> createOrderAsync(string customer, string phone,string addressCustomer,string addressWater, string addressContract, string service, string type, string note)
+        public async Task<string> createUpdateOrderAsync(string customer, string phone,string addressCustomer,string addressWater, string addressContract, string service, string type, string note)
         {
             if (string.IsNullOrEmpty(customer) || string.IsNullOrEmpty(phone) || string.IsNullOrEmpty(addressCustomer) || string.IsNullOrEmpty(addressWater) || string.IsNullOrEmpty(addressContract) || string.IsNullOrEmpty(service) || string.IsNullOrEmpty(type))
             {
@@ -84,49 +84,62 @@ namespace ServerWater2.APIs
             }
             using (DataContext context = new DataContext())
             {
-
-               
-
-                SqlType? m_type = context.types!.Where(s => s.isdeleted == false && s.code.CompareTo(type) == 0).FirstOrDefault();
-                if (m_type == null)
+                SqlOrder? m_order = context.orders!.Where(s => s.name.CompareTo(customer) == 0 && s.phone.CompareTo(phone) == 0).FirstOrDefault();
+                if(m_order == null)
                 {
-                    return "";
+                    m_order = new SqlOrder();
+                    m_order.ID = DateTime.Now.Ticks;
+                    m_order.code = generatorcode();
+                    m_order.name = customer;
+                    m_order.addressCustomer = addressCustomer;
+                    m_order.addressWater = addressWater;
+                    m_order.addressContract = addressContract;
+                    m_order.phone = phone;
+                    m_order.note = note;
+                    m_order.service = context.services!.Where(s => s.isdeleted == false && s.code.CompareTo(service) == 0).FirstOrDefault();
+                    m_order.type = context.types!.Where(s => s.isdeleted == false && s.code.CompareTo(type) == 0).FirstOrDefault();
+                    m_order.lastestTime = DateTime.Now.ToUniversalTime();
+                    m_order.createdTime = DateTime.Now.ToUniversalTime();
+                    m_order.state = context.states!.Where(s => s.isdeleted == false && s.code == 0).FirstOrDefault();
+
+                    context.orders!.Add(m_order);
+                    await context.SaveChangesAsync();
+
+                    SqlLogOrder log = new SqlLogOrder();
+                    log.ID = DateTime.Now.Ticks;
+                    log.order = m_order;
+                    log.time = DateTime.Now.ToUniversalTime();
+                    log.note = "New Order";
+                    context.logs!.Add(log);
+
                 }
-                SqlService? m_service = context.services!.Where(s => s.isdeleted == false && s.code.CompareTo(service) == 0).FirstOrDefault();
-                if(m_service == null)
+                else
                 {
-                    return "";
+                    if(m_order.state!.code < 3)
+                    {
+                        m_order.addressCustomer = addressCustomer;
+                        m_order.addressWater = addressWater;
+                        m_order.addressContract = addressContract;
+                        m_order.service = context.services!.Where(s => s.isdeleted == false && s.code.CompareTo(service) == 0).FirstOrDefault();
+                        m_order.type = context.types!.Where(s => s.isdeleted == false && s.code.CompareTo(type) == 0).FirstOrDefault();
+                        if (string.IsNullOrEmpty(note))
+                        {
+                            m_order.note = note;
+                        }
+
+                        m_order.lastestTime = DateTime.Now.ToUniversalTime();
+                    }  
+                    else
+                    {
+                        return "Nhan vien da xac nhan yeu cau !!!";
+                    }    
                 }
 
-                SqlOrder order = new SqlOrder();
-                order.ID = DateTime.Now.Ticks;
-                order.code = generatorcode();
-                order.name = customer;
-                order.addressCustomer = addressCustomer;
-                order.addressWater = addressWater;
-                order.addressContract = addressContract;
-                order.phone = phone;
-                order.note = note;
-                order.type = m_type;
-                order.service = m_service;
-                order.lastestTime = DateTime.Now.ToUniversalTime();
-                order.createdTime = DateTime.Now.ToUniversalTime();
-                order.state = context.states!.Where(s => s.isdeleted == false && s.code == 0).FirstOrDefault();
-
-                context.orders!.Add(order);
-                await context.SaveChangesAsync();
-
-                SqlLogOrder log= new SqlLogOrder();
-                log.ID = DateTime.Now.Ticks;
-                log.order = order;
-                log.time = DateTime.Now.ToUniversalTime();
-                log.note = "New Order";
-                context.logs!.Add(log);
 
                 int rows = await context.SaveChangesAsync();
                 if (rows > 0)
                 {
-                    return order.code;
+                    return m_order.code;
                 }
                 else
                 {
@@ -134,8 +147,6 @@ namespace ServerWater2.APIs
                 }
             }
         }
-      
-
         public async Task<bool> confirmOrder(string token, string code)
         {
             using(DataContext context = new DataContext())
@@ -145,15 +156,16 @@ namespace ServerWater2.APIs
                 {
                     return false;
                 }
-                SqlOrder? order = context.orders!.Include(s => s.state).Where(s => s.isDelete == false && s.code.CompareTo(code) == 0 && s.state!.code == 0).Include(s => s.receiver).FirstOrDefault();
+                SqlOrder? order = context.orders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).Include(s => s.state).FirstOrDefault();
                 if(order == null)
                 {
                     return false;
                 }
-                if(order.receiver != null)
+                if(order.state!.code != 0)
                 {
                     return false;
-                }
+                }    
+
                 SqlState? state = context.states!.Where(s => s.isdeleted == false && s.code == 1).FirstOrDefault();
                 if(state == null)
                 {
@@ -175,8 +187,7 @@ namespace ServerWater2.APIs
                 }
             }
         }
-
-        public async Task<bool> addCustomer(string token,string maDB, string code)
+        public async Task<bool> setCustomer(string token,string maDB, string code)
         {
             using(DataContext context = new DataContext())
             {
@@ -207,7 +218,7 @@ namespace ServerWater2.APIs
                 }
 
                 m_order.customer = m_customer;
-                
+                m_order.lastestTime = DateTime.Now.ToUniversalTime();
 
                 int rows = await context.SaveChangesAsync();
                 if (rows > 0)

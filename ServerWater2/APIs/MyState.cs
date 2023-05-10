@@ -90,44 +90,11 @@ namespace ServerWater2.APIs
             }
         }
 
-       /* public async Task<bool> createAsync(int code, string name, string des)
-        {
-            if (string.IsNullOrEmpty(code.ToString()) || string.IsNullOrEmpty(name))
-            {
-                return false;
-            }
-            using (DataContext context = new DataContext())
-            {
-                SqlState? type = context.states!.Where(s => s.isdeleted == false && (s.code.CompareTo(code) == 0 || s.name.CompareTo(name) == 0)).FirstOrDefault();
-                if (type != null)
-                {
-                    return false;
-                }
-
-                SqlState item = new SqlState();
-                item.ID = DateTime.Now.Ticks;
-                item.code = code;
-                item.name = name;
-                item.des = des;
-                context.sqlStates!.Add(item);
-
-                int rows = await context.SaveChangesAsync();
-                if (rows > 0)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-        }
-
         public async Task<bool> editAsync(int code, string des, string name)
         {
             using (DataContext context = new DataContext())
             {
-                SqlState? type = context.sqlStates!.Where(s => s.isdeleted == false && s.code.CompareTo(code) == 0).FirstOrDefault();
+                SqlState? type = context.states!.Where(s => s.isdeleted == false && s.code.CompareTo(code) == 0).FirstOrDefault();
                 if (type == null)
                 {
                     return false;
@@ -147,29 +114,62 @@ namespace ServerWater2.APIs
             }
         }
 
-        public async Task<bool> deleteAsync(int code)
-        {
-            using (DataContext context = new DataContext())
-            {
-                SqlState? type = context.sqlStates!.Where(s => s.isdeleted == false && s.code == code).FirstOrDefault();
-                if (type == null)
-                {
-                    return false;
-                }
 
-                type.isdeleted = true;
+        /* public async Task<bool> createAsync(int code, string name, string des)
+         {
+             if (string.IsNullOrEmpty(code.ToString()) || string.IsNullOrEmpty(name))
+             {
+                 return false;
+             }
+             using (DataContext context = new DataContext())
+             {
+                 SqlState? type = context.states!.Where(s => s.isdeleted == false && (s.code.CompareTo(code) == 0 || s.name.CompareTo(name) == 0)).FirstOrDefault();
+                 if (type != null)
+                 {
+                     return false;
+                 }
 
-                int rows = await context.SaveChangesAsync();
-                if (rows > 0)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-        }*/
+                 SqlState item = new SqlState();
+                 item.ID = DateTime.Now.Ticks;
+                 item.code = code;
+                 item.name = name;
+                 item.des = des;
+                 context.sqlStates!.Add(item);
+
+                 int rows = await context.SaveChangesAsync();
+                 if (rows > 0)
+                 {
+                     return true;
+                 }
+                 else
+                 {
+                     return false;
+                 }
+             }
+         }
+         public async Task<bool> deleteAsync(int code)
+         {
+             using (DataContext context = new DataContext())
+             {
+                 SqlState? type = context.sqlStates!.Where(s => s.isdeleted == false && s.code == code).FirstOrDefault();
+                 if (type == null)
+                 {
+                     return false;
+                 }
+
+                 type.isdeleted = true;
+
+                 int rows = await context.SaveChangesAsync();
+                 if (rows > 0)
+                 {
+                     return true;
+                 }
+                 else
+                 {
+                     return false;
+                 }
+             }
+         }*/
 
         public class ItemStateOrder
         {
