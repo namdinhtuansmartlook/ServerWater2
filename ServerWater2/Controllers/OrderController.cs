@@ -31,7 +31,36 @@ namespace ServerWater2.Controllers
         {
            
 
-            string order = await Program.api_order.createUpdateOrderAsync(item.customer, item.phone, item.addressCustomer, item.addressWater, item.addressContract, item.service, item.type,item.note);
+            string order = await Program.api_order.createNewOrder(item.customer, item.phone, item.addressCustomer, item.addressWater, item.addressContract, item.service, item.type,item.note);
+            if (string.IsNullOrEmpty(order))
+            {
+                return BadRequest();
+            }
+            else
+            {
+                return Ok(order);
+            }
+        }
+
+        public class ItemHttpRequest
+        {
+            public string code { get; set; } = "";
+            public string name { get; set; } = "";
+            public string customer { get; set; } = "";
+            public string phone { get; set; } = "";
+            public string address { get; set; } = "";
+            public string addressContract { get; set; } = "";
+            public string type { get; set; } = "";
+            public string note { get; set; } = "";
+        }
+
+        [HttpPost]
+        [Route("createRequestOrder")]
+        public async Task<IActionResult> CreateRequestOrderAsync(ItemHttpRequest item)
+        {
+
+
+            string order = await Program.api_order.createRequestOrder(item.code, item.name, item.phone, item.customer, item.address, item.addressContract, item.type, item.note);
             if (string.IsNullOrEmpty(order))
             {
                 return BadRequest();

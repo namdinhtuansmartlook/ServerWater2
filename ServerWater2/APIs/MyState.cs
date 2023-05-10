@@ -72,14 +72,24 @@ namespace ServerWater2.APIs
                     context.states!.Add(item);
                 }
 
-                
-
                 type = context.states!.Where(s => s.code == 5).FirstOrDefault();
                 if (type == null)
                 {
                     SqlState item = new SqlState();
                     item.ID = DateTime.Now.Ticks;
                     item.code = 5;
+                    item.name = "Đã Hoàn Thành";
+                    item.des = "Đã Hoàn Thành";
+                    item.isdeleted = false;
+                    context.states!.Add(item);
+                }
+
+                type = context.states!.Where(s => s.code == 6).FirstOrDefault();
+                if (type == null)
+                {
+                    SqlState item = new SqlState();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = 6;
                     item.name = "Hủy";
                     item.des = "Hủy";
                     item.isdeleted = false;
