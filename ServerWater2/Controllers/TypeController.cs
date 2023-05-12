@@ -25,7 +25,7 @@ namespace ServerWater2.Controllers
         [Route("createType")]
         public async Task<IActionResult> CreateTypeAsync([FromHeader] string token, ItemHttpType type)
         {
-            long id = Program.api_user.checkCS(token);
+            long id = Program.api_user.checkAdmin(token);
             if (id >= 0)
             {
                 bool flag = await Program.api_type.createAsync(type.code, type.name, type.des);
@@ -50,7 +50,7 @@ namespace ServerWater2.Controllers
         [Route("editType")]
         public async Task<IActionResult> EditTypeAsync([FromHeader] string token, ItemHttpType service)
         {
-            long id = Program.api_user.checkCS(token);
+            long id = Program.api_user.checkAdmin(token);
             if (id >= 0)
             {
                 bool flag = await Program.api_type.editAsync(service.code, service.name, service.des);
@@ -75,7 +75,7 @@ namespace ServerWater2.Controllers
         [Route("{code}/deleteType")]
         public async Task<IActionResult> DeleteTypeAsync([FromHeader] string token, string code)
         {
-            long id = Program.api_user.checkCS(token);
+            long id = Program.api_user.checkAdmin(token);
             if (id >= 0)
             {
                 bool flag = await Program.api_type.deleteAsync(code);

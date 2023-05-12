@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 
 namespace ServerWater2.Controllers
 {
@@ -53,7 +54,7 @@ namespace ServerWater2.Controllers
         [Route("createUser")]
         public async Task<IActionResult> CreateUserAsync([FromHeader] string token, ItemUser user)
         {
-            long id = Program.api_user.checkCS(token);
+            long id = Program.api_user.checkAdmin(token);
             if (id >= 0)
             {
                 bool flag = await Program.api_user.createUserAsync(token, user.user, user.username, user.password, user.displayName, user.numberPhone, user.des, user.role);
@@ -76,24 +77,30 @@ namespace ServerWater2.Controllers
         [Route("editUser")]
         public async Task<IActionResult> editUserAsync([FromHeader] string token, ItemUserV2 user)
         {
-
-            bool flag = await Program.api_user.editUserAsync(token, user.user, user.password, user.displayName, user.numberPhone, user.des, user.role);
-            if (flag)
+            long id = Program.api_user.checkAdmin(token);
+            if (id >= 0)
             {
-                return Ok();
+                bool flag = await Program.api_user.editUserAsync(token, user.user, user.password, user.displayName, user.numberPhone, user.des, user.role);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
             }
             else
             {
-                return BadRequest();
+                return Unauthorized();
             }
-
         }
 
         [HttpDelete]
         [Route("{code}/deleteUser")]
         public async Task<IActionResult> deleteUserAsync([FromHeader] string token, string code)
         {
-            long id = Program.api_user.checkCS(token);
+            long id = Program.api_user.checkAdmin(token);
             if (id >= 0)
             {
                 bool flag = await Program.api_user.deleteUserAsync(token, code);
@@ -143,7 +150,7 @@ namespace ServerWater2.Controllers
         [Route("getListUser")]
         public IActionResult GetListUser([FromHeader] string token)
         {
-            long id = Program.api_user.checkCS(token);
+            long id = Program.api_user.checkSystem(token);
             if (id >= 0)
             {
                 return Ok(Program.api_user.listUser(token));

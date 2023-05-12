@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using static ServerWater2.APIs.MyCustomer;
+using static ServerWater2.APIs.MyLogOrder;
+using static ServerWater2.APIs.MyOrder;
 
 namespace ServerWater2.Controllers
 {
@@ -72,10 +75,25 @@ namespace ServerWater2.Controllers
         }
 
         [HttpPut]
-        [Route("{code}/confirmOrder")]
-        public async Task<IActionResult> ReceiveOrder([FromHeader] string token, string code)
+        [Route("setActionOrder")]
+        public async Task<IActionResult> SetAction([FromHeader] string token, string id, string action)
         {
-            long id = Program.api_user.checkCS(token);
+            bool flag = await Program.api_order.setAction(token, id, action);
+            if (flag)
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpPut]
+        [Route("{code}/confirmOrder")]
+        public async Task<IActionResult> ConfirmOrder([FromHeader] string token, string code)
+        {
+            long id = Program.api_user.checkSystem(token);
             if (id >= 0)
             {
                 bool flag = await Program.api_order.confirmOrder(token, code);
@@ -101,23 +119,33 @@ namespace ServerWater2.Controllers
         [Route("{code}/setCustomer")]
         public async Task<IActionResult> SetCustomer([FromHeader] string token, string maDB, string code)
         {
-            bool flag = await Program.api_order.setCustomer(token, maDB, code);
-            if (flag)
+            long id = Program.api_user.checkSystem(token);
+            if (id >= 0)
             {
-                return Ok();
+                bool flag = await Program.api_order.setCustomer(token, maDB, code);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
             }
             else
             {
-                return BadRequest();
+                return Unauthorized();
             }
+           
         }
         
        
         [HttpPut]
         [Route("{code}/setConfirmedOrder")]
-        public async Task<IActionResult> recieveOrderByManager([FromHeader] string token, string code)
+        public async Task<IActionResult> SetConfirmedOrder([FromHeader] string token, string code)
         {
-            long id = Program.api_user.checkManager(token);
+            long id = Program.api_user.checkSystem(token);
             if (id >= 0)
             {
                 bool flag = await Program.api_order.setConfirmedOrder(token, code);
@@ -140,9 +168,9 @@ namespace ServerWater2.Controllers
 
         [HttpPut]
         [Route("{code}/setAssginOrder")]
-        public async Task<IActionResult> setWorkerOrder([FromHeader] string token, string code, string user)
+        public async Task<IActionResult> SetAssginOrder([FromHeader] string token, string code, string user)
         {
-            long id = Program.api_user.checkManager(token);
+            long id = Program.api_user.checkSystem(token);
             if (id >= 0)
             {
                 bool flag = await Program.api_order.setAssginOrder(token, code, user);
@@ -164,7 +192,7 @@ namespace ServerWater2.Controllers
         }
         [HttpPut]
         [Route("{code}/beginWorkOrder")]
-        public async Task<IActionResult> beginWorkOrder([FromHeader] string token, string code)
+        public async Task<IActionResult> BeginWorkOrder([FromHeader] string token, string code)
         {
             long id = Program.api_user.checkUser(token);
             if (id >= 0)
@@ -189,7 +217,7 @@ namespace ServerWater2.Controllers
 
         [HttpPut]
         [Route("{code}/finishWorkOrder")]
-        public async Task<IActionResult> finishWorkOrder([FromHeader] string token, string code)
+        public async Task<IActionResult> FinishWorkOrder([FromHeader] string token, string code)
         {
             long id = Program.api_user.checkUser(token);
             if (id >= 0)
@@ -214,7 +242,7 @@ namespace ServerWater2.Controllers
 
         [HttpPut]
         [Route("{code}/finishOrder")]
-        public async Task<IActionResult> finishOrder([FromHeader] string token, string code)
+        public async Task<IActionResult> FinishOrder([FromHeader] string token, string code)
         {
             long id = Program.api_user.checkUser(token);
             if (id >= 0)
@@ -238,9 +266,9 @@ namespace ServerWater2.Controllers
         }
         [HttpDelete]
         [Route("{code}/cancelOrder")]
-        public async Task<IActionResult> cancelOrder([FromHeader] string token, string code)
+        public async Task<IActionResult> CancelOrder([FromHeader] string token, string code)
         {
-            long id = Program.api_user.checkManager(token);
+            long id = Program.api_user.checkSystem(token);
             if (id >= 0)
             {
                 bool flag = await Program.api_order.cancelOrder(token, code);
@@ -274,17 +302,20 @@ namespace ServerWater2.Controllers
         {
             return Ok(Program.api_order.getListOrder(token));
         }
-        /*[HttpGet]
-        [Route("getListOrderForManager")]
-        public IActionResult GetListOrderManager([FromHeader] string token)
-        {
-            return Ok(Program.api_order.getListOrderForManager(token));
-        }*/
+
         [HttpGet]
         [Route("getFindOrder")]
-        public IActionResult SearchingOrder( string code)
+        public IActionResult GetFindOrder(string code)
         {
             return Ok(Program.api_order.getFindOrder(code));
+        }
+
+        [HttpGet]
+        [Route("getInfoCustomer")]
+        public IActionResult GetInfoCustomer(string code)
+        {
+            ItemCustomer info = Program.api_order.getInfoCustmer(code);
+            return Ok(info);
         }
 
 

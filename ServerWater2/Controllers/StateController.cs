@@ -12,25 +12,16 @@ namespace ServerWater2.Controllers
     {
         [HttpGet]
         [Route("getListState")]
-        public IActionResult GetListState([FromHeader] string token)
+        public IActionResult GetListState()
         {
-            long id = Program.api_user.checkCS(token);
-            if (id >= 0)
-            {
-                return Ok(Program.api_state.getList());
-
-            }
-            else
-            {
-                return Unauthorized();
-            }
+            return Ok(Program.api_state.getList());
         }
 
         [HttpPost]
         [Route("editState")]
         public async Task<IActionResult> EditTypeAsync([FromHeader] string token, ItemStateOrder state)
         {
-            long id = Program.api_user.checkCS(token);
+            long id = Program.api_user.checkAdmin(token);
             if (id >= 0)
             {
                 bool flag = await Program.api_state.editAsync(state.code, state.name, state.des);

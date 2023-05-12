@@ -117,7 +117,7 @@ namespace ServerWater2.APIs
             }
         }*/
 
-        public long checkManager(string token)
+        public long checkAdmin(string token)
         {
             using (DataContext context = new DataContext())
             {
@@ -126,15 +126,15 @@ namespace ServerWater2.APIs
                 {
                     return -1;
                 }
-                if (user.role!.code.CompareTo("admin") == 0 || user.role!.code.CompareTo("manager") == 0 )
+                if (user.role!.code.CompareTo("admin") != 0 )
                 {
-                    return user.ID;
+                    return -1;
                 }
-                return -1;
+                return user.ID;
             }
         }
         
-        public long checkCS(string token)
+        public long checkSystem(string token)
         {
             using (DataContext context = new DataContext())
             {
@@ -143,11 +143,11 @@ namespace ServerWater2.APIs
                 {
                     return -1;
                 }
-                if (user.role!.code.CompareTo("admin") == 0 || user.role!.code.CompareTo("receiver") == 0)
+                if (user.role!.code.CompareTo("staff") == 0)
                 {
-                    return user.ID;
+                    return -1;
                 }
-                return -1;
+                return user.ID;
             }
         }
         public long checkUser(string token)
