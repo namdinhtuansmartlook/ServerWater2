@@ -29,18 +29,28 @@ namespace ServerWater2.APIs
                     SqlState item = new SqlState();
                     item.ID = DateTime.Now.Ticks;
                     item.code = 1;
-                    item.name = "Xác Nhận";
-                    item.des = "Xác Nhận";
+                    item.name = "Ghi Nhận";
+                    item.des = "Ghi Nhận";
                     item.isdeleted = false;
                     context.states!.Add(item);
                 }
-
                 type = context.states!.Where(s => s.code == 2).FirstOrDefault();
                 if (type == null)
                 {
                     SqlState item = new SqlState();
                     item.ID = DateTime.Now.Ticks;
                     item.code = 2;
+                    item.name = "Đã xác thực";
+                    item.des = "Đã xác thực";
+                    item.isdeleted = false;
+                    context.states!.Add(item);
+                }
+                type = context.states!.Where(s => s.code == 3).FirstOrDefault();
+                if (type == null)
+                {
+                    SqlState item = new SqlState();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = 3;
                     item.name = "Đã phân công việc";
                     item.des = "Đã phân công việc";
                     item.isdeleted = false;
@@ -48,26 +58,14 @@ namespace ServerWater2.APIs
                 }
                
 
-                type = context.states!.Where(s => s.code == 3).FirstOrDefault();
-                if (type == null)
-                {
-                    SqlState item = new SqlState();
-                    item.ID = DateTime.Now.Ticks;
-                    item.code = 3;
-                    item.name = "Thực Hiện";
-                    item.des = "Thực Hiện";
-                    item.isdeleted = false;
-                    context.states!.Add(item);
-                }
-
                 type = context.states!.Where(s => s.code == 4).FirstOrDefault();
                 if (type == null)
                 {
                     SqlState item = new SqlState();
                     item.ID = DateTime.Now.Ticks;
                     item.code = 4;
-                    item.name = "Kết Thúc";
-                    item.des = "Kết Thúc";
+                    item.name = "Thực Hiện";
+                    item.des = "Thực Hiện";
                     item.isdeleted = false;
                     context.states!.Add(item);
                 }
@@ -78,8 +76,8 @@ namespace ServerWater2.APIs
                     SqlState item = new SqlState();
                     item.ID = DateTime.Now.Ticks;
                     item.code = 5;
-                    item.name = "Đã Hoàn Thành";
-                    item.des = "Đã Hoàn Thành";
+                    item.name = "Kết Thúc";
+                    item.des = "Kết Thúc";
                     item.isdeleted = false;
                     context.states!.Add(item);
                 }
@@ -90,6 +88,18 @@ namespace ServerWater2.APIs
                     SqlState item = new SqlState();
                     item.ID = DateTime.Now.Ticks;
                     item.code = 6;
+                    item.name = "Đã Hoàn Thành";
+                    item.des = "Đã Hoàn Thành";
+                    item.isdeleted = false;
+                    context.states!.Add(item);
+                }
+
+                type = context.states!.Where(s => s.code == 7).FirstOrDefault();
+                if (type == null)
+                {
+                    SqlState item = new SqlState();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = 7;
                     item.name = "Hủy";
                     item.des = "Hủy";
                     item.isdeleted = false;
@@ -104,13 +114,13 @@ namespace ServerWater2.APIs
         {
             using (DataContext context = new DataContext())
             {
-                SqlState? type = context.states!.Where(s => s.isdeleted == false && s.code.CompareTo(code) == 0).FirstOrDefault();
-                if (type == null)
+                SqlState? state = context.states!.Where(s => s.isdeleted == false && s.code.CompareTo(code) == 0).FirstOrDefault();
+                if (state == null)
                 {
                     return false;
                 }
-                type.name = name;
-                type.des = des;
+                state.name = name;
+                state.des = des;
 
                 int rows = await context.SaveChangesAsync();
                 if (rows > 0)

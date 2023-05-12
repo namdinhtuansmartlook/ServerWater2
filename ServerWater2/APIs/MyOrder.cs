@@ -44,7 +44,7 @@ namespace ServerWater2.APIs
                 {
                     return false;
                 }
-                SqlOrder? order = context.orders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0)
+                SqlOrder? order = context.orders!.Where(s => s.isDelete == false &&  s.isFinish == false && s.code.CompareTo(code) == 0)
                                                     .Include(s => s.state)
                                                     .FirstOrDefault();
                 if (order == null)
@@ -56,20 +56,24 @@ namespace ServerWater2.APIs
                 {
                     return false;
                 }
-
-                if (m_state.code == 0)
+                /*if(state == 0)
                 {
                     order.receiver = user;
+                    state += 1;
                 }
-                else if (m_state.code == 1)
+                if(state == 1)
                 {
-                    order.manager = user;
+                    state += 1;
                 }
-                else if (m_state.code == 2)
+                else if (state == 2)
                 {
-                    order.worker = user;
+                    state += 1;
                 }
-
+                else if (state == 6)
+                {
+                    order.isFinish = true;
+                }*/
+               
                 order.state = context.states!.Where(s => s.isdeleted == false && s.code == state).FirstOrDefault();
                 order.lastestTime = DateTime.Now.ToUniversalTime();
 
@@ -102,7 +106,7 @@ namespace ServerWater2.APIs
             {
                 
 
-                SqlOrder? m_order = context.orders!.Where(s => s.name.CompareTo(name) == 0 && s.phone.CompareTo(phone) == 0 && s.addressCustomer.CompareTo(addressCustomer) == 0 && s.isDelete == false).FirstOrDefault();
+                SqlOrder? m_order = context.orders!.Where(s => s.name.CompareTo(name) == 0 && s.phone.CompareTo(phone) == 0 && s.addressCustomer.CompareTo(addressCustomer) == 0 && s.isDelete == false).Include(s => s.type).Include(s => s.state).Include(s => s.service).FirstOrDefault();
                 if (m_order == null)
                 {
                     m_order = new SqlOrder();
@@ -123,6 +127,7 @@ namespace ServerWater2.APIs
                     m_order.addressContract = addressContract;
                     m_order.note = note;
                     m_order.service = context.services!.Where(s => s.isdeleted == false && s.code.CompareTo(service) == 0).FirstOrDefault();
+                    m_order.type = context.types!.Where(s => s.isdeleted == false && s.code.CompareTo(type) == 0).FirstOrDefault();
                     m_order.lastestTime = DateTime.Now.ToUniversalTime();
                     m_order.createdTime = DateTime.Now.ToUniversalTime();
                     m_order.state = context.states!.Where(s => s.isdeleted == false && s.code == 0).FirstOrDefault();
@@ -239,7 +244,7 @@ namespace ServerWater2.APIs
                 {
                     return false;
                 }
-                SqlOrder? order = context.orders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).Include(s => s.state).FirstOrDefault();
+                SqlOrder? order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).Include(s => s.state).FirstOrDefault();
                 if(order == null)
                 {
                     return false;
@@ -248,344 +253,9 @@ namespace ServerWater2.APIs
                 {
                     return false;
                 }
+                order.receiver = m_user;
 
-                bool flag = await setStateOrder(m_user.ID, order.code, 1, "Checked Order !!!", "", "","acion1");
-                return flag;
-            }
-        }
-        public async Task<bool> setCustomer(string token,string maDB, string code)
-        {
-            using(DataContext context = new DataContext())
-            {
-                SqlUser? user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role).FirstOrDefault();
-                if(user == null)
-                {
-                    return false;
-                }
-                SqlCustomer? m_customer = context.customers!.Where(s => s.code.CompareTo(maDB) == 0 && s.isdeleted == false).Include(s => s.orders).FirstOrDefault();
-                if(m_customer == null)
-                {
-                    return false;
-                }
-                //if(m_customer.orders == null)
-                //{
-                //    m_customer.orders = new List<SqlOrder>();
-                //}
-                //SqlOrder? tmp = m_customer.orders.Where(s => s.code.CompareTo(order) == 0 && s.isDelete == false).FirstOrDefault();
-                //if(tmp != null)
-                //{
-                //    return false;
-                //}
-
-                SqlOrder? m_order = user.receiverOrders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).FirstOrDefault();
-                if(m_order == null)
-                {
-                    return false;
-                }
-
-                m_order.customer = m_customer;
-                m_order.lastestTime = DateTime.Now.ToUniversalTime();
-
-                int rows = await context.SaveChangesAsync();
-                if (rows > 0)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-
-            }
-        }
-        public async Task<bool> setConfirmedOrder(string token, string code)
-        {
-            using (DataContext context = new DataContext())
-            {
-                SqlUser? m_user = context.users!.Include(s => s.role).Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role).FirstOrDefault();
-                if (m_user == null)
-                {
-                    return false;
-                }
-                SqlOrder? order = context.orders!.Include(s => s.state).Where(s => s.isDelete == false && s.code.CompareTo(code) == 0 && s.state!.code == 1).Include(s => s.manager).Include(s => s.customer).FirstOrDefault();
-                if (order == null)
-                {
-                    return false;
-                }
-                if (order.manager != null)
-                {
-                    return false;
-                }
-
-
-                string note = string.Format("Received Order {0} From Manager : {1} ", order.code, m_user.user);
-                bool flag = await setStateOrder(m_user.ID, order.code, 1, note, "", "", "acion1");
-                return flag;
-            }
-        }
-        public async Task<bool> setAssginOrder(string token, string code, string user)
-        {
-            using (DataContext context = new DataContext())
-            {
-                SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.managerOrders).Include(s => s.role).FirstOrDefault();
-                if (m_user == null)
-                {
-                    return false;
-                }
-                SqlUser? worker = context.users!.Include(s => s.role).Where(s => s.isdeleted == false && s.user.CompareTo(user) == 0).FirstOrDefault();
-                if (worker == null)
-                {
-                    return false;
-                }
-
-                if (m_user.role!.code.CompareTo("admin") == 0 || m_user.role!.code.CompareTo("receiver") == 0)
-                {
-                    SqlOrder? order = context.orders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).Include(s => s.state).FirstOrDefault();
-                    if (order == null)
-                    {
-                        return false;
-                    }
-                    if(order.state!.code > 2)
-                    {
-                        return false;
-                    }
-                    string note = string.Format("Assigned Order {0} For Staff : {1} From Manager : {2} ", order.code, worker.user, m_user.user);
-                    bool flag = await setStateOrder(m_user.ID, order.code, 2, note, "", "", "acion2");
-                    return flag;
-                }
-                else
-                {
-                   
-                    SqlOrder? order = m_user.managerOrders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).FirstOrDefault();
-                    if (order == null)
-                    {
-                        return false;
-                    }
-                    if (order.state!.code > 2)
-                    {
-                        return false;
-                    }
-
-                    string note = string.Format("Assigned Order {0} For Staff : {1} From Manager : {2} ", order.code, worker.user, m_user.user);
-                    bool flag = await setStateOrder(m_user.ID, order.code, 2, note, "", "", "acion2");
-                    return flag;
-                }
-            }
-        }
-        public async Task<bool> beginWorkOrder(string token, string code)
-        {
-            using(DataContext context = new DataContext())
-            {
-                SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role).Include(s => s.receiverOrders).Include(s => s.managerOrders).Include(s => s.workerOrders).FirstOrDefault();
-                if(m_user == null)
-                {
-                    return false;
-                }
-
-                if(m_user.role!.code.CompareTo("admin") == 0 || m_user.role!.code.CompareTo("receiver") == 0)
-                {
-                    SqlOrder? m_order = context.orders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).FirstOrDefault();
-                    if (m_order == null)
-                    {
-                        return false;
-                    }
-                    if(m_order.state!.code != 2)
-                    {
-                        return false;
-                    }
-
-                    string note = string.Format("Starting work to Order {0} From Worker : {1} ", m_order.code, m_user.user);
-                    bool flag = await setStateOrder(m_user.ID, m_order.code, 3, note, "", "", "acion3");
-                    return flag;
-                }
-                else
-                {
-                    if(m_user.role.code.CompareTo("manager") == 0 || m_user.role.code.CompareTo("survey") == 0)
-                    {
-                        SqlOrder? m_order = m_user.managerOrders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).FirstOrDefault();
-                        if (m_order == null)
-                        {
-                            return false;
-                        }
-                        if (m_order.state!.code != 2)
-                        {
-                            return false;
-                        }
-
-                        string note = string.Format("Starting work to Order {0} From Worker : {1} ", m_order.code, m_user.user);
-                        bool flag = await setStateOrder(m_user.ID, m_order.code, 3, note, "", "", "acion3");
-                        return flag;
-                    }    
-                    else
-                    {
-                        SqlOrder? m_order = m_user.workerOrders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).FirstOrDefault();
-                        if (m_order == null)
-                        {
-                            return false;
-                        }
-                        if (m_order.state!.code != 2)
-                        {
-                            return false;
-                        }
-
-                        string note = string.Format("Starting work to Order {0} From Worker : {1} ", m_order.code, m_user.user);
-                        bool flag = await setStateOrder(m_user.ID, m_order.code, 3, note, "", "", "acion3");
-                        return flag;
-
-                    }    
-                }    
-            }
-        }
-
-        public async Task<bool> finishWorkOrder(string token, string code)
-        {
-            using (DataContext context = new DataContext())
-            {
-                SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role).Include(s => s.receiverOrders).Include(s => s.managerOrders).Include(s => s.workerOrders).FirstOrDefault();
-                if (m_user == null)
-                {
-                    return false;
-                }
-
-                if (m_user.role!.code.CompareTo("admin") == 0 || m_user.role!.code.CompareTo("receiver") == 0)
-                {
-                    SqlOrder? m_order = context.orders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).FirstOrDefault();
-                    if (m_order == null)
-                    {
-                        return false;
-                    }
-                    if (m_order.state!.code != 3)
-                    {
-                        return false;
-                    }
-
-                    string note = string.Format("Finishing work to Order {0} From Worker : {1} ", m_order.code, m_user.user);
-                    bool flag = await setStateOrder(m_user.ID, m_order.code, 4, note, "", "", "acion4");
-                    return flag;
-                }
-                else
-                {
-                    if (m_user.role.code.CompareTo("manager") == 0 || m_user.role.code.CompareTo("survey") == 0)
-                    {
-                        SqlOrder? m_order = m_user.managerOrders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).FirstOrDefault();
-                        if (m_order == null)
-                        {
-                            return false;
-                        }
-                        if (m_order.state!.code != 3)
-                        {
-                            return false;
-                        }
-
-                        string note = string.Format("Starting work to Order {0} From Worker : {1} ", m_order.code, m_user.user);
-                        bool flag = await setStateOrder(m_user.ID, m_order.code, 4, note, "", "", "acion4");
-                        return flag;
-                    }
-                    else
-                    {
-                        SqlOrder? m_order = m_user.workerOrders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).FirstOrDefault();
-                        if (m_order == null)
-                        {
-                            return false;
-                        }
-                        if (m_order.state!.code != 3)
-                        {
-                            return false;
-                        }
-
-                        string note = string.Format("Starting work to Order {0} From Worker : {1} ", m_order.code, m_user.user);
-                        bool flag = await setStateOrder(m_user.ID, m_order.code, 4, note, "", "", "acion4");
-                        return flag;
-
-                    }
-                }
-            }
-        }
-
-        public async Task<bool> finishOrder(string token, string code)
-        {
-            using (DataContext context = new DataContext())
-            {
-                SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role).Include(s => s.receiverOrders).Include(s => s.managerOrders).Include(s => s.workerOrders).FirstOrDefault();
-                if (m_user == null)
-                {
-                    return false;
-                }
-
-                if (m_user.role!.code.CompareTo("admin") == 0 || m_user.role!.code.CompareTo("receiver") == 0)
-                {
-                    SqlOrder? m_order = context.orders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).FirstOrDefault();
-                    if (m_order == null)
-                    {
-                        return false;
-                    }
-                    if (m_order.state!.code != 5)
-                    {
-                        return false;
-                    }
-
-                    string note = string.Format("Finished Order {0} ", m_order.code);
-                    bool flag = await setStateOrder(m_user.ID, m_order.code, 5, note, "", "", "acion5");
-                    return flag;
-                }
-                else
-                {
-                    if (m_user.role.code.CompareTo("manager") == 0|| m_user.role.code.CompareTo("survey") == 0)
-                    {
-                        SqlOrder? m_order = m_user.managerOrders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).FirstOrDefault();
-                        if (m_order == null)
-                        {
-                            return false;
-                        }
-                        if (m_order.state!.code != 5)
-                        {
-                            return false;
-                        }
-
-                        string note = string.Format("Finished Order {0} ", m_order.code);
-                        bool flag = await setStateOrder(m_user.ID, m_order.code, 5, note, "", "", "acion5");
-                        return flag;
-                    }
-                    else
-                    {
-                        SqlOrder? m_order = m_user.workerOrders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).FirstOrDefault();
-                        if (m_order == null)
-                        {
-                            return false;
-                        }
-                        if (m_order.state!.code != 5)
-                        {
-                            return false;
-                        }
-
-                        string note = string.Format("Finished Order {0} ", m_order.code);
-                        bool flag = await setStateOrder(m_user.ID, m_order.code, 5, note, "", "", "acion5");
-                        return flag;
-
-                    }
-                }
-            }
-        }
-
-        public async Task<bool> cancelOrder(string token,string code)
-        {
-            using (DataContext context = new DataContext())
-            {
-                SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).FirstOrDefault();
-                if (m_user == null)
-                {
-                    return false;
-                }
-                SqlOrder? m_order = context.orders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).Include(s => s.customer).FirstOrDefault();
-                if (m_order == null)
-                {
-                    return false;
-                }
-
-                string note = "Canceled order";
-                bool flag = await setStateOrder(m_user.ID, m_order.code, 5, note, m_order.customer!.latitude, m_order.customer.longitude, "action5");
-                m_order.lastestTime = DateTime.Now.ToUniversalTime();
-
+                bool flag = await setStateOrder(m_user.ID, order.code, 1, "Checked Order !!!", "", "", "action1");
                 if (flag)
                 {
                     int rows = await context.SaveChangesAsync();
@@ -602,6 +272,498 @@ namespace ServerWater2.APIs
                 {
                     return false;
                 }
+            }
+        }
+
+        public async Task<bool> setCustomer(string token, string maDB, string code)
+        {
+            using (DataContext context = new DataContext())
+            {
+                SqlUser? user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role).Include(s => s.receiverOrders).FirstOrDefault();
+                if (user == null)
+                {
+                    return false;
+                }
+                SqlCustomer? m_customer = context.customers!.Where(s => s.code.CompareTo(maDB) == 0 && s.isdeleted == false).Include(s => s.orders).FirstOrDefault();
+                if (m_customer == null)
+                {
+                    return false;
+                }
+               
+                //if(m_customer.orders == null)
+                //{
+                //    m_customer.orders = new List<SqlOrder>();
+                //}
+                //SqlOrder? tmp = m_customer.orders.Where(s => s.code.CompareTo(order) == 0 && s.isDelete == false).FirstOrDefault();
+                //if(tmp != null)
+                //{
+                //    return false;
+                //}
+
+                SqlOrder? m_order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).Include(s => s.state).FirstOrDefault();
+                if (m_order == null)
+                {
+                    return false;
+                }
+                if(m_order.state!.code < 1)
+                {
+                    return false;
+                }
+
+                m_order.customer = m_customer;
+
+                bool flag = await setStateOrder(user.ID, m_order.code, 2, "Set Customer Order !!!", m_customer.latitude, m_customer.longitude, "action1");
+                if (flag)
+                {
+                    int rows = await context.SaveChangesAsync();
+                    if (rows > 0)
+                    {
+                        return flag;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+
+            }
+        }
+
+        public async Task<bool> setConfirmedOrder(string token, string code)
+        {
+            using (DataContext context = new DataContext())
+            {
+                SqlUser? m_user = context.users!.Include(s => s.role).Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role).FirstOrDefault();
+                if (m_user == null)
+                {
+                    return false;
+                }
+                SqlOrder? order = context.orders!.Include(s => s.state).Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).Include(s => s.manager).Include(s => s.customer).FirstOrDefault();
+                if (order == null)
+                {
+                    return false;
+                }
+                if(order.state!.code > 2)
+                {
+                    return false;
+                }
+                if (order.manager != null)
+                {
+                    return false;
+                }
+                order.manager = m_user;
+
+                string note = string.Format("Received Order {0} From Manager : {1} ", order.code, m_user.user);
+                bool flag = await setStateOrder(m_user.ID, order.code, 2, note, "", "", "action1");
+                if (flag)
+                {
+                    int rows = await context.SaveChangesAsync();
+                    if (rows > 0)
+                    {
+                        return flag;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+        public async Task<bool> setAssginOrder(string token, string code, string user)
+        {
+            using (DataContext context = new DataContext())
+            {
+                SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.managerOrders!).ThenInclude(s => s.state).Include(s => s.role).FirstOrDefault();
+                if (m_user == null)
+                {
+                    return false;
+                }
+                SqlUser? worker = context.users!.Include(s => s.role).Where(s => s.isdeleted == false  && s.user.CompareTo(user) == 0).FirstOrDefault();
+                if (worker == null)
+                {
+                    return false;
+                }
+
+                if (m_user.role!.code.CompareTo("admin") == 0 || m_user.role!.code.CompareTo("receiver") == 0)
+                {
+                    SqlOrder? order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).Include(s => s.state).FirstOrDefault();
+                    if (order == null)
+                    {
+                        return false;
+                    }
+                    if(order.customer == null)
+                    {
+                        return false;
+                    }
+                    if(order.state!.code > 3)
+                    {
+                        return false;
+                    }
+                    order.worker = worker;
+                    string note = "";
+                    if(order.manager == null)
+                    {
+                        note = string.Format("Received Order {0} From Manager : {1} ", order.code, m_user.user);
+                        bool flag1 =  await setStateOrder(m_user.ID, order.code, 3, note, "", "", "action1");
+
+                    } 
+
+                    note = string.Format("Assigned Order {0} For Staff : {1} From Manager : {2} ", order.code, worker.user, m_user.user);
+                    bool flag = await setStateOrder(m_user.ID, order.code, 3, note, "", "", "action2");
+                    if (flag)
+                    {
+                        int rows = await context.SaveChangesAsync();
+                        if (rows > 0)
+                        {
+                            return flag;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                   
+                    SqlOrder? order = m_user.managerOrders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).FirstOrDefault();
+                    if (order == null)
+                    {
+                        return false;
+                    }
+                    if (order.state!.code > 3)
+                    {
+                        return false;
+                    }
+                    order.worker = worker;
+
+                    string note = string.Format("Assigned Order {0} For Staff : {1} From Manager : {2} ", order.code, worker.user, m_user.user);
+                    bool flag = await setStateOrder(m_user.ID, order.code, 3, note, "", "", "action2");
+                    if (flag)
+                    {
+                        int rows = await context.SaveChangesAsync();                       
+                        if (rows > 0)
+                        {
+                            return flag;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+        public async Task<bool> beginWorkOrder(string token, string code)
+        {
+            using(DataContext context = new DataContext())
+            {
+                SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role)
+                                                .Include(s => s.receiverOrders!).ThenInclude(s => s.state)
+                                                .Include(s => s.managerOrders!).ThenInclude(s => s.state)
+                                                .Include(s => s.workerOrders!).ThenInclude(s => s.state)
+                                                .FirstOrDefault();
+                if(m_user == null)
+                {
+                    return false;
+                }
+
+                if(m_user.role!.code.CompareTo("admin") == 0 || m_user.role!.code.CompareTo("receiver") == 0)
+                {
+                    SqlOrder? m_order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).Include(s => s.state).FirstOrDefault();
+                    if (m_order == null)
+                    {
+                        return false;
+                    }
+                    if(m_order.state!.code != 3)
+                    {
+                        return false;
+                    }
+
+                    string note = string.Format("Starting work to Order {0} From Worker : {1} ", m_order.code, m_user.user);
+                    bool flag = await setStateOrder(m_user.ID, m_order.code, 4, note, "", "", "action3");
+                    return flag;
+                }
+                else
+                {
+                    if(m_user.role.code.CompareTo("manager") == 0 || m_user.role.code.CompareTo("survey") == 0)
+                    {
+                        SqlOrder? m_order = m_user.managerOrders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).FirstOrDefault();
+                        if (m_order == null)
+                        {
+                            return false;
+                        }
+                        if (m_order.state!.code != 3)
+                        {
+                            return false;
+                        }
+
+                        string note = string.Format("Starting work to Order {0} From Worker : {1} ", m_order.code, m_user.user);
+                        bool flag = await setStateOrder(m_user.ID, m_order.code, 4, note, "", "", "action3");
+                        return flag;
+                    }    
+                    else
+                    {
+                        SqlOrder? m_order = m_user.workerOrders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).FirstOrDefault();
+                        if (m_order == null)
+                        {
+                            return false;
+                        }
+                        if (m_order.state!.code != 3)
+                        {
+                            return false;
+                        }
+
+                        string note = string.Format("Starting work to Order {0} From Worker : {1} ", m_order.code, m_user.user);
+                        bool flag = await setStateOrder(m_user.ID, m_order.code, 4, note, "", "", "action3");
+                        return flag;
+
+                    }    
+                }    
+            }
+        }
+
+        public async Task<bool> finishWorkOrder(string token, string code)
+        {
+            using (DataContext context = new DataContext())
+            {
+                SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role)
+                                                .Include(s => s.receiverOrders!).ThenInclude(s => s.state)
+                                                .Include(s => s.managerOrders!).ThenInclude(s => s.state)
+                                                .Include(s => s.workerOrders!).ThenInclude(s => s.state)
+                                                .FirstOrDefault();
+                if (m_user == null)
+                {
+                    return false;
+                }
+
+                if (m_user.role!.code.CompareTo("admin") == 0 || m_user.role!.code.CompareTo("receiver") == 0)
+                {
+                    SqlOrder? m_order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).FirstOrDefault();
+                    if (m_order == null)
+                    {
+                        return false;
+                    }
+                    if (m_order.state!.code != 4)
+                    {
+                        return false;
+                    }
+
+                    string note = string.Format("Finishing work to Order {0} From Worker : {1} ", m_order.code, m_user.user);
+                    bool flag = await setStateOrder(m_user.ID, m_order.code, 5, note, "", "", "action4");
+                    return flag;
+                }
+                else
+                {
+                    if (m_user.role.code.CompareTo("manager") == 0 || m_user.role.code.CompareTo("survey") == 0)
+                    {
+                        SqlOrder? m_order = m_user.managerOrders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).FirstOrDefault();
+                        if (m_order == null)
+                        {
+                            return false;
+                        }
+                        if (m_order.state!.code != 4)
+                        {
+                            return false;
+                        }
+
+                        string note = string.Format("Starting work to Order {0} From Worker : {1} ", m_order.code, m_user.user);
+                        bool flag = await setStateOrder(m_user.ID, m_order.code, 5, note, "", "", "action4");
+                        return flag;
+                    }
+                    else
+                    {
+                        SqlOrder? m_order = m_user.workerOrders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).FirstOrDefault();
+                        if (m_order == null)
+                        {
+                            return false;
+                        }
+                        if (m_order.state!.code != 4)
+                        {
+                            return false;
+                        }
+
+                        string note = string.Format("Starting work to Order {0} From Worker : {1} ", m_order.code, m_user.user);
+                        bool flag = await setStateOrder(m_user.ID, m_order.code, 5, note, "", "", "action4");
+                        return flag;
+
+                    }
+                }
+            }
+        }
+
+        public async Task<bool> finishOrder(string token, string code)
+        {
+            using (DataContext context = new DataContext())
+            {
+                SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role)
+                                                .Include(s => s.receiverOrders!).ThenInclude(s => s.state)
+                                                .Include(s => s.managerOrders!).ThenInclude(s => s.state)
+                                                .Include(s => s.workerOrders!).ThenInclude(s => s.state)
+                                                .FirstOrDefault();
+                if (m_user == null)
+                {
+                    return false;
+                }
+
+                if (m_user.role!.code.CompareTo("admin") == 0 || m_user.role!.code.CompareTo("receiver") == 0)
+                {
+                    SqlOrder? m_order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).FirstOrDefault();
+                    if (m_order == null)
+                    {
+                        return false;
+                    }
+                    if (m_order.state!.code != 5)
+                    {
+                        return false;
+                    }
+
+                    string note = string.Format("Finished Order {0} ", m_order.code);
+                    bool flag = await setStateOrder(m_user.ID, m_order.code, 6, note, "", "", "action5");
+                    return flag;
+                }
+                else
+                {
+                    if (m_user.role.code.CompareTo("manager") == 0|| m_user.role.code.CompareTo("survey") == 0)
+                    {
+                        SqlOrder? m_order = m_user.managerOrders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).FirstOrDefault();
+                        if (m_order == null)
+                        {
+                            return false;
+                        }
+                        if (m_order.state!.code != 5)
+                        {
+                            return false;
+                        }
+
+                        string note = string.Format("Finished Order {0} ", m_order.code);
+                        bool flag = await setStateOrder(m_user.ID, m_order.code, 6, note, "", "", "action5");
+                        return flag;
+                    }
+                    else
+                    {
+                        SqlOrder? m_order = m_user.workerOrders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).FirstOrDefault();
+                        if (m_order == null)
+                        {
+                            return false;
+                        }
+                        if (m_order.state!.code != 5)
+                        {
+                            return false;
+                        }
+
+                        string note = string.Format("Finished Order {0} ", m_order.code);
+                        bool flag = await setStateOrder(m_user.ID, m_order.code, 6, note, "", "", "action5");
+                        return flag;
+
+                    }
+                }
+            }
+        }
+
+        public async Task<bool> cancelOrder(string token,string code)
+        {
+            using (DataContext context = new DataContext())
+            {
+                SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role)
+                                                .Include(s => s.receiverOrders!).ThenInclude(s => s.state)
+                                                .Include(s => s.managerOrders!).ThenInclude(s => s.state)
+                                                .Include(s => s.workerOrders!).ThenInclude(s => s.state)
+                                                .FirstOrDefault();
+                if (m_user == null)
+                {
+                    return false;
+                }
+
+                SqlOrder? m_order = null;
+                if (m_user.role!.code.CompareTo("staff") != 0 )
+                {
+                    if (m_user.role.code.CompareTo("manager") == 0 || m_user.role.code.CompareTo("survey") == 0)
+                    {
+                        m_order = m_user.managerOrders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).FirstOrDefault();
+                        if (m_order == null)
+                        {
+                            return false;
+                        }
+                        if (m_order.state!.code > 3)
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        m_order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).FirstOrDefault();
+                        if (m_order == null)
+                        {
+                            return false;
+                        }
+                        if (m_order.state!.code > 3)
+                        {
+                            return false;
+                        }
+                    }
+                    string note = string.Format("Cancelled Order {0} ", m_order.code);
+                    bool flag = await setStateOrder(m_user.ID, m_order.code, 7, note, "", "", "action5");
+                    return flag;
+
+                }
+                else
+                {
+                    return false;
+                }
+                
+                /* else
+                 {
+                     if (m_user.role.code.CompareTo("manager") == 0 || m_user.role.code.CompareTo("survey") == 0)
+                     {
+                         SqlOrder? m_order = m_user.managerOrders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).FirstOrDefault();
+                         if (m_order == null)
+                         {
+                             return false;
+                         }
+                         if (m_order.state!.code != 6)
+                         {
+                             return false;
+                         }
+
+                         string note = string.Format("Cancelled Order {0} ", m_order.code);
+                         bool flag = await setStateOrder(m_user.ID, m_order.code, 6, note, "", "", "action5");
+                         return flag;
+                     }
+                     else
+                     {
+                         SqlOrder? m_order = m_user.workerOrders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).FirstOrDefault();
+                         if (m_order == null)
+                         {
+                             return false;
+                         }
+                         if (m_order.state!.code != 6)
+                         {
+                             return false;
+                         }
+
+                         string note = string.Format("Cancelled Order {0} ", m_order.code);
+                         bool flag = await setStateOrder(m_user.ID, m_order.code, 5, note, "", "", "action5");
+                         return flag;
+
+                     }
+                 }*/
             }
         }
 
@@ -625,7 +787,7 @@ namespace ServerWater2.APIs
         {
             public string code { get; set; } = "";
             public ItemProfile profile { get; set; } = new ItemProfile();
-            public ItemUser reciver { get; set; } = new ItemUser();
+            public ItemUser receiver { get; set; } = new ItemUser();
             public ItemUser manager { get; set; } = new ItemUser();
             public ItemUser worker { get; set; } = new ItemUser();
             public ItemCustomer customer  { get; set; } = new ItemCustomer();
@@ -729,7 +891,7 @@ namespace ServerWater2.APIs
                         receiver.displayName = item.receiver.displayName;
                         receiver.numberPhone = item.receiver.phoneNumber;
 
-                        tmp.reciver = receiver;
+                        tmp.receiver = receiver;
                     }
 
                     if (item.manager != null)
@@ -840,7 +1002,7 @@ namespace ServerWater2.APIs
                         receiver.displayName = item.receiver.displayName;
                         receiver.numberPhone = item.receiver.phoneNumber;
 
-                        tmp.reciver = receiver;
+                        tmp.receiver = receiver;
                     }
 
                     if (item.manager != null)

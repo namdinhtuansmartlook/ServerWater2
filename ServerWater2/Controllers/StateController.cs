@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
+using static ServerWater2.APIs.MyState;
 using static ServerWater2.Controllers.TypeController;
 
 namespace ServerWater2.Controllers
@@ -13,7 +14,7 @@ namespace ServerWater2.Controllers
         [Route("getListState")]
         public IActionResult GetListState([FromHeader] string token)
         {
-            long id = Program.api_user.checkAdmin(token);
+            long id = Program.api_user.checkCS(token);
             if (id >= 0)
             {
                 return Ok(Program.api_state.getList());
@@ -27,12 +28,12 @@ namespace ServerWater2.Controllers
 
         [HttpPost]
         [Route("editState")]
-        public async Task<IActionResult> EditTypeAsync([FromHeader] string token, ItemHttpType service)
+        public async Task<IActionResult> EditTypeAsync([FromHeader] string token, ItemStateOrder state)
         {
-            long id = Program.api_user.checkAdmin(token);
+            long id = Program.api_user.checkCS(token);
             if (id >= 0)
             {
-                bool flag = await Program.api_type.editAsync(service.code, service.name, service.des);
+                bool flag = await Program.api_state.editAsync(state.code, state.name, state.des);
                 if (flag)
                 {
                     return Ok();

@@ -25,7 +25,7 @@ namespace ServerWater2.Controllers
         [Route("createAction")]
         public async Task<IActionResult> CreateActionAsync([FromHeader] string token, ItemHttpAction action)
         {
-            long id = Program.api_user.checkAdmin(token);
+            long id = Program.api_user.checkCS(token);
             if (id >= 0)
             {
                 bool flag = await Program.api_action.createAsync(action.code, action.name, action.des);
@@ -50,7 +50,7 @@ namespace ServerWater2.Controllers
         [Route("editAction")]
         public async Task<IActionResult> EditActionAsync([FromHeader] string token, ItemHttpAction action)
         {
-            long id = Program.api_user.checkAdmin(token);
+            long id = Program.api_user.checkCS(token);
             if (id >= 0)
             {
                 bool flag = await Program.api_action.editAsync(action.code, action.name, action.des);
@@ -75,7 +75,7 @@ namespace ServerWater2.Controllers
         [Route("{code}/deleteAction")]
         public async Task<IActionResult> DeleteActionAsync([FromHeader] string token, string code)
         {
-            long id = Program.api_user.checkAdmin(token);
+            long id = Program.api_user.checkCS(token);
             if (id >= 0)
             {
                 bool flag = await Program.api_action.deleteAsync(code);
@@ -99,7 +99,7 @@ namespace ServerWater2.Controllers
         [Route("getListAction")]
         public IActionResult getListAction([FromHeader] string token)
         {
-            long id = Program.api_user.checkAdmin(token);
+            long id = Program.api_user.checkCS(token);
             if (id >= 0)
             {
                 return Ok(Program.api_action.getListAction());

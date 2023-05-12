@@ -100,7 +100,7 @@ namespace ServerWater2.APIs
                 int rows = await context.SaveChangesAsync();
             }
         }
-        public long checkAdmin(string token)
+       /* public long checkAdmin(string token)
         {
             using (DataContext context = new DataContext())
             {
@@ -115,7 +115,7 @@ namespace ServerWater2.APIs
                 }
                 return 0;
             }
-        }
+        }*/
 
         public long checkManager(string token)
         {
@@ -128,27 +128,12 @@ namespace ServerWater2.APIs
                 }
                 if (user.role!.code.CompareTo("admin") == 0 || user.role!.code.CompareTo("manager") == 0 )
                 {
-                    return 0;
+                    return user.ID;
                 }
                 return -1;
             }
         }
-        public long checkSurvey(string token)
-        {
-            using (DataContext context = new DataContext())
-            {
-                SqlUser? user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role).FirstOrDefault();
-                if (user == null)
-                {
-                    return -1;
-                }
-                if (user.role!.code.CompareTo("admin") == 0 || user.role!.code.CompareTo("survey") == 0)
-                {
-                    return 0;
-                }
-                return -1;
-            }
-        }
+        
         public long checkCS(string token)
         {
             using (DataContext context = new DataContext())
@@ -160,7 +145,7 @@ namespace ServerWater2.APIs
                 }
                 if (user.role!.code.CompareTo("admin") == 0 || user.role!.code.CompareTo("receiver") == 0)
                 {
-                    return 0;
+                    return user.ID;
                 }
                 return -1;
             }
@@ -175,7 +160,7 @@ namespace ServerWater2.APIs
                     return -1;
                 }
 
-                return 0;
+                return user.ID;
             }
         }
 
@@ -481,7 +466,7 @@ namespace ServerWater2.APIs
         }
 
 
-        public class infoUser
+       /* public class infoUser
         {
             public string user { get; set; } = "";
             public string username { get; set; } = "";
@@ -515,7 +500,7 @@ namespace ServerWater2.APIs
 
             return temp;
         }
-
+*/
        
 
     }

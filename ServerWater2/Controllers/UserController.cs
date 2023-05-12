@@ -53,7 +53,7 @@ namespace ServerWater2.Controllers
         [Route("createUser")]
         public async Task<IActionResult> CreateUserAsync([FromHeader] string token, ItemUser user)
         {
-            long id = Program.api_user.checkAdmin(token);
+            long id = Program.api_user.checkCS(token);
             if (id >= 0)
             {
                 bool flag = await Program.api_user.createUserAsync(token, user.user, user.username, user.password, user.displayName, user.numberPhone, user.des, user.role);
@@ -93,7 +93,7 @@ namespace ServerWater2.Controllers
         [Route("{code}/deleteUser")]
         public async Task<IActionResult> deleteUserAsync([FromHeader] string token, string code)
         {
-            long id = Program.api_user.checkAdmin(token);
+            long id = Program.api_user.checkCS(token);
             if (id >= 0)
             {
                 bool flag = await Program.api_user.deleteUserAsync(token, code);
@@ -133,10 +133,17 @@ namespace ServerWater2.Controllers
         }
 
         [HttpGet]
+        [Route("getListRole")]
+        public IActionResult getListRole()
+        {
+            return Ok(Program.api_role.getListRole());
+        }
+
+        [HttpGet]
         [Route("getListUser")]
         public IActionResult GetListUser([FromHeader] string token)
         {
-            long id = Program.api_user.checkAdmin(token);
+            long id = Program.api_user.checkCS(token);
             if (id >= 0)
             {
                 return Ok(Program.api_user.listUser(token));
@@ -146,12 +153,13 @@ namespace ServerWater2.Controllers
                 return Unauthorized();
             }
         }
-
+/*
         [HttpGet]
         [Route("getInfoUser")]
         public IActionResult getInfoUser([FromHeader] string token)
         {
             return Ok(Program.api_user.getInfoUser(token));
-        }
+        }*/
+        
     }
 }

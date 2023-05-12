@@ -25,6 +25,7 @@ namespace ServerWater2.Models
         public string note { get; set; } = "";
         public DateTime createdTime { get; set; }
         public DateTime lastestTime { get; set; }
+        public bool isFinish { get; set; } = false;
         public bool isDelete { get; set; } = false;
     }
 }

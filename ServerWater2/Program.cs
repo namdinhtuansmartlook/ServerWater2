@@ -18,6 +18,7 @@ public class Program
     public static MyState api_state = new MyState();
     public static MyService api_service = new MyService();
     public static MyAction api_action = new MyAction();
+    public static MyLogOrder api_log = new MyLogOrder();
     
     public static MyCustomer api_customer = new MyCustomer();
 

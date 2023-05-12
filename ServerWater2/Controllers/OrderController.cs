@@ -70,20 +70,33 @@ namespace ServerWater2.Controllers
                 return Ok(order);
             }
         }
+
         [HttpPut]
         [Route("{code}/confirmOrder")]
         public async Task<IActionResult> ReceiveOrder([FromHeader] string token, string code)
         {
-            bool flag = await Program.api_order.confirmOrder(token, code);
-            if (flag)
+            long id = Program.api_user.checkCS(token);
+            if (id >= 0)
             {
-                return Ok();
+                bool flag = await Program.api_order.confirmOrder(token, code);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
             }
             else
             {
-                return BadRequest();
+                return Unauthorized();
             }
+
         }
+
+
         [HttpPut]
         [Route("{code}/setCustomer")]
         public async Task<IActionResult> SetCustomer([FromHeader] string token, string maDB, string code)
@@ -98,9 +111,10 @@ namespace ServerWater2.Controllers
                 return BadRequest();
             }
         }
-
+        
+       
         [HttpPut]
-        [Route("{code}/receiveOrderManager")]
+        [Route("{code}/setConfirmedOrder")]
         public async Task<IActionResult> recieveOrderByManager([FromHeader] string token, string code)
         {
             long id = Program.api_user.checkManager(token);
@@ -125,13 +139,111 @@ namespace ServerWater2.Controllers
         }
 
         [HttpPut]
-        [Route("{code}/setWorker")]
+        [Route("{code}/setAssginOrder")]
         public async Task<IActionResult> setWorkerOrder([FromHeader] string token, string code, string user)
         {
             long id = Program.api_user.checkManager(token);
             if (id >= 0)
             {
                 bool flag = await Program.api_order.setAssginOrder(token, code, user);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }
+        [HttpPut]
+        [Route("{code}/beginWorkOrder")]
+        public async Task<IActionResult> beginWorkOrder([FromHeader] string token, string code)
+        {
+            long id = Program.api_user.checkUser(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_order.beginWorkOrder(token, code);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }
+
+        [HttpPut]
+        [Route("{code}/finishWorkOrder")]
+        public async Task<IActionResult> finishWorkOrder([FromHeader] string token, string code)
+        {
+            long id = Program.api_user.checkUser(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_order.finishWorkOrder(token, code);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }
+
+        [HttpPut]
+        [Route("{code}/finishOrder")]
+        public async Task<IActionResult> finishOrder([FromHeader] string token, string code)
+        {
+            long id = Program.api_user.checkUser(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_order.finishOrder(token, code);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }
+        [HttpDelete]
+        [Route("{code}/cancelOrder")]
+        public async Task<IActionResult> cancelOrder([FromHeader] string token, string code)
+        {
+            long id = Program.api_user.checkManager(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_order.cancelOrder(token, code);
                 if (flag)
                 {
                     return Ok();
