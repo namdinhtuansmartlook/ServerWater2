@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
+using static ServerWater2.Controllers.ActionController;
 
 namespace ServerWater2.Controllers
 {
@@ -139,11 +140,43 @@ namespace ServerWater2.Controllers
 
         }
 
+        public class ItemHttpRole
+        {
+            public string name { get; set; } = "";
+            public string des { get; set; } = "";
+            public string note { get; set; } = "";
+        }
+
         [HttpGet]
         [Route("getListRole")]
         public IActionResult getListRole()
         {
             return Ok(Program.api_role.getListRole());
+        }
+
+        [HttpPost]
+        [Route("editRole")]
+        public async Task<IActionResult> EditRoleAsync([FromHeader] string token, ItemHttpRole role)
+        {
+            long id = Program.api_user.checkAdmin(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_action.editAsync(role.name, role.des, role.note);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
         }
 
         [HttpGet]

@@ -75,10 +75,10 @@ namespace ServerWater2.Controllers
         }
 
         [HttpPut]
-        [Route("setActionOrder")]
-        public async Task<IActionResult> SetAction([FromHeader] string token, string id, string action)
+        [Route("{code}/setAction")]
+        public async Task<IActionResult> SetAction([FromHeader] string token, string code, string action)
         {
-            bool flag = await Program.api_order.setAction(token, id, action);
+            bool flag = await Program.api_order.setAction(token, code, action);
             if (flag)
             {
                 return Ok();
@@ -298,9 +298,35 @@ namespace ServerWater2.Controllers
 
         [HttpGet]
         [Route("getListOrder")]
-        public IActionResult GetListNewOrder([FromHeader] string token)
+        public IActionResult GetListNewOrder([FromHeader] string token, string begin, string end)
         {
-            return Ok(Program.api_order.getListOrder(token));
+            DateTime time_begin = DateTime.MinValue;
+            try
+            {
+                time_begin = DateTime.ParseExact(begin, "dd-MM-yyyy", null);
+            }
+            catch (Exception e)
+            {
+                time_begin = DateTime.MinValue;
+            }
+            DateTime time_end = DateTime.MinValue;
+            try
+            {
+                time_end = DateTime.ParseExact(end, "dd-MM-yyyy", null);
+            }
+            catch (Exception e)
+            {
+                time_end = DateTime.MaxValue;
+            }
+            long id = Program.api_user.checkUser(token);
+            if (id >= 0)
+            {
+                return Ok(Program.api_order.getListOrder(token, time_begin, time_end));
+            }
+            else
+            {
+                return Unauthorized();
+            }
         }
 
         [HttpGet]
