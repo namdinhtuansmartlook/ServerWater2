@@ -876,7 +876,7 @@ namespace ServerWater2.APIs
                     info.longitude = m_log.longitude;
                     info.latitude = m_log.latitude;
                     info.note = m_log.note;
-                    info.time = m_log.time;
+                    info.time = m_log.time.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
 
                 }
             }

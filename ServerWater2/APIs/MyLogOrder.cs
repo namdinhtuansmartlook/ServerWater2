@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using ServerWater2.Models;
 using static ServerWater2.APIs.MyAction;
 using static ServerWater2.APIs.MyCustomer;
@@ -28,7 +29,7 @@ namespace ServerWater2.APIs
             public ItemUser user { get; set; } = new ItemUser();
             public ItemLogOrder order { get; set; } = new ItemLogOrder();
             public ItemAction action { get; set; } = new ItemAction();
-            public string time { get; set; } = "";
+            public DateTime time { get; set; }
             public string note { get; set; } = "";
             public string latitude { get; set; } = "";
             public string longitude { get; set; } = "";
@@ -169,7 +170,7 @@ namespace ServerWater2.APIs
                             itemLog.action = action;
                         }
 
-                        itemLog.time = item.time.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
+                        itemLog.time = item.time;
                         itemLog.note = item.note;
                         itemLog.latitude = item.latitude;
                         itemLog.longitude = item.longitude;
@@ -180,5 +181,187 @@ namespace ServerWater2.APIs
                 return list;
             }
         }
+
+        public List<ItemLog> getDataRow(DateTime begin, DateTime end)
+        {
+            DateTime m_begin = new DateTime(begin.Year, begin.Month, begin.Day, 0, 0, 0);
+            DateTime m_end = new DateTime(end.Year, end.Month, end.Day, 0, 0, 0);
+            end = m_end.AddDays(1);
+            List<ItemLog> datas = getListLog();
+
+            List<ItemLog> m_datas = datas.Where(s => DateTime.Compare(m_begin.ToUniversalTime(), s.time) <= 0 && DateTime.Compare(end.ToUniversalTime(), s.time) > 0).ToList();
+            if(m_datas.Count < 1)
+            {
+                return new List<ItemLog>();
+            }
+            return m_datas;
+        }
+        public class ItemHistoryForUser
+        {
+            public ItemAction action { get; set; } = new ItemAction();
+            public string time { get; set; } = "";
+            public string note { get; set; } = "";
+            public string latitude { get; set; } = "";
+            public string longitude { get; set; } = "";
+
+        }
+        public class ItemHistory
+        {
+            public ItemUser user { get; set; } = new ItemUser();
+            public List<ItemHistoryForUser> datas = new List<ItemHistoryForUser>();
+
+        }
+
+        public string getListHistoryOrderForUser(string token, DateTime begin, DateTime end, string code)
+        {
+            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(code))
+            {
+                return "";
+            }
+            using (DataContext context = new DataContext())
+            {
+                SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).FirstOrDefault();
+                if (m_user == null)
+                {
+                    return "";
+                }
+
+                List<ItemLog> datas = getDataRow(begin, end).Where(s => s.order.order.code.CompareTo(code) == 0).ToList();
+
+                if (datas.Count < 1)
+                {
+                    return "";
+                }
+                List<ItemHistoryForUser> m_datas = new List<ItemHistoryForUser>();
+
+                foreach (ItemLog item in datas)
+                {
+                    ItemHistoryForUser tmp = new ItemHistoryForUser();
+
+                    tmp.action.code = item.action.code;
+                    tmp.action.name = item.action.name;
+                    tmp.action.des = item.action.code;
+
+                    tmp.time = item.time.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
+                    tmp.note = item.note;
+                    tmp.latitude = item.latitude;
+                    tmp.longitude = item.longitude;
+
+                    m_datas.Add(tmp);
+                }
+
+                string result = "";
+                if (m_datas.Count > 0)
+                {
+                    result = JsonConvert.SerializeObject(m_datas);
+                }
+                return result;
+            }
+
+        }
+        public string getListLogOrder(string token, DateTime begin, DateTime end, string user)
+        {
+            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(user))
+            {
+                return "";
+            }
+            using (DataContext context = new DataContext())
+            {
+                SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).FirstOrDefault();
+                if (m_user == null)
+                {
+                    return "";
+                }
+
+                List<ItemLog> datas = getDataRow(begin, end).Where(s => s.user.user.CompareTo(user) == 0).ToList();
+
+                if (datas.Count < 1)
+                {
+                    return "";
+                }
+                List<ItemHistoryForUser> m_datas = new List<ItemHistoryForUser>();
+
+                foreach (ItemLog item in datas)
+                {
+                    ItemHistoryForUser tmp = new ItemHistoryForUser();
+
+                    tmp.action.code = item.action.code;
+                    tmp.action.name = item.action.name;
+                    tmp.action.des = item.action.code;
+
+                    tmp.time = item.time.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
+                    tmp.note = item.note;
+                    tmp.latitude = item.latitude;
+                    tmp.longitude = item.longitude;
+
+                    m_datas.Add(tmp);
+                }
+
+                string result = "";
+                if (m_datas.Count > 0)
+                {
+                    result = JsonConvert.SerializeObject(m_datas);
+                }
+                return result;
+            }
+
+        }
+        public string getListLogOrderForAdmin(string token, DateTime begin, DateTime end)
+        {
+            if(string.IsNullOrEmpty(token))
+            {
+                return "";
+            }
+            using(DataContext context = new DataContext())
+            {
+                SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).FirstOrDefault();
+                if(m_user == null)
+                {
+                    return "";
+                }
+
+                List<ItemLog> datas = getDataRow(begin, end).ToList();
+
+                if (datas.Count < 1)
+                {
+                    return "";
+                }
+                List<ItemHistory> m_datas = new List<ItemHistory>();
+                List<ItemUser> listUsers = new List<ItemUser>();
+
+                foreach (ItemLog item in datas)
+                {
+                    if(item.user.user != "")
+                    {
+                        ItemUser? tmpUser = listUsers.Where(s => s.user.CompareTo(item.user.user) == 0).FirstOrDefault();
+                        if (tmpUser == null)
+                        {
+                            ItemHistory tmp = new ItemHistory();
+                            tmp.user = item.user;
+                            List<ItemHistoryForUser>? tmps = JsonConvert.DeserializeObject<List<ItemHistoryForUser>>(getListLogOrder(token, begin, end, item.user.user));
+                            if (tmps != null)
+                            {
+                                tmp.datas = tmps;
+                            }
+                            listUsers.Add(item.user);
+                            m_datas.Add(tmp);
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                }
+         
+                string result = "";
+                if (m_datas.Count > 0)
+                {
+                    result = JsonConvert.SerializeObject(m_datas);
+                }
+                return result;
+            }
+            
+        }
+        
     }
 }
