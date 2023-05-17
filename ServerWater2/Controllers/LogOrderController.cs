@@ -27,14 +27,14 @@ namespace ServerWater2.Controllers
             {
                 time_begin = DateTime.MinValue;
             }
-            DateTime time_end = DateTime.MinValue;
+            DateTime time_end = DateTime.MaxValue;
             try
             {
                 time_end = DateTime.ParseExact(end, "dd-MM-yyyy", null);
             }
             catch (Exception e)
             {
-                time_end = DateTime.MinValue;
+                time_end = DateTime.MaxValue;
             }
             long id = Program.api_user.checkSystem(token);
             if (id >= 0)
@@ -61,14 +61,14 @@ namespace ServerWater2.Controllers
             {
                 time_begin = DateTime.MinValue;
             }
-            DateTime time_end = DateTime.MinValue;
+            DateTime time_end = DateTime.MaxValue;
             try
             {
                 time_end = DateTime.ParseExact(end, "dd-MM-yyyy", null);
             }
             catch (Exception e)
             {
-                time_end = DateTime.MinValue;
+                time_end = DateTime.MaxValue;
             }
             long id = Program.api_user.checkAdmin(token);
             if (id >= 0)

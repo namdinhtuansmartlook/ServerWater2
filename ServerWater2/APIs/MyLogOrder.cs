@@ -185,8 +185,8 @@ namespace ServerWater2.APIs
         public List<ItemLog> getDataRow(DateTime begin, DateTime end)
         {
             DateTime m_begin = new DateTime(begin.Year, begin.Month, begin.Day, 0, 0, 0);
-            DateTime m_end = new DateTime(end.Year, end.Month, end.Day, 0, 0, 0);
-            end = m_end.AddDays(1);
+            DateTime m_end = new DateTime(end.Year, end.Month, end.Day, 23, 59, 59);
+            //end = m_end.AddDays(1);
             List<ItemLog> datas = getListLog();
 
             List<ItemLog> m_datas = datas.Where(s => DateTime.Compare(m_begin.ToUniversalTime(), s.time) <= 0 && DateTime.Compare(end.ToUniversalTime(), s.time) > 0).ToList();
