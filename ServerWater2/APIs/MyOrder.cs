@@ -156,7 +156,7 @@ namespace ServerWater2.APIs
                     log.ID = DateTime.Now.Ticks;
                     log.order = m_order;
                     log.time = DateTime.Now.ToUniversalTime();
-                    log.note = "New Order : " + m_order.service!.name;
+                    log.note = String.Format("{0}_{1} : {2}", m_order.code, m_order.service!.name, m_order.state!.name);
                     context.logs!.Add(log);
                 }
                 else 
@@ -185,7 +185,7 @@ namespace ServerWater2.APIs
                     log.ID = DateTime.Now.Ticks;
                     log.order = m_order;
                     log.time = DateTime.Now.ToUniversalTime();
-                    log.note = "New Order : " + m_order.service!.name;
+                    log.note = String.Format("{0}_{1} : {2}", m_order.code, m_order.service!.name, m_order.state!.name);
                     context.logs!.Add(log);
                 }
                 int rows = await context.SaveChangesAsync();
@@ -284,7 +284,9 @@ namespace ServerWater2.APIs
                 }
                 order.receiver = m_user;
 
-                bool flag = await setStateOrder(m_user.ID, order.code, 1, "Checked Order !!!", "", "");
+                string note = string.Format("{0} : {1} ", order.state!.name, order.code);
+
+                bool flag = await setStateOrder(m_user.ID, order.code, 1, note, "", "");
                 if (flag)
                 {
                     int rows = await context.SaveChangesAsync();
@@ -342,7 +344,9 @@ namespace ServerWater2.APIs
 
                 m_order.customer = m_customer;
 
-                bool flag = await setStateOrder(user.ID, m_order.code, m_order.state!.code, "Set Customer Order !!!", m_customer.latitude, m_customer.longitude);
+                string note = string.Format("KH : {0} - MDB : {1} Theo DH : {2}_{3} ", m_customer.name, m_customer.code, m_order.code, m_order.service!.name);
+
+                bool flag = await setStateOrder(user.ID, m_order.code, m_order.state!.code, note, m_customer.latitude, m_customer.longitude);
                 if (flag)
                 {
                     int rows = await context.SaveChangesAsync();
@@ -387,7 +391,7 @@ namespace ServerWater2.APIs
                 }
                 order.manager = m_user;
 
-                string note = string.Format("Received Order {0} From Manager : {1} ", order.code, m_user.user);
+                string note = string.Format("{0} : {1} -  DH : {1}  ", m_user.user, order.state!.name , order.code);
                 bool flag = await setStateOrder(m_user.ID, order.code, 2, note, "", "");
                 if (flag)
                 {
@@ -438,12 +442,12 @@ namespace ServerWater2.APIs
                     string note = "";
                     if(order.manager == null)
                     {
-                        note = string.Format("Received Order {0} From Manager : {1} ", order.code, m_user.user);
+                        note = string.Format("{0} : {1} -  DH : {1}  ", m_user.user, order.state!.name, order.code);
                         bool flag1 =  await setStateOrder(m_user.ID, order.code, 3, note, "", "");
 
-                    } 
+                    }
 
-                    note = string.Format("Assigned Order {0} For Staff : {1} From Manager : {2} ", order.code, worker.user, m_user.user);
+                    note = string.Format("{0} : {1} -  DH : {1}  ", order.state!.name, m_user.user,  order.code);
                     bool flag = await setStateOrder(m_user.ID, order.code, 3, note, "", "");
                     if (flag)
                     {
@@ -476,7 +480,7 @@ namespace ServerWater2.APIs
                     }
                     order.worker = worker;
 
-                    string note = string.Format("Assigned Order {0} For Staff : {1} From Manager : {2} ", order.code, worker.user, m_user.user);
+                    string note = string.Format("{0} : {1} -  DH : {1}  ", order.state!.name, m_user.user, order.code);
                     bool flag = await setStateOrder(m_user.ID, order.code, 3, note, "", "");
                     if (flag)
                     {
@@ -523,7 +527,7 @@ namespace ServerWater2.APIs
                         return false;
                     }
 
-                    string note = string.Format("Starting work to Order {0} From Worker : {1} ", m_order.code, m_user.user);
+                    string note = string.Format("{0} {1} : {2}", m_user.user, m_order.state!.name, m_order.code);
                     bool flag = await setStateOrder(m_user.ID, m_order.code, 4, note, "", "");
                     return flag;
                 }
@@ -541,7 +545,7 @@ namespace ServerWater2.APIs
                             return false;
                         }
 
-                        string note = string.Format("Starting work to Order {0} From Worker : {1} ", m_order.code, m_user.user);
+                        string note = string.Format("{0} {1} : {2}", m_user.user, m_order.state!.name, m_order.code);
                         bool flag = await setStateOrder(m_user.ID, m_order.code, 4, note, "", "");
                         return flag;
                     }    
@@ -557,7 +561,7 @@ namespace ServerWater2.APIs
                             return false;
                         }
 
-                        string note = string.Format("Starting work to Order {0} From Worker : {1} ", m_order.code, m_user.user);
+                        string note = string.Format("{0} {1} : {2}", m_user.user, m_order.state!.name, m_order.code);
                         bool flag = await setStateOrder(m_user.ID, m_order.code, 4, note, "", "");
                         return flag;
 
@@ -592,7 +596,7 @@ namespace ServerWater2.APIs
                         return false;
                     }
 
-                    string note = string.Format("Finishing work to Order {0} From Worker : {1} ", m_order.code, m_user.user);
+                    string note = string.Format("{0} {1} : {2}", m_user.user, m_order.state!.name, m_order.code);
                     bool flag = await setStateOrder(m_user.ID, m_order.code, 5, note, "", "");
                     return flag;
                 }
@@ -610,7 +614,7 @@ namespace ServerWater2.APIs
                             return false;
                         }
 
-                        string note = string.Format("Starting work to Order {0} From Worker : {1} ", m_order.code, m_user.user);
+                        string note = string.Format("{0} {1} : {2}", m_user.user, m_order.state!.name, m_order.code);
                         bool flag = await setStateOrder(m_user.ID, m_order.code, 5, note, "", "");
                         return flag;
                     }
@@ -626,7 +630,7 @@ namespace ServerWater2.APIs
                             return false;
                         }
 
-                        string note = string.Format("Starting work to Order {0} From Worker : {1} ", m_order.code, m_user.user);
+                        string note = string.Format("{0} {1} : {2}", m_user.user, m_order.state!.name, m_order.code);
                         bool flag = await setStateOrder(m_user.ID, m_order.code, 5, note, "", "");
                         return flag;
 
@@ -665,7 +669,7 @@ namespace ServerWater2.APIs
                         return false;
                     }
 
-                    string note = string.Format("Finished Order {0} ", m_order.code);
+                    string note = string.Format("{0} : {1} ", m_order.state!.name, m_order.code);
                     bool flag = await setStateOrder(m_user.ID, m_order.code, 6, note, "", "");
                     return flag;
                 }
@@ -687,7 +691,7 @@ namespace ServerWater2.APIs
                             return false;
                         }
 
-                        string note = string.Format("Finished Order {0} ", m_order.code);
+                        string note = string.Format("{0} : {1} ", m_order.state!.name, m_order.code);
                         bool flag = await setStateOrder(m_user.ID, m_order.code, 6, note, "", "");
                         return flag;
                     }
@@ -707,7 +711,7 @@ namespace ServerWater2.APIs
                             return false;
                         }
 
-                        string note = string.Format("Finished Order {0} ", m_order.code);
+                        string note = string.Format("{0} : {1} ", m_order.state!.name, m_order.code);
                         bool flag = await setStateOrder(m_user.ID, m_order.code, 6, note, "", "");
                         return flag;
 
@@ -757,7 +761,7 @@ namespace ServerWater2.APIs
                             return false;
                         }
                     }
-                    string note = string.Format("Cancelled Order {0} ", m_order.code);
+                    string note = string.Format("{0} : {1} ", m_order.state!.name, m_order.code);
                     bool flag = await setStateOrder(m_user.ID, m_order.code, 7, note, "", "");
                     return flag;
 
