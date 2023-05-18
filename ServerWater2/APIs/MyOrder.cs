@@ -38,15 +38,11 @@ namespace ServerWater2.APIs
             }
         }
 
-        public async Task<bool> setStateOrder(long idUser, string code, int state, string note, string latitude, string longitude)
+        public async Task<bool> setStateOrder(long idUser, string code, string note, string latitude, string longitude)
         {
             using (DataContext context = new DataContext())
             {
-                SqlState? m_state = context.states!.Where(s => s.isdeleted == false && s.code == state).FirstOrDefault();
-                if (m_state == null)
-                {
-                    return false;
-                }
+                
                 SqlUser? user = context.users!.Where(s => s.isdeleted == false && s.ID == idUser).FirstOrDefault();
                 if (user == null)
                 {
@@ -59,14 +55,6 @@ namespace ServerWater2.APIs
                 {
                     return false;
                 }
-
-                if(state == 7)
-                {
-                    order.isDelete = true;
-                }
-                
-                order.state = context.states!.Where(s => s.isdeleted == false && s.code == state).FirstOrDefault();
-                order.lastestTime = DateTime.Now.ToUniversalTime();
 
                 SqlLogOrder log = new SqlLogOrder();
                 log.ID = DateTime.Now.Ticks;
@@ -282,11 +270,19 @@ namespace ServerWater2.APIs
                 {
                     return false;
                 }
+
+                SqlState? m_state = context.states!.Where(s => s.isdeleted == false && s.code == 1).FirstOrDefault();
+                if (m_state == null)
+                {
+                    return false;
+                }
+                order.state = m_state;
                 order.receiver = m_user;
+                order.lastestTime = DateTime.Now.ToUniversalTime();
 
                 string note = string.Format("{0} : {1} ", order.state!.name, order.code);
 
-                bool flag = await setStateOrder(m_user.ID, order.code, 1, note, "", "");
+                bool flag = await setStateOrder(m_user.ID, order.code, note, "", "");
                 if (flag)
                 {
                     int rows = await context.SaveChangesAsync();
@@ -343,10 +339,11 @@ namespace ServerWater2.APIs
                 }
 
                 m_order.customer = m_customer;
+                m_order.lastestTime = DateTime.Now.ToUniversalTime();
 
                 string note = string.Format("KH : {0} - MDB : {1} Theo DH : {2}_{3} ", m_customer.name, m_customer.code, m_order.code, m_order.service!.name);
 
-                bool flag = await setStateOrder(user.ID, m_order.code, m_order.state!.code, note, m_customer.latitude, m_customer.longitude);
+                bool flag = await setStateOrder(user.ID, m_order.code, note, m_customer.latitude, m_customer.longitude);
                 if (flag)
                 {
                     int rows = await context.SaveChangesAsync();
@@ -389,10 +386,19 @@ namespace ServerWater2.APIs
                 {
                     return false;
                 }
+
+                SqlState? m_state = context.states!.Where(s => s.isdeleted == false && s.code == 2).FirstOrDefault();
+                if (m_state == null)
+                {
+                    return false;
+                }
+
+                order.state = m_state;
                 order.manager = m_user;
+                order.lastestTime = DateTime.Now.ToUniversalTime();
 
                 string note = string.Format("{0} : {1} -  DH : {1}  ", m_user.user, order.state!.name , order.code);
-                bool flag = await setStateOrder(m_user.ID, order.code, 2, note, "", "");
+                bool flag = await setStateOrder(m_user.ID, order.code, note, "", "");
                 if (flag)
                 {
                     int rows = await context.SaveChangesAsync();
@@ -426,6 +432,12 @@ namespace ServerWater2.APIs
                     return false;
                 }
 
+                SqlState? m_state = context.states!.Where(s => s.isdeleted == false && s.code == 3).FirstOrDefault();
+                if (m_state == null)
+                {
+                    return false;
+                }
+
                 if (m_user.role!.code.CompareTo("admin") == 0 || m_user.role!.code.CompareTo("receiver") == 0)
                 {
                     SqlOrder? order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).Include(s => s.state).FirstOrDefault();
@@ -438,17 +450,20 @@ namespace ServerWater2.APIs
                         return false;
                     }
 
+                    order.state = m_state;
                     order.worker = worker;
+                    order.lastestTime = DateTime.Now.ToUniversalTime();
+
                     string note = "";
                     if(order.manager == null)
-                    {
+                    {                      
                         note = string.Format("{0} : {1} -  DH : {1}  ", m_user.user, order.state!.name, order.code);
-                        bool flag1 =  await setStateOrder(m_user.ID, order.code, 3, note, "", "");
+                        bool flag1 =  await setStateOrder(m_user.ID, order.code, note, "", "");
 
                     }
 
                     note = string.Format("{0} : {1} -  DH : {1}  ", order.state!.name, m_user.user,  order.code);
-                    bool flag = await setStateOrder(m_user.ID, order.code, 3, note, "", "");
+                    bool flag = await setStateOrder(m_user.ID, order.code, note, "", "");
                     if (flag)
                     {
                         int rows = await context.SaveChangesAsync();
@@ -478,10 +493,13 @@ namespace ServerWater2.APIs
                     {
                         return false;
                     }
+
+                    order.state = m_state;
                     order.worker = worker;
+                    order.lastestTime = DateTime.Now.ToUniversalTime();
 
                     string note = string.Format("{0} : {1} -  DH : {1}  ", order.state!.name, m_user.user, order.code);
-                    bool flag = await setStateOrder(m_user.ID, order.code, 3, note, "", "");
+                    bool flag = await setStateOrder(m_user.ID, order.code, note, "", "");
                     if (flag)
                     {
                         int rows = await context.SaveChangesAsync();                       
@@ -515,7 +533,13 @@ namespace ServerWater2.APIs
                     return false;
                 }
 
-                if(m_user.role!.code.CompareTo("admin") == 0 || m_user.role!.code.CompareTo("receiver") == 0)
+                SqlState? m_state = context.states!.Where(s => s.isdeleted == false && s.code == 4).FirstOrDefault();
+                if (m_state == null)
+                {
+                    return false;
+                }
+
+                if (m_user.role!.code.CompareTo("admin") == 0 || m_user.role!.code.CompareTo("receiver") == 0)
                 {
                     SqlOrder? m_order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).Include(s => s.state).FirstOrDefault();
                     if (m_order == null)
@@ -527,8 +551,12 @@ namespace ServerWater2.APIs
                         return false;
                     }
 
+                    m_order.state = m_state;
+                    m_order.lastestTime = DateTime.Now.ToUniversalTime();
+
+
                     string note = string.Format("{0} {1} : {2}", m_user.user, m_order.state!.name, m_order.code);
-                    bool flag = await setStateOrder(m_user.ID, m_order.code, 4, note, "", "");
+                    bool flag = await setStateOrder(m_user.ID, m_order.code, note, "", "");
                     return flag;
                 }
                 else
@@ -544,9 +572,12 @@ namespace ServerWater2.APIs
                         {
                             return false;
                         }
+                        
+                        m_order.state = m_state;
+                        m_order.lastestTime = DateTime.Now.ToUniversalTime();
 
                         string note = string.Format("{0} {1} : {2}", m_user.user, m_order.state!.name, m_order.code);
-                        bool flag = await setStateOrder(m_user.ID, m_order.code, 4, note, "", "");
+                        bool flag = await setStateOrder(m_user.ID, m_order.code, note, "", "");
                         return flag;
                     }    
                     else
@@ -561,8 +592,11 @@ namespace ServerWater2.APIs
                             return false;
                         }
 
+                        m_order.state = m_state;
+                        m_order.lastestTime = DateTime.Now.ToUniversalTime();
+
                         string note = string.Format("{0} {1} : {2}", m_user.user, m_order.state!.name, m_order.code);
-                        bool flag = await setStateOrder(m_user.ID, m_order.code, 4, note, "", "");
+                        bool flag = await setStateOrder(m_user.ID, m_order.code, note, "", "");
                         return flag;
 
                     }    
@@ -584,6 +618,12 @@ namespace ServerWater2.APIs
                     return false;
                 }
 
+                SqlState? m_state = context.states!.Where(s => s.isdeleted == false && s.code == 5).FirstOrDefault();
+                if (m_state == null)
+                {
+                    return false;
+                }
+
                 if (m_user.role!.code.CompareTo("admin") == 0 || m_user.role!.code.CompareTo("receiver") == 0)
                 {
                     SqlOrder? m_order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).FirstOrDefault();
@@ -596,8 +636,11 @@ namespace ServerWater2.APIs
                         return false;
                     }
 
+                    m_order.state = m_state;
+                    m_order.lastestTime = DateTime.Now.ToUniversalTime();
+
                     string note = string.Format("{0} {1} : {2}", m_user.user, m_order.state!.name, m_order.code);
-                    bool flag = await setStateOrder(m_user.ID, m_order.code, 5, note, "", "");
+                    bool flag = await setStateOrder(m_user.ID, m_order.code, note, "", "");
                     return flag;
                 }
                 else
@@ -614,8 +657,11 @@ namespace ServerWater2.APIs
                             return false;
                         }
 
+                        m_order.state = m_state;
+                        m_order.lastestTime = DateTime.Now.ToUniversalTime();
+
                         string note = string.Format("{0} {1} : {2}", m_user.user, m_order.state!.name, m_order.code);
-                        bool flag = await setStateOrder(m_user.ID, m_order.code, 5, note, "", "");
+                        bool flag = await setStateOrder(m_user.ID, m_order.code, note, "", "");
                         return flag;
                     }
                     else
@@ -630,8 +676,11 @@ namespace ServerWater2.APIs
                             return false;
                         }
 
+                        m_order.state = m_state;
+                        m_order.lastestTime = DateTime.Now.ToUniversalTime();
+
                         string note = string.Format("{0} {1} : {2}", m_user.user, m_order.state!.name, m_order.code);
-                        bool flag = await setStateOrder(m_user.ID, m_order.code, 5, note, "", "");
+                        bool flag = await setStateOrder(m_user.ID, m_order.code, note, "", "");
                         return flag;
 
                     }
@@ -653,6 +702,12 @@ namespace ServerWater2.APIs
                     return false;
                 }
 
+                SqlState? m_state = context.states!.Where(s => s.isdeleted == false && s.code == 6).FirstOrDefault();
+                if (m_state == null)
+                {
+                    return false;
+                }
+
                 if (m_user.role!.code.CompareTo("admin") == 0 || m_user.role!.code.CompareTo("receiver") == 0)
                 {
                     SqlOrder? m_order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).FirstOrDefault();
@@ -669,8 +724,12 @@ namespace ServerWater2.APIs
                         return false;
                     }
 
+                    m_order.state = m_state;
+                    m_order.isFinish = true;
+                    m_order.lastestTime = DateTime.Now.ToUniversalTime();
+
                     string note = string.Format("{0} : {1} ", m_order.state!.name, m_order.code);
-                    bool flag = await setStateOrder(m_user.ID, m_order.code, 6, note, "", "");
+                    bool flag = await setStateOrder(m_user.ID, m_order.code, note, "", "");
                     return flag;
                 }
                 else
@@ -691,8 +750,12 @@ namespace ServerWater2.APIs
                             return false;
                         }
 
+                        m_order.state = m_state;
+                        m_order.isFinish = true;
+                        m_order.lastestTime = DateTime.Now.ToUniversalTime();
+
                         string note = string.Format("{0} : {1} ", m_order.state!.name, m_order.code);
-                        bool flag = await setStateOrder(m_user.ID, m_order.code, 6, note, "", "");
+                        bool flag = await setStateOrder(m_user.ID, m_order.code, note, "", "");
                         return flag;
                     }
                     else
@@ -711,8 +774,12 @@ namespace ServerWater2.APIs
                             return false;
                         }
 
+                        m_order.state = m_state;
+                        m_order.isFinish = true;
+                        m_order.lastestTime = DateTime.Now.ToUniversalTime();
+
                         string note = string.Format("{0} : {1} ", m_order.state!.name, m_order.code);
-                        bool flag = await setStateOrder(m_user.ID, m_order.code, 6, note, "", "");
+                        bool flag = await setStateOrder(m_user.ID, m_order.code, note, "", "");
                         return flag;
 
                     }
@@ -730,6 +797,12 @@ namespace ServerWater2.APIs
                                                 .Include(s => s.workerOrders!).ThenInclude(s => s.state)
                                                 .FirstOrDefault();
                 if (m_user == null)
+                {
+                    return false;
+                }
+
+                SqlState? m_state = context.states!.Where(s => s.isdeleted == false && s.code == 7).FirstOrDefault();
+                if (m_state == null)
                 {
                     return false;
                 }
@@ -761,8 +834,13 @@ namespace ServerWater2.APIs
                             return false;
                         }
                     }
+
+                    m_order.isDelete = true;
+                    m_order.state = m_state;
+                    m_order.lastestTime = DateTime.Now.ToUniversalTime();
+
                     string note = string.Format("{0} : {1} ", m_order.state!.name, m_order.code);
-                    bool flag = await setStateOrder(m_user.ID, m_order.code, 7, note, "", "");
+                    bool flag = await setStateOrder(m_user.ID, m_order.code, note, "", "");
                     return flag;
 
                 }
