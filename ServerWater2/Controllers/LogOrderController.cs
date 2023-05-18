@@ -49,8 +49,8 @@ namespace ServerWater2.Controllers
         }
 
         [HttpGet]
-        [Route("getListHistoryForAdmin")]
-        public IActionResult getListHistoryForAdmin([FromHeader] string token, string begin, string end)
+        [Route("{user}/getListHistoryForAdmin")]
+        public IActionResult getListHistoryForAdmin([FromHeader] string token, string begin, string end, string user)
         {
             DateTime time_begin = DateTime.MinValue;
             try
@@ -73,7 +73,7 @@ namespace ServerWater2.Controllers
             long id = Program.api_user.checkAdmin(token);
             if (id >= 0)
             {
-                return Ok(Program.api_log.getListLogOrderForAdmin(token, time_begin, time_end));
+                return Ok(Program.api_log.getListLogOrderForAdmin(token, time_begin, time_end, user));
             }
             else
             {

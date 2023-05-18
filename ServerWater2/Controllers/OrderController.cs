@@ -57,6 +57,13 @@ namespace ServerWater2.Controllers
             public string note { get; set; } = "";
         }
 
+        public class ItemHttpSetAction
+        {
+            public string code { get; set; } = "";
+            public string action { get; set; } = "";
+            public string note { get; set; } = "";
+        }
+
         [HttpPost]
         [Route("createRequestOrder")]
         public async Task<IActionResult> CreateRequestOrderAsync(ItemHttpRequest item)
@@ -75,10 +82,14 @@ namespace ServerWater2.Controllers
         }
 
         [HttpPut]
-        [Route("{code}/setAction")]
-        public async Task<IActionResult> SetAction([FromHeader] string token, string code, string action)
+        [Route("setAction")]
+        public async Task<IActionResult> SetAction([FromHeader] string token,[FromBody] ItemHttpSetAction tmp)
         {
-            bool flag = await Program.api_order.setAction(token, code, action);
+            if(string.IsNullOrEmpty(token) || string.IsNullOrEmpty(tmp.code)  || string.IsNullOrEmpty(tmp.action))
+            {
+                return BadRequest();
+            }
+            bool flag = await Program.api_order.setAction(token, tmp.code, tmp.action, tmp.note);
             if (flag)
             {
                 return Ok();

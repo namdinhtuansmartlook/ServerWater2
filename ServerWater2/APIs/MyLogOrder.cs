@@ -207,8 +207,9 @@ namespace ServerWater2.APIs
         }
         public class ItemHistory
         {
-            public ItemUser user { get; set; } = new ItemUser();
-            public List<ItemHistoryForUser> datas = new List<ItemHistoryForUser>();
+            public string order { get; set; } = "";
+            public string state { get; set; } = "";
+            public List<ItemHistoryForUser> datas { get; set; } = new List<ItemHistoryForUser>();
 
         }
 
@@ -259,7 +260,7 @@ namespace ServerWater2.APIs
             }
 
         }
-        public string getListLogOrder(string token, DateTime begin, DateTime end, string user)
+       /* public string getListLogOrder(string token, DateTime begin, DateTime end, string user)
         {
             if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(user))
             {
@@ -288,6 +289,8 @@ namespace ServerWater2.APIs
                     tmp.action.code = item.action.code;
                     tmp.action.name = item.action.name;
                     tmp.action.des = item.action.code;
+                    tmp.order = item.order.order.code;
+                    tmp.state = item.order.order.state.code.ToString();
 
                     tmp.time = item.time.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
                     tmp.note = item.note;
@@ -305,52 +308,65 @@ namespace ServerWater2.APIs
                 return result;
             }
 
-        }
-        public string getListLogOrderForAdmin(string token, DateTime begin, DateTime end)
+        }*/
+        public string getListLogOrderForAdmin(string token, DateTime begin, DateTime end, string user)
         {
-            if(string.IsNullOrEmpty(token))
+            if(string.IsNullOrEmpty(token) || string.IsNullOrEmpty(user))
             {
                 return "";
             }
             using(DataContext context = new DataContext())
             {
-                SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).FirstOrDefault();
+                SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role).FirstOrDefault();
                 if(m_user == null)
                 {
                     return "";
                 }
 
-                List<ItemLog> datas = getDataRow(begin, end).ToList();
+                SqlUser? tmp_user = context.users!.Where(s => s.isdeleted == false && s.user.CompareTo(user) == 0)
+                                                  .Include(s => s.receiverOrders!).ThenInclude(s => s.state)
+                                                  .Include(s => s.managerOrders!).ThenInclude(s => s.state)
+                                                  .Include(s => s.workerOrders!).ThenInclude(s => s.state)
+                                                  .Include(s => s.role)
+                                                  .FirstOrDefault();
+                if(tmp_user == null)
+                {
+                    return "";
+                }
+                List<SqlOrder> orders = new List<SqlOrder>();
+
+                List<ItemLog> datas = getDataRow(begin, end);
+                if (tmp_user.role!.code.CompareTo("receiver") == 0 || tmp_user.role!.code.CompareTo("admin") == 0)
+                {
+                    orders = tmp_user.receiverOrders!.ToList();
+                }
+                else if(tmp_user.role!.code.CompareTo("manager") == 0)
+                {
+                    orders = tmp_user.managerOrders!.ToList();
+
+                }
+                else if (tmp_user.role!.code.CompareTo("staff") == 0)
+                {
+                    orders = tmp_user.workerOrders!.ToList();
+                }
 
                 if (datas.Count < 1)
                 {
                     return "";
                 }
                 List<ItemHistory> m_datas = new List<ItemHistory>();
-                List<ItemUser> listUsers = new List<ItemUser>();
-
-                foreach (ItemLog item in datas)
+                foreach (SqlOrder order in orders)
                 {
-                    if(item.user.user != "")
+                    ItemHistory tmp = new ItemHistory();
+                    tmp.order = order.code;
+                    tmp.state = order.state!.code.ToString();
+                    List<ItemHistoryForUser>? tmps = JsonConvert.DeserializeObject<List<ItemHistoryForUser>>(getListHistoryOrderForUser(token, begin, end, order.code));
+                    if (tmps != null)
                     {
-                        ItemUser? tmpUser = listUsers.Where(s => s.user.CompareTo(item.user.user) == 0).FirstOrDefault();
-                        if (tmpUser == null)
-                        {
-                            ItemHistory tmp = new ItemHistory();
-                            tmp.user = item.user;
-                            List<ItemHistoryForUser>? tmps = JsonConvert.DeserializeObject<List<ItemHistoryForUser>>(getListLogOrder(token, begin, end, item.user.user));
-                            if (tmps != null)
-                            {
-                                tmp.datas = tmps;
-                            }
-                            listUsers.Add(item.user);
-                            m_datas.Add(tmp);
-                        }
-                        else
-                        {
-                            continue;
-                        }
+                        tmp.datas = tmps;
                     }
+                    m_datas.Add(tmp);
+
                 }
          
                 string result = "";

@@ -90,7 +90,7 @@ namespace ServerWater2.APIs
             }
         }
 
-        public async Task<bool> setAction(string token, string order, string action)
+        public async Task<bool> setAction(string token, string order, string action, string note)
         {
             
             using (DataContext context = new DataContext())
@@ -114,6 +114,10 @@ namespace ServerWater2.APIs
                 }
 
                 m_log.action = m_action;
+                if (!string.IsNullOrEmpty(note))
+                {
+                    m_log.note = note;
+                }
                 m_log.time = DateTime.Now.ToUniversalTime();
                 int rows = await context.SaveChangesAsync();
 
@@ -130,55 +134,30 @@ namespace ServerWater2.APIs
 
                 if (string.IsNullOrEmpty(code))
                 {
-                    m_order = context.orders!.Where(s => s.name.CompareTo(name) == 0 && s.phone.CompareTo(phone) == 0 && s.addressCustomer.CompareTo(addressCustomer) == 0 && s.isDelete == false).Include(s => s.customer).Include(s => s.type).Include(s => s.state).Include(s => s.service).FirstOrDefault();
-                    if (m_order == null)
-                    {
-                        m_order = new SqlOrder();
-                        m_order.ID = DateTime.Now.Ticks;
-                        m_order.code = generatorcode();
-                        m_order.name = name;
-                        m_order.phone = phone;
-                        m_order.addressCustomer = addressCustomer;
-                        m_order.addressWater = addressOrder;
-                        m_order.addressContract = addressContract;
-                        m_order.note = note;
-                        m_order.service = context.services!.Where(s => s.isdeleted == false && s.code.CompareTo(service) == 0).FirstOrDefault();
-                        m_order.type = context.types!.Where(s => s.isdeleted == false && s.code.CompareTo(type) == 0).FirstOrDefault();
-                        m_order.lastestTime = DateTime.Now.ToUniversalTime();
-                        m_order.createdTime = DateTime.Now.ToUniversalTime();
-                        m_order.state = context.states!.Where(s => s.isdeleted == false && s.code == 0).FirstOrDefault();
+                    m_order = new SqlOrder();
+                    m_order.ID = DateTime.Now.Ticks;
+                    m_order.code = generatorcode();
+                    m_order.name = name;
+                    m_order.phone = phone;
+                    m_order.addressCustomer = addressCustomer;
+                    m_order.addressWater = addressOrder;
+                    m_order.addressContract = addressContract;
+                    m_order.note = note;
+                    m_order.service = context.services!.Where(s => s.isdeleted == false && s.code.CompareTo(service) == 0).FirstOrDefault();
+                    m_order.type = context.types!.Where(s => s.isdeleted == false && s.code.CompareTo(type) == 0).FirstOrDefault();
+                    m_order.lastestTime = DateTime.Now.ToUniversalTime();
+                    m_order.createdTime = DateTime.Now.ToUniversalTime();
+                    m_order.state = context.states!.Where(s => s.isdeleted == false && s.code == 0).FirstOrDefault();
 
-                        context.orders!.Add(m_order);
-                        await context.SaveChangesAsync();
+                    context.orders!.Add(m_order);
+                    await context.SaveChangesAsync();
 
-                        SqlLogOrder log = new SqlLogOrder();
-                        log.ID = DateTime.Now.Ticks;
-                        log.order = m_order;
-                        log.time = DateTime.Now.ToUniversalTime();
-                        log.note = "New Order : " + m_order.service!.name;
-                        context.logs!.Add(log);
-
-                    }
-                    else
-                    {
-                        if (m_order.state!.code < 3)
-                        {
-                            m_order.addressWater = addressOrder;
-                            m_order.addressContract = addressContract;
-                            m_order.service = context.services!.Where(s => s.isdeleted == false && s.code.CompareTo(service) == 0).FirstOrDefault();
-                            m_order.type = context.types!.Where(s => s.isdeleted == false && s.code.CompareTo(type) == 0).FirstOrDefault();
-                            if (string.IsNullOrEmpty(note))
-                            {
-                                m_order.note = note;
-                            }
-
-                            m_order.lastestTime = DateTime.Now.ToUniversalTime();
-                        }
-                        else
-                        {
-                            return "";
-                        }
-                    }
+                    SqlLogOrder log = new SqlLogOrder();
+                    log.ID = DateTime.Now.Ticks;
+                    log.order = m_order;
+                    log.time = DateTime.Now.ToUniversalTime();
+                    log.note = "New Order : " + m_order.service!.name;
+                    context.logs!.Add(log);
                 }
                 else 
                 {
@@ -1109,13 +1088,13 @@ namespace ServerWater2.APIs
             public string time { get; set; } = "";
         }
 
-        public ItemLogOrder getFindOrder(string code)
+        public List<ItemLogOrder> getFindOrder(string code)
         {
+            List<ItemLogOrder> list = new List<ItemLogOrder>();
             using (DataContext context = new DataContext())
             {
-                ItemLogOrder m_info = new ItemLogOrder();
 
-                SqlOrder? item = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && (s.code.CompareTo(code) == 0 || s.phone.CompareTo(code) == 0 || s.addressWater.CompareTo(code) == 0))
+                List<SqlOrder>? items = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && (s.code.CompareTo(code) == 0 || s.phone.CompareTo(code) == 0 || s.addressWater.CompareTo(code) == 0))
                                                         .Include(s => s.type)
                                                         .Include(s => s.service)
                                                         .Include(s => s.state)
@@ -1123,107 +1102,111 @@ namespace ServerWater2.APIs
                                                         .Include(s => s.receiver)
                                                         .Include(s => s.manager)
                                                         .Include(s => s.worker)
-                                                        .FirstOrDefault();
-                if (item == null)
+                                                        .ToList();
+                if (items.Count < 1)
                 {
-                    return new ItemLogOrder();
+                    return new List<ItemLogOrder>();
                 }
-
-
-                ItemOrder tmp = new ItemOrder();
-                tmp.code = item.code;
-                tmp.profile.name = item.name;
-                tmp.profile.phone = item.phone;
-                tmp.profile.addressCustomer = item.addressCustomer;
-                tmp.profile.addressWater = item.addressWater;
-                tmp.profile.addressContract = item.addressContract;
-                if (item.customer != null)
+                foreach (SqlOrder item in items)
                 {
-                    ItemCustomer customer = new ItemCustomer();
-                    customer.maDB = item.customer.code;
-                    customer.sdt = item.customer.phone;
-                    customer.tenkh = item.customer.name;
-                    customer.diachi = item.customer.address;
-                    customer.note = item.customer.note;
-                    customer.x = item.customer.latitude;
-                    customer.y = item.customer.longitude;
-                    if (item.customer.images != null)
+                    ItemLogOrder m_info = new ItemLogOrder();
+
+                    ItemOrder tmp = new ItemOrder();
+                    tmp.code = item.code;
+                    tmp.profile.name = item.name;
+                    tmp.profile.phone = item.phone;
+                    tmp.profile.addressCustomer = item.addressCustomer;
+                    tmp.profile.addressWater = item.addressWater;
+                    tmp.profile.addressContract = item.addressContract;
+                    if (item.customer != null)
                     {
-                        customer.images = item.customer.images;
+                        ItemCustomer customer = new ItemCustomer();
+                        customer.maDB = item.customer.code;
+                        customer.sdt = item.customer.phone;
+                        customer.tenkh = item.customer.name;
+                        customer.diachi = item.customer.address;
+                        customer.note = item.customer.note;
+                        customer.x = item.customer.latitude;
+                        customer.y = item.customer.longitude;
+                        if (item.customer.images != null)
+                        {
+                            customer.images = item.customer.images;
+                        }
+
+                        tmp.customer = customer;
+
                     }
 
-                    tmp.customer = customer;
+                    if (item.receiver != null)
+                    {
+                        ItemUser receiver = new ItemUser();
+                        receiver.user = item.receiver.user;
+                        receiver.displayName = item.receiver.displayName;
+                        receiver.numberPhone = item.receiver.phoneNumber;
 
+                        tmp.receiver = receiver;
+                    }
+
+                    if (item.manager != null)
+                    {
+                        ItemUser manager = new ItemUser();
+                        manager.user = item.manager.user;
+                        manager.displayName = item.manager.displayName;
+                        manager.numberPhone = item.manager.phoneNumber;
+
+                        tmp.manager = manager;
+                    }
+
+                    if (item.worker != null)
+                    {
+                        ItemUser worker = new ItemUser();
+                        worker.user = item.worker.user;
+                        worker.displayName = item.worker.displayName;
+                        worker.numberPhone = item.worker.phoneNumber;
+
+                        tmp.worker = worker;
+                    }
+
+                    tmp.note = item.note;
+                    if (item.type != null)
+                    {
+                        ItemType type = new ItemType();
+
+                        type.code = item.type.code;
+                        type.name = item.type.name;
+                        type.des = item.type.des;
+                        tmp.type = type;
+                    }
+
+                    if (item.service != null)
+                    {
+                        ItemService service = new ItemService();
+                        service.code = item.service.code;
+                        service.name = item.service.name;
+                        service.des = item.service.des;
+                        tmp.service = service;
+                    }
+                    if (item.state != null)
+                    {
+                        ItemStateOrder state = new ItemStateOrder();
+                        state.code = item.state.code;
+                        state.name = item.state.name;
+                        state.des = item.state.des;
+                        tmp.state = state;
+                    }
+
+                    tmp.createTime = item.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
+                    tmp.lastestTime = item.lastestTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
+
+                    m_info.order = tmp;
+
+                    m_info.logAction = getLogOrder(item.ID.ToString());
+
+                    m_info.time = item.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
+                    list.Add(m_info);
                 }
 
-                if (item.receiver != null)
-                {
-                    ItemUser receiver = new ItemUser();
-                    receiver.user = item.receiver.user;
-                    receiver.displayName = item.receiver.displayName;
-                    receiver.numberPhone = item.receiver.phoneNumber;
-
-                    tmp.receiver = receiver;
-                }
-
-                if (item.manager != null)
-                {
-                    ItemUser manager = new ItemUser();
-                    manager.user = item.manager.user;
-                    manager.displayName = item.manager.displayName;
-                    manager.numberPhone = item.manager.phoneNumber;
-
-                    tmp.manager = manager;
-                }
-
-                if (item.worker != null)
-                {
-                    ItemUser worker = new ItemUser();
-                    worker.user = item.worker.user;
-                    worker.displayName = item.worker.displayName;
-                    worker.numberPhone = item.worker.phoneNumber;
-
-                    tmp.worker = worker;
-                }
-
-                tmp.note = item.note;
-                if (item.type != null)
-                {
-                    ItemType type = new ItemType();
-
-                    type.code = item.type.code;
-                    type.name = item.type.name;
-                    type.des = item.type.des;
-                    tmp.type = type;
-                }
-
-                if (item.service != null)
-                {
-                    ItemService service = new ItemService();
-                    service.code = item.service.code;
-                    service.name = item.service.name;
-                    service.des = item.service.des;
-                    tmp.service = service;
-                }
-                if (item.state != null)
-                {
-                    ItemStateOrder state = new ItemStateOrder();
-                    state.code = item.state.code;
-                    state.name = item.state.name;
-                    state.des = item.state.des;
-                    tmp.state = state;
-                }
-
-                tmp.createTime = item.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
-                tmp.lastestTime = item.lastestTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
-
-                m_info.order = tmp;
-
-                m_info.logAction = getLogOrder(item.ID.ToString());
-
-                m_info.time = item.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
-
-                return m_info;
+                return list;
             }
         }
 
