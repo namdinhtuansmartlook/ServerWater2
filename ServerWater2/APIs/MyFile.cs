@@ -1,6 +1,8 @@
 ﻿using ServerWater2.Models;
 using Microsoft.EntityFrameworkCore;
 using RestSharp;
+using Newtonsoft.Json;
+using static ServerWater2.Program;
 
 namespace ServerWater2.APIs
 {
@@ -86,6 +88,49 @@ namespace ServerWater2.APIs
             {
                 /*Console.Write(response.StatusCode.ToString());*/
                 return null;
+            }
+        }
+
+        public string getFileConfig()
+        {
+            try
+            {
+                string filePath = string.Format("Configs/configSql.json");
+                string data = File.ReadAllText(filePath);
+                return data;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return "";
+            }
+        }
+
+        public bool createConfig(string m_file)
+        {
+            string path = "./Configs";
+            string fileName = m_file + ".json";
+            try
+            {
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+                string link = Path.Combine(path, fileName);
+                ItemHost tmp = new ItemHost();
+
+                string data = "Host=office.stvg.vn:59066;Database=db_stvg_ServerWater2;Username=postgres;Password=stvg";
+                tmp.host.Add(data);
+
+                //data = "Host=office.stvg.vn:59061;Database=db_stvg_cba;Username=postgres;Password=stvg";
+                //tmp.host.Add(data);
+                string file = JsonConvert.SerializeObject(tmp);
+                File.WriteAllText(link, file);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
             }
         }
     }

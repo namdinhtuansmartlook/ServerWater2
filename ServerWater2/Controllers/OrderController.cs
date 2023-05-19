@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using ServerWater2.APIs;
 using static ServerWater2.APIs.MyCustomer;
 using static ServerWater2.APIs.MyLogOrder;
 using static ServerWater2.APIs.MyOrder;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace ServerWater2.Controllers
 {
@@ -201,14 +203,100 @@ namespace ServerWater2.Controllers
             }
 
         }
+
+        public class ItemHttpJob
+        {
+            public string code { get; set; } = "";
+            public string note { get; set; } = "";
+        }
+
         [HttpPut]
-        [Route("{code}/beginWorkOrder")]
-        public async Task<IActionResult> BeginWorkOrder([FromHeader] string token, string code)
+        [Route("beginWorkOrder")]
+        public async Task<IActionResult> BeginWorkOrder([FromHeader] string token, ItemHttpJob job)
+        {
+            if (string.IsNullOrEmpty(job.code))
+            {
+                return BadRequest();
+            }
+            long id = Program.api_user.checkUser(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_order.beginWorkOrder(token, job.code, job.note);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }
+
+        public class ItemHttpAddmage
+        {
+            public string latitude { get; set; } = "";
+            public string longitude { get; set; } = "";
+            public string note { get; set; } = "";
+            public IFormFile image { get; set; }
+
+        }
+
+        public class ItemHttpRemoveImage
+        {
+            public string image { get; set; } = "";
+            public string latitude { get; set; } = "";
+            public string longitude { get; set; } = "";
+            public string note { get; set; } = "";
+        }
+
+
+        [HttpPut]
+        [Route("{code}/addImageWorkOrder")]
+        public async Task<IActionResult> AddImageWorkOrder([FromHeader] string token, string code,[FromForm] ItemHttpAddmage items )
         {
             long id = Program.api_user.checkUser(token);
             if (id >= 0)
             {
-                bool flag = await Program.api_order.beginWorkOrder(token, code);
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    items.image.CopyTo(ms);
+                    bool flag = await Program.api_order.addImageWorkingAsync(token, code, ms.ToArray(), items.latitude, items.longitude, items.note);
+                    if (flag)
+                    {
+                        return Ok();
+                    }
+                    else
+                    {
+                        return BadRequest();
+                    }
+                }
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }
+
+        [HttpPut]
+        [Route("{code}/removeImageWorkOrder")]
+        public async Task<IActionResult> RemoveImageWorkOrder([FromHeader] string token, string code, ItemHttpRemoveImage items)
+        {
+            if(string.IsNullOrEmpty(items.image))
+            {
+                return BadRequest();
+            }
+            long id = Program.api_user.checkUser(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_order.removeImageWorkingAsync(token, code, items.image, items.latitude, items.longitude, items.note);
                 if (flag)
                 {
                     return Ok();
@@ -227,13 +315,74 @@ namespace ServerWater2.Controllers
         }
 
         [HttpPut]
-        [Route("{code}/finishWorkOrder")]
-        public async Task<IActionResult> FinishWorkOrder([FromHeader] string token, string code)
+        [Route("finishWorkOrder")]
+        public async Task<IActionResult> FinishWorkOrder([FromHeader] string token, ItemHttpJob job)
+        {
+            if(string.IsNullOrEmpty(job.code))
+            {
+                return BadRequest();
+            }
+            long id = Program.api_user.checkUser(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_order.finishWorkOrder(token, job.code, job.note);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }
+
+        [HttpPut]
+        [Route("{code}/addImageFinishOrder")]
+        public async Task<IActionResult> AddImageFinishOrder([FromHeader] string token, string code,[FromForm] ItemHttpAddmage items)
         {
             long id = Program.api_user.checkUser(token);
             if (id >= 0)
             {
-                bool flag = await Program.api_order.finishWorkOrder(token, code);
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    items.image.CopyTo(ms);
+                    bool flag = await Program.api_order.addImageFinishAsync(token, code, ms.ToArray(), items.latitude, items.longitude, items.note);
+                    if (flag)
+                    {
+                        return Ok();
+                    }
+                    else
+                    {
+                        return BadRequest();
+                    }
+                }
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }
+
+        [HttpPut]
+        [Route("{code}/removeImageFinishOrder")]
+        public async Task<IActionResult> RemoveImageFinishOrder([FromHeader] string token, string code, ItemHttpRemoveImage items)
+        {
+            if (string.IsNullOrEmpty(items.image))
+            {
+                return BadRequest();
+            }
+            long id = Program.api_user.checkUser(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_order.removeImageWorkingAsync(token, code, items.image, items.latitude, items.longitude, items.note);
                 if (flag)
                 {
                     return Ok();
@@ -275,6 +424,59 @@ namespace ServerWater2.Controllers
             }
 
         }
+
+        [HttpPut]
+        [Route("{code}/addImageSign")]
+        public async Task<IActionResult> addImageCustomer([FromHeader] string token, string code, IFormFile image)
+        {
+            long id = Program.api_user.checkUser(token);
+            if (id >= 0)
+            {
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    image.CopyTo(ms);
+                    bool flag = await Program.api_order.addImageSignAsync(token, code, ms.ToArray());
+                    if (flag)
+                    {
+                        return Ok();
+
+                    }
+                    else
+                    {
+                        return BadRequest();
+                    }
+                }
+            }
+            else
+            {
+                return Unauthorized();
+            }
+        }
+
+        [HttpDelete]
+        [Route("{maDB}/removeImageSign")]
+        public async Task<IActionResult> removeImageCustomer([FromHeader] string token, string code, string image)
+        {
+            long id = Program.api_user.checkUser(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_order.removeImageSignAsync(token, code, image);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+        }
+
         [HttpDelete]
         [Route("{code}/cancelOrder")]
         public async Task<IActionResult> CancelOrder([FromHeader] string token, string code)

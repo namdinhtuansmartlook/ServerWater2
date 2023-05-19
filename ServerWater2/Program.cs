@@ -4,10 +4,16 @@ using Serilog.Sinks.SystemConsole.Themes;
 using Serilog;
 using ServerWater2.Models;
 using ServerWater2.APIs;
+using Newtonsoft.Json;
 
 namespace ServerWater2;
 public class Program
 {
+    public class ItemHost
+    {
+        public List<string> host { get; set; } = new List<string>();
+    }
+    
     public static MyRole api_role = new MyRole();
     //public static MyPoint api_point = new MyPoint();
     //public static MyArea api_area = new MyArea();
@@ -30,8 +36,36 @@ public class Program
                .WriteTo.File("mylog.txt", rollingInterval: RollingInterval.Day)
                //.WriteTo.Seq("http://log.smartlook.com.vn:8090", apiKey: "FTidLKHRnxm8y7BaUNvX")
                .CreateLogger();
+
         try
         {
+            string path = "./Configs";
+            string link = Path.Combine(path, "configSql.json");
+
+            if (!File.Exists(link))
+            {
+                bool flag = Program.api_file.createConfig("configSql");
+                if (!flag)
+                {
+                    while (true)
+                    {
+                        Thread.Sleep(1000);
+                        Console.WriteLine("DB null !!! ");
+                    }
+                }
+            }
+
+            string file = Program.api_file.getFileConfig();
+
+            ItemHost? tmp = JsonConvert.DeserializeObject<ItemHost>(file);
+            if (tmp != null)
+            {
+                if (tmp.host.Count > 0)
+                {
+                    DataContext.configSql = tmp.host[0];
+                }
+            }
+
             var builder = WebApplication.CreateBuilder(args);
             builder.WebHost.ConfigureKestrel((context, option) =>
             {
@@ -52,11 +86,12 @@ public class Program
                 });
             });
             builder.Services.AddDbContext<DataContext>(options => options.UseNpgsql(DataContext.configSql));
-           // builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+            // builder.Services.AddDatabaseDeveloperPageExceptionFilter();
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
 
             var app = builder.Build();
 
@@ -96,6 +131,7 @@ public class Program
         {
             Log.Error(ex.ToString());
         }
+
         Log.CloseAndFlush();
     }
 }
