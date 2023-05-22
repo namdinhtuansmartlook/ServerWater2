@@ -207,6 +207,8 @@ namespace ServerWater2.Controllers
         public class ItemHttpJob
         {
             public string code { get; set; } = "";
+            public string latitude { get; set; } = "";
+            public string longitude { get; set; } = "";
             public string note { get; set; } = "";
         }
 
@@ -221,7 +223,7 @@ namespace ServerWater2.Controllers
             long id = Program.api_user.checkUser(token);
             if (id >= 0)
             {
-                bool flag = await Program.api_order.beginWorkOrder(token, job.code, job.note);
+                bool flag = await Program.api_order.beginWorkOrder(token, job.code, job.latitude, job.longitude, job.note);
                 if (flag)
                 {
                     return Ok();
@@ -239,38 +241,38 @@ namespace ServerWater2.Controllers
 
         }
 
-        public class ItemHttpAddmage
-        {
-            public string latitude { get; set; } = "";
-            public string longitude { get; set; } = "";
-            public string note { get; set; } = "";
-            public IFormFile image { get; set; }
+        //public class ItemHttpAddmage
+        //{
+        //    public string latitude { get; set; } = "";
+        //    public string longitude { get; set; } = "";
+        //    public string note { get; set; } = "";
+        //    public IFormFile image { get; set; }
 
-        }
+        //}
 
-        public class ItemHttpRemoveImage
-        {
-            public string image { get; set; } = "";
-            public string latitude { get; set; } = "";
-            public string longitude { get; set; } = "";
-            public string note { get; set; } = "";
-        }
+        //public class ItemHttpRemoveImage
+        //{
+        //    public string image { get; set; } = "";
+        //    public string latitude { get; set; } = "";
+        //    public string longitude { get; set; } = "";
+        //    public string note { get; set; } = "";
+        //}
 
 
         [HttpPut]
         [Route("{code}/addImageWorkOrder")]
-        public async Task<IActionResult> AddImageWorkOrder([FromHeader] string token, string code,[FromForm] ItemHttpAddmage items )
+        public async Task<IActionResult> AddImageWorkOrder([FromHeader] string token, string code, IFormFile image )
         {
             long id = Program.api_user.checkUser(token);
             if (id >= 0)
             {
                 using (MemoryStream ms = new MemoryStream())
                 {
-                    items.image.CopyTo(ms);
-                    bool flag = await Program.api_order.addImageWorkingAsync(token, code, ms.ToArray(), items.latitude, items.longitude, items.note);
-                    if (flag)
+                    image.CopyTo(ms);
+                    string tmp = await Program.api_order.addImageWorkingAsync(token, code, ms.ToArray());
+                    if (!string.IsNullOrEmpty(tmp))
                     {
-                        return Ok();
+                        return Ok(tmp);
                     }
                     else
                     {
@@ -285,18 +287,14 @@ namespace ServerWater2.Controllers
 
         }
 
-        [HttpPut]
+        [HttpDelete]
         [Route("{code}/removeImageWorkOrder")]
-        public async Task<IActionResult> RemoveImageWorkOrder([FromHeader] string token, string code, ItemHttpRemoveImage items)
+        public async Task<IActionResult> RemoveImageWorkOrder([FromHeader] string token, string code, string image)
         {
-            if(string.IsNullOrEmpty(items.image))
-            {
-                return BadRequest();
-            }
             long id = Program.api_user.checkUser(token);
             if (id >= 0)
             {
-                bool flag = await Program.api_order.removeImageWorkingAsync(token, code, items.image, items.latitude, items.longitude, items.note);
+                bool flag = await Program.api_order.removeImageWorkingAsync(token, code, image);
                 if (flag)
                 {
                     return Ok();
@@ -345,18 +343,18 @@ namespace ServerWater2.Controllers
 
         [HttpPut]
         [Route("{code}/addImageFinishOrder")]
-        public async Task<IActionResult> AddImageFinishOrder([FromHeader] string token, string code,[FromForm] ItemHttpAddmage items)
+        public async Task<IActionResult> AddImageFinishOrder([FromHeader] string token, string code, IFormFile image)
         {
             long id = Program.api_user.checkUser(token);
             if (id >= 0)
             {
                 using (MemoryStream ms = new MemoryStream())
                 {
-                    items.image.CopyTo(ms);
-                    bool flag = await Program.api_order.addImageFinishAsync(token, code, ms.ToArray(), items.latitude, items.longitude, items.note);
-                    if (flag)
+                    image.CopyTo(ms);
+                    string tmp = await Program.api_order.addImageFinishAsync(token, code, ms.ToArray());
+                    if (!string.IsNullOrEmpty(tmp))
                     {
-                        return Ok();
+                        return Ok(tmp);
                     }
                     else
                     {
@@ -371,18 +369,14 @@ namespace ServerWater2.Controllers
 
         }
 
-        [HttpPut]
+        [HttpDelete]
         [Route("{code}/removeImageFinishOrder")]
-        public async Task<IActionResult> RemoveImageFinishOrder([FromHeader] string token, string code, ItemHttpRemoveImage items)
+        public async Task<IActionResult> RemoveImageFinishOrder([FromHeader] string token, string code, string image)
         {
-            if (string.IsNullOrEmpty(items.image))
-            {
-                return BadRequest();
-            }
             long id = Program.api_user.checkUser(token);
             if (id >= 0)
             {
-                bool flag = await Program.api_order.removeImageWorkingAsync(token, code, items.image, items.latitude, items.longitude, items.note);
+                bool flag = await Program.api_order.removeImageWorkingAsync(token, code, image);
                 if (flag)
                 {
                     return Ok();
@@ -435,10 +429,10 @@ namespace ServerWater2.Controllers
                 using (MemoryStream ms = new MemoryStream())
                 {
                     image.CopyTo(ms);
-                    bool flag = await Program.api_order.addImageSignAsync(token, code, ms.ToArray());
-                    if (flag)
+                    string tmp = await Program.api_order.addImageSignAsync(token, code, ms.ToArray());
+                    if (!string.IsNullOrEmpty(tmp))
                     {
-                        return Ok();
+                        return Ok(tmp);
 
                     }
                     else
@@ -454,7 +448,7 @@ namespace ServerWater2.Controllers
         }
 
         [HttpDelete]
-        [Route("{maDB}/removeImageSign")]
+        [Route("{code}/removeImageSign")]
         public async Task<IActionResult> removeImageCustomer([FromHeader] string token, string code, string image)
         {
             long id = Program.api_user.checkUser(token);
