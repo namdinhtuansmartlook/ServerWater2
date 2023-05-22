@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
+using static ServerWater2.Program;
 
 namespace ServerWater2.Controllers
 {
@@ -25,18 +26,39 @@ namespace ServerWater2.Controllers
                 Response.Headers.Add("Cache-Control", "no-cache");
                 Response.Headers.Add("Connection", "keep-alive");
 
-                long ID = Program.api_user.checkUser(token);
-
-                if (ID < 0)
+                if(state.CompareTo("0") == 0)
                 {
-                    return;
-                }
+                    long ID = Program.api_user.checkAdmin(token);
+
+                    if (ID < 0)
+                    {
+                        return;
+                    }
+                }    
+                else if(state.CompareTo("1") == 0)
+                {
+                    long ID = Program.api_user.checkSystem(token);
+
+                    if (ID < 0)
+                    {
+                        return;
+                    }
+                }   
+                else
+                {
+                    long ID = Program.api_user.checkUser(token);
+
+                    if (ID < 0)
+                    {
+                        return;
+                    }
+                }    
+                
 
                 string id = DateTime.Now.Ticks.ToString();
                 Program.HttpNotification httpNotification = new Program.HttpNotification();
                 httpNotification.id = id;
-                httpNotification.state = state;
-                httpNotification.messagers = new List<string>();
+                httpNotification.datas = Program.dataNotifications.Where(s => s.state.CompareTo(state) == 0).ToList();
                 Program.httpNotifications.Add(httpNotification);
 
                 while (true)
@@ -47,20 +69,28 @@ namespace ServerWater2.Controllers
                     {
                         break;
                     }
-                    List<string> list = notification.messagers.ToList();
-                    notification.messagers.Clear();
-                    if (list.Count == 0)
+                    if(notification.datas.Count < 1)
+                    {
+                        break;
+                    }    
+                    if (notification.datas.Count == 0)
                     {
                         string msg = string.Format("data: {0}\r\r", DateTime.Now);
                         await Response.WriteAsync(msg);
                         await Response.Body.FlushAsync();
                     }
-                    foreach (string s in list)
+                    foreach (DataNotification s in notification.datas)
                     {
-                        Log.Information(s);
-                        await Response.WriteAsync(string.Format("data: {0}\r\r", s));
-                        await Response.Body.FlushAsync();
-                        await Task.Delay(100);
+                        if(s.messagers.Count > 0)
+                        {
+                            foreach (string m in s.messagers)
+                            {
+                                Log.Information(s.state + ":" + m);
+                                await Response.WriteAsync(string.Format("data: {0}\r\r", m));
+                                await Response.Body.FlushAsync();
+                                await Task.Delay(100);
+                            }
+                        }    
                     }
                     if (cancellationToken.IsCancellationRequested)
                     {

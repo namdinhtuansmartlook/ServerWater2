@@ -193,13 +193,13 @@ namespace ServerWater2.Controllers
                 return Unauthorized();
             }
         }
-/*
+
         [HttpGet]
         [Route("getInfoUser")]
         public IActionResult getInfoUser([FromHeader] string token)
         {
             return Ok(Program.api_user.getInfoUser(token));
-        }*/
-        
+        }
+
     }
 }

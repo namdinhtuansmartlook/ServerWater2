@@ -466,7 +466,7 @@ namespace ServerWater2.APIs
         }
 
 
-       /* public class infoUser
+        public class infoUser
         {
             public string user { get; set; } = "";
             public string username { get; set; } = "";
@@ -500,8 +500,5 @@ namespace ServerWater2.APIs
 
             return temp;
         }
-*/
-       
-
     }
 }

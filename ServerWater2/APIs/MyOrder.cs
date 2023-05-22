@@ -15,14 +15,64 @@ using System.Collections.Generic;
 using Serilog;
 using static ServerWater2.Program;
 using static Azure.Core.HttpHeader;
+using static ServerWater2.APIs.MyOrder;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace ServerWater2.APIs  
 {
 
     public class MyOrder
     {
+        public class CacheListOrder
+        { 
+            public long id { get; set; } = 0;
+            public DateTime begin { get; set; }
+            public DateTime end { get; set; }
+            public List<ItemInfoOrder> datas { get; set; } = new List<ItemInfoOrder>();
+            public DateTime create { get; set; }
+        }
+        public List<CacheListOrder> cacheListOrder = new List<CacheListOrder>();
+
         public MyOrder()
         {
+            Thread t = new Thread(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1000);
+                    for (int i = 0; i < cacheListOrder.Count; i++)
+                    {
+                        TimeSpan time = DateTime.Now.Subtract(cacheListOrder[i].create);
+                        if (time.Minutes > 5.0)
+                        {
+                            cacheListOrder.RemoveAt(i);
+                            i--;
+                        }
+                    }
+
+                    //Thread.Sleep(1000);
+                    //for (int i = 0; i < cacheListAllPersons.Count; i++)
+                    //{
+                    //    TimeSpan time = DateTime.Now.Subtract(cacheListAllPersons[i].create);
+                    //    if (time.Minutes > 5.0)
+                    //    {
+                    //        cacheListAllPersons.RemoveAt(i);
+                    //        i--;
+                    //    }
+                    //}
+                    //Thread.Sleep(1000);
+                    //for (int i = 0; i < cacheExcels.Count; i++)
+                    //{
+                    //    TimeSpan time = DateTime.Now.Subtract(cacheExcels[i].create);
+                    //    if (time.Minutes > 5.0)
+                    //    {
+                    //        cacheExcels.RemoveAt(i);
+                    //        i--;
+                    //    }
+                    //}
+                }
+            });
+            t.Start();
         }
         public string generatorcode()
         {
@@ -61,11 +111,11 @@ namespace ServerWater2.APIs
                 SqlLogOrder log = new SqlLogOrder();
                 log.ID = DateTime.Now.Ticks;
                 log.order = order;
-                log.note = note;
-                log.time = order.lastestTime;
                 log.user = user;
                 log.latitude = latitude;
                 log.longitude = longitude;
+                log.note = note;
+                log.time = DateTime.Now.ToUniversalTime();
                 context.logs!.Add(log);
 
                 int rows = await context.SaveChangesAsync();
@@ -189,10 +239,10 @@ namespace ServerWater2.APIs
                 itemNotify.state = m_order.state.code.ToString();
                 itemNotify.time = m_order.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
 
-                List<HttpNotification> notifications = Program.httpNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0).ToList();
-                foreach (HttpNotification notification in notifications)
+                List<DataNotification> datas = Program.dataNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0).ToList();
+                foreach (DataNotification m_data in datas)
                 {
-                    notification.messagers.Add(JsonConvert.SerializeObject(itemNotify));
+                    m_data.messagers.Add(JsonConvert.SerializeObject(itemNotify));
                 }
 
 
@@ -336,10 +386,10 @@ namespace ServerWater2.APIs
                 itemNotify.state = order.state.code.ToString();
                 itemNotify.time = order.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
 
-                List<HttpNotification> notifications = Program.httpNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0).ToList();
-                foreach (HttpNotification notification in notifications)
+                List<DataNotification> datas = Program.dataNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0).ToList();
+                foreach (DataNotification m_data in datas)
                 {
-                    notification.messagers.Add(JsonConvert.SerializeObject(itemNotify));
+                    m_data.messagers.Add(JsonConvert.SerializeObject(itemNotify));
                 }
 
 
@@ -523,10 +573,10 @@ namespace ServerWater2.APIs
                     itemNotify.state = order.state.code.ToString();
                     itemNotify.time = order.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
 
-                    List<HttpNotification> notifications = Program.httpNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0).ToList();
-                    foreach (HttpNotification notification in notifications)
+                    List<DataNotification> datas = Program.dataNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0).ToList();
+                    foreach (DataNotification m_data in datas)
                     {
-                        notification.messagers.Add(JsonConvert.SerializeObject(itemNotify));
+                        m_data.messagers.Add(JsonConvert.SerializeObject(itemNotify));
                     }
 
                     string note = "";
@@ -1292,6 +1342,50 @@ namespace ServerWater2.APIs
             return info;
         }
 
+        public List<ItemOrderRequest> getOrderLogs(string code)
+        {
+            if (string.IsNullOrEmpty(code))
+            {
+                return new List<ItemOrderRequest>();
+            }
+
+            List<ItemOrderRequest> infos = new List<ItemOrderRequest>();
+            long id = long.Parse(code);
+            if (id > 0)
+            {
+
+                List<ItemLog> logs = Program.api_log.getListLog();
+                if (logs.Count > 0)
+                {
+                    List<ItemLog>? mLogs = logs.Where(s => s.order.id == id).OrderByDescending(s => s.time).ToList();
+                    if(mLogs.Count > 0)
+                    {
+                        foreach(ItemLog m_log in mLogs)
+                        {
+                            ItemOrderRequest info = new ItemOrderRequest();
+                            info.user.user = m_log.user.user;
+                            info.user.displayName = m_log.user.displayName;
+                            info.user.numberPhone = m_log.user.numberPhone;
+
+                            info.action.code = m_log.action.code;
+                            info.action.name = m_log.action.name;
+                            info.action.des = m_log.action.des;
+
+                            info.longitude = m_log.longitude;
+                            info.latitude = m_log.latitude;
+                            info.note = m_log.note;
+                            info.time = m_log.time.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
+
+                            infos.Add(info);
+                        }
+                    }
+                    
+
+                }
+            }
+            return infos;
+        }
+
 
         public class ItemProfile
         {
@@ -1314,7 +1408,7 @@ namespace ServerWater2.APIs
             public ItemType type { get; set; } = new ItemType();
             public ItemService service { get; set; } = new ItemService();
             public ItemStateOrder state { get; set; } = new ItemStateOrder();
-            public ItemOrderRequest logAction { get; set; } = new ItemOrderRequest();
+            public List<ItemOrderRequest> logActions { get; set; } = new List<ItemOrderRequest>();
             public DateTime createTime { get; set; } 
             public DateTime lastestTime { get; set; }
 
@@ -1326,6 +1420,7 @@ namespace ServerWater2.APIs
             DateTime m_end = new DateTime(end.Year, end.Month, end.Day, 23, 59, 59);
 
             List<ItemInfoOrder> list = new List<ItemInfoOrder>();
+
             using (DataContext context = new DataContext())
             {
                 SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role)
@@ -1351,11 +1446,11 @@ namespace ServerWater2.APIs
                                                        .Include(s => s.state)
                                                        .OrderByDescending(s => s.createdTime)
                                                        .ToList();
-                if(orders.Count < 1)
+                if (orders.Count < 1)
                 {
                     return new List<ItemInfoOrder>();
-                }    
-
+                }
+                //Console.WriteLine("Version : 22-05-2023");
                 List<SqlOrder> mOrders = new List<SqlOrder>();
                 if (m_user.role!.code.CompareTo("staff") == 0)
                 {
@@ -1378,7 +1473,7 @@ namespace ServerWater2.APIs
                         mOrders = orders;
                     }
                 }
-                
+
                 /*  if (Program.api_user.checkSurvey(token) == 0)
                   {
                       m_order = orders.Where(s => s.state!.code != 0 && (s.service!.code.CompareTo("SC") == 0 || s.service!.code.CompareTo("TT") == 0)).ToList();
@@ -1395,7 +1490,7 @@ namespace ServerWater2.APIs
                 foreach (SqlOrder item in mOrders)
                 {
                     ItemInfoOrder tmp = new ItemInfoOrder();
-                    
+
                     tmp.code = item.code;
                     tmp.profile.name = item.name;
                     tmp.profile.phone = item.phone;
@@ -1414,7 +1509,7 @@ namespace ServerWater2.APIs
                             customer.note = item.customer.note;
                             customer.x = item.customer.latitude;
                             customer.y = item.customer.longitude;
-                            if(item.customer.images != null)
+                            if (item.customer.images != null)
                             {
                                 customer.images = item.customer.images;
                             }
@@ -1482,15 +1577,17 @@ namespace ServerWater2.APIs
                         tmp.state = state;
                     }
 
-                    tmp.logAction = getLogOrder(item.ID.ToString());
-
+                    //ItemOrderRequest m_log = getLogOrder(item.ID.ToString());
+                    //tmp.logActions.Add(m_log);
+                    tmp.logActions = getOrderLogs(item.ID.ToString());
                     tmp.createTime = item.createdTime;
                     tmp.lastestTime = item.lastestTime;
 
                     list.Add(tmp);
                 }
-            }
-            return list;
+                return list;
+            }    
+            
         }
 
         public class ItemOrder

@@ -5,6 +5,7 @@ using Serilog;
 using ServerWater2.Models;
 using ServerWater2.APIs;
 using Newtonsoft.Json;
+using System.Runtime.InteropServices;
 
 namespace ServerWater2;
 public class Program
@@ -14,12 +15,19 @@ public class Program
         public List<string> host { get; set; } = new List<string>();
     }
     
-    public class HttpNotification
+    public class DataNotification
     {
-        public string id { get; set; } = "";
         public string state { get; set; } = "";
         public List<string> messagers { get; set; } = new List<string>();
     }
+
+    public class HttpNotification
+    {
+        public string id { get; set; } = "";
+        public List<DataNotification> datas { get; set; } = new List<DataNotification>();
+
+    }
+
     public static MyRole api_role = new MyRole();
     //public static MyPoint api_point = new MyPoint();
     //public static MyArea api_area = new MyArea();
@@ -32,6 +40,7 @@ public class Program
     public static MyAction api_action = new MyAction();
     public static MyLogOrder api_log = new MyLogOrder();
     public static List<HttpNotification> httpNotifications = new List<HttpNotification>();
+    public static List<DataNotification> dataNotifications = new List<DataNotification>();
 
 
     public static MyCustomer api_customer = new MyCustomer();
@@ -125,7 +134,7 @@ public class Program
 
 
             app.MapControllers();
-            app.MapGet("/", () => string.Format("ServerWater2 of STVG - {0}", DateTime.Now));
+            app.MapGet("/", () => string.Format("ServerWater2 of STVG - Version 1 : {0}", DateTime.Now));
             await api_role.initAsync();
             await api_user.initAsync();
             await api_service.initAsync();

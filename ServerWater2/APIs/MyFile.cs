@@ -3,6 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using RestSharp;
 using Newtonsoft.Json;
 using static ServerWater2.Program;
+using System.IO;
+using System.Runtime.InteropServices;
+using Serilog;
 
 namespace ServerWater2.APIs
 {
@@ -23,14 +26,33 @@ namespace ServerWater2.APIs
             using (DataContext context = new DataContext())
             {
                 string code = createKey(file);
-                string link_file = "Data/" + code + ".file";
+                string path = "./Data";
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+
+                string code_file = code + ".file";
+                string link_file = "";
+                
                 try
                 {
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        link_file = Path.Combine(path, code_file);
+                    }
+                    else
+                    {
+                        link_file = path + "/" + code_file;
+                        //Console.WriteLine("Save file on Linux !!!");
+                    }
+
                     await File.WriteAllBytesAsync(link_file, data);
                 }
                 catch (Exception ex)
                 {
                     code = "";
+                    Log.Error(ex.ToString());
                 }
                 if (string.IsNullOrEmpty(code))
                 {
