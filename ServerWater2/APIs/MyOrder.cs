@@ -239,10 +239,18 @@ namespace ServerWater2.APIs
                 itemNotify.state = m_order.state.code.ToString();
                 itemNotify.time = m_order.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
 
-                List<DataNotification> datas = Program.dataNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0).ToList();
-                foreach (DataNotification m_data in datas)
+                DataNotification? data = Program.dataNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0 && s.isRequest == false).FirstOrDefault();
+                if(data == null)
                 {
-                    m_data.messagers.Add(JsonConvert.SerializeObject(itemNotify));
+                    data = new DataNotification();
+                    data.state = itemNotify.state;
+                    data.isRequest = false;
+                    data.messagers.Add(JsonConvert.SerializeObject(itemNotify));
+                    Program.dataNotifications.Add(data);
+                }
+                else
+                {
+                    data.messagers.Add(JsonConvert.SerializeObject(itemNotify));
                 }
 
 

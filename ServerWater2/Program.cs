@@ -18,12 +18,19 @@ public class Program
     public class DataNotification
     {
         public string state { get; set; } = "";
+        public bool isRequest { get; set; } = false;
+        public List<string> messagers { get; set; } = new List<string>();
+    }
+
+    public class ItemDataNotification
+    {
         public List<string> messagers { get; set; } = new List<string>();
     }
 
     public class HttpNotification
     {
         public string id { get; set; } = "";
+        public string state { get; set; } = "";
         public List<DataNotification> datas { get; set; } = new List<DataNotification>();
 
     }

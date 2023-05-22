@@ -52,13 +52,13 @@ namespace ServerWater2.Controllers
                     {
                         return;
                     }
-                }    
-                
+                }                   
 
                 string id = DateTime.Now.Ticks.ToString();
                 Program.HttpNotification httpNotification = new Program.HttpNotification();
                 httpNotification.id = id;
-                httpNotification.datas = Program.dataNotifications.Where(s => s.state.CompareTo(state) == 0).ToList();
+                httpNotification.state = state;
+               // httpNotification.isRequest = false;
                 Program.httpNotifications.Add(httpNotification);
 
                 while (true)
@@ -69,10 +69,9 @@ namespace ServerWater2.Controllers
                     {
                         break;
                     }
-                    if(notification.datas.Count < 1)
-                    {
-                        break;
-                    }    
+                    notification.datas = Program.dataNotifications.Where(s => s.state.CompareTo(notification.state) == 0 && s.isRequest == false).ToList();
+
+                    
                     if (notification.datas.Count == 0)
                     {
                         string msg = string.Format("data: {0}\r\r", DateTime.Now);
@@ -83,14 +82,25 @@ namespace ServerWater2.Controllers
                     {
                         if(s.messagers.Count > 0)
                         {
-                            foreach (string m in s.messagers)
+                            for (int i = 0; i < s.messagers.Count; i++)
                             {
-                                Log.Information(s.state + ":" + m);
-                                await Response.WriteAsync(string.Format("data: {0}\r\r", m));
+                                Log.Information(s.state +":" + s.messagers[i]);
+                                await Response.WriteAsync(string.Format("data: {0}\r\r", s.messagers[i]));
                                 await Response.Body.FlushAsync();
                                 await Task.Delay(100);
+                                s.messagers.RemoveAt(0);
+                                i--;
+                                s.isRequest = true;
                             }
-                        }    
+                          
+                        }
+                        else
+                        {
+                            string msg = string.Format("data: {0}\r\r", DateTime.Now);
+                            await Response.WriteAsync(msg);
+                            await Response.Body.FlushAsync();
+                        }
+                       
                     }
                     if (cancellationToken.IsCancellationRequested)
                     {

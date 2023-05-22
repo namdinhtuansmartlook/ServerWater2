@@ -126,11 +126,11 @@ namespace ServerWater2.APIs
                 {
                     return -1;
                 }
-                if (user.role!.code.CompareTo("admin") != 0 )
+                if (user.role!.code.CompareTo("admin") == 0 || user.role!.code.CompareTo("receiver") == 0)
                 {
-                    return -1;
+                    return user.ID;
                 }
-                return user.ID;
+                return -1;
             }
         }
         
