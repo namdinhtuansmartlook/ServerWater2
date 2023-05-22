@@ -14,6 +14,12 @@ public class Program
         public List<string> host { get; set; } = new List<string>();
     }
     
+    public class HttpNotification
+    {
+        public string id { get; set; } = "";
+        public string state { get; set; } = "";
+        public List<string> messagers { get; set; } = new List<string>();
+    }
     public static MyRole api_role = new MyRole();
     //public static MyPoint api_point = new MyPoint();
     //public static MyArea api_area = new MyArea();
@@ -25,7 +31,9 @@ public class Program
     public static MyService api_service = new MyService();
     public static MyAction api_action = new MyAction();
     public static MyLogOrder api_log = new MyLogOrder();
-    
+    public static List<HttpNotification> httpNotifications = new List<HttpNotification>();
+
+
     public static MyCustomer api_customer = new MyCustomer();
 
     public static async Task Main(string[] args)

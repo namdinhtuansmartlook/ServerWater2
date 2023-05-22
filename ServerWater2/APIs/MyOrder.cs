@@ -13,6 +13,7 @@ using System;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using Serilog;
+using static ServerWater2.Program;
 using static Azure.Core.HttpHeader;
 
 namespace ServerWater2.APIs  
@@ -114,6 +115,12 @@ namespace ServerWater2.APIs
             }
         }
 
+        public class ItemNotifyOrder {
+            public string note { get; set; } = "";
+            public string state { get; set; } = "";
+            public string time { get; set; } = "";
+        }
+
 
         public async Task<string> createUpdateOrderAsync(string code, string name, string customer, string phone, string addressCustomer, string addressOrder, string addressContract, string service, string type, string note)
         {
@@ -177,6 +184,18 @@ namespace ServerWater2.APIs
                     log.note = String.Format("{0}_{1} : {2}", m_order.code, m_order.service!.name, m_order.state!.name);
                     context.logs!.Add(log);
                 }
+                ItemNotifyOrder itemNotify = new ItemNotifyOrder();
+                itemNotify.note = String.Format("{0}_{1}", m_order.code, m_order.service!.name);
+                itemNotify.state = m_order.state.code.ToString();
+                itemNotify.time = m_order.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
+
+                List<HttpNotification> notifications = Program.httpNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0).ToList();
+                foreach (HttpNotification notification in notifications)
+                {
+                    notification.messagers.Add(JsonConvert.SerializeObject(itemNotify));
+                }
+
+
                 int rows = await context.SaveChangesAsync();
                 if (rows > 0)
                 {
@@ -221,6 +240,37 @@ namespace ServerWater2.APIs
             }
         }
 
+        public async Task<bool> testOrder(string user,string code, int state)
+        {
+            using(DataContext context = new DataContext())
+            {
+                SqlOrder? order = context.orders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).Include(s => s.state).Include(s => s.service).Include(s => s.type).Include(s => s.worker).FirstOrDefault();
+                if(order == null)
+                {
+                    return false;
+                }
+                SqlUser? muser = context.users!.Where(s => s.isdeleted == false && s.user.CompareTo(user) == 0).FirstOrDefault();
+                if(muser == null)
+                {
+                    return false;
+                }
+
+                if(state == 0)
+                {
+                    string tmp = await createNewOrder(order.name, order.phone, order.addressCustomer, order.addressWater, order.addressContract, order.service!.code, order.type!.code, order.note);
+                }
+                if(state == 1)
+                {
+                    bool check = await confirmOrder(muser.token, code);
+                }
+                if (state == 3)
+                {
+                    bool check = await setAssginOrder(muser.token, code, "staff");
+                }
+                return true;
+            }
+        }
+
         public async Task<string> createRequestOrder(string code, string name, string phone, string customer, string addressCustomer, string addressContract, string service, string note)
         {
             if (string.IsNullOrEmpty(code) || string.IsNullOrEmpty(name) || string.IsNullOrEmpty(addressCustomer) || string.IsNullOrEmpty(service))
@@ -262,7 +312,7 @@ namespace ServerWater2.APIs
                     return false;
                 }    
 
-                SqlOrder? order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).Include(s => s.state).FirstOrDefault();
+                SqlOrder? order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).Include(s => s.state).Include(s => s.service).FirstOrDefault();
                 if(order == null)
                 {
                     return false;
@@ -281,9 +331,22 @@ namespace ServerWater2.APIs
                 order.receiver = m_user;
                 order.lastestTime = DateTime.Now.ToUniversalTime();
 
+                ItemNotifyOrder itemNotify = new ItemNotifyOrder();
+                itemNotify.note = String.Format("{0}_{1}", order.code, order.service!.name);
+                itemNotify.state = order.state.code.ToString();
+                itemNotify.time = order.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
+
+                List<HttpNotification> notifications = Program.httpNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0).ToList();
+                foreach (HttpNotification notification in notifications)
+                {
+                    notification.messagers.Add(JsonConvert.SerializeObject(itemNotify));
+                }
+
+
                 string note = string.Format("{0} : {1} ", order.state!.name, order.code);
 
                 bool flag = await setStateOrder(m_user.ID, order.code, note, "", "");
+
                 if (flag)
                 {
                     int rows = await context.SaveChangesAsync();
@@ -441,7 +504,7 @@ namespace ServerWater2.APIs
 
                 if (m_user.role!.code.CompareTo("admin") == 0 || m_user.role!.code.CompareTo("receiver") == 0)
                 {
-                    SqlOrder? order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).Include(s => s.state).FirstOrDefault();
+                    SqlOrder? order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).Include(s => s.state).Include(s => s.service).FirstOrDefault();
                     if (order == null)
                     {
                         return false;
@@ -454,6 +517,17 @@ namespace ServerWater2.APIs
                     order.state = m_state;
                     order.worker = worker;
                     order.lastestTime = DateTime.Now.ToUniversalTime();
+
+                    ItemNotifyOrder itemNotify = new ItemNotifyOrder();
+                    itemNotify.note = String.Format("{0}_{1}", order.code, order.service!.name);
+                    itemNotify.state = order.state.code.ToString();
+                    itemNotify.time = order.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
+
+                    List<HttpNotification> notifications = Program.httpNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0).ToList();
+                    foreach (HttpNotification notification in notifications)
+                    {
+                        notification.messagers.Add(JsonConvert.SerializeObject(itemNotify));
+                    }
 
                     string note = "";
                     if(order.manager == null)
@@ -1668,5 +1742,6 @@ namespace ServerWater2.APIs
 
             return info;
         }
+
     }
 }
