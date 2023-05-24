@@ -111,7 +111,39 @@ namespace ServerWater2.APIs
                 m_log.action = m_action;
                 if (!string.IsNullOrEmpty(note))
                 {
-                    m_log.note = note;
+                    try
+                    {
+                        ItemNote? m_note = JsonConvert.DeserializeObject<ItemNote>(note);
+                        if (m_note != null)
+                        {
+                            ItemNote? image = JsonConvert.DeserializeObject<ItemNote>(m_log.note);
+                            if (image != null)
+                            {
+                                if (m_note.images.Count > 0)
+                                {
+                                    foreach (string item in m_note.images)
+                                    {
+                                        image.images.Add(item);
+                                    }
+                                }
+
+                            }
+                            m_log.note = JsonConvert.SerializeObject(image);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        ItemNote? image = JsonConvert.DeserializeObject<ItemNote>(m_log.note);
+                        if (image != null)
+                        {
+                            image.note = note;
+                            image.images = image.images;
+                        }
+                        m_log.note = JsonConvert.SerializeObject(image);
+
+                    }
+
+
                 }
                 m_log.time = DateTime.Now.ToUniversalTime();
                 int rows = await context.SaveChangesAsync();
@@ -226,11 +258,17 @@ namespace ServerWater2.APIs
                     context.orders!.Add(m_order);
                     await context.SaveChangesAsync();
 
+                    ItemNote image = new ItemNote();
+                    image.note = String.Format("{0}_{1} : {2}", m_order.code, m_order.service!.name, m_order.state!.name);
+                    image.images = new List<string>();
+
+                    string m_note = JsonConvert.SerializeObject(image);
+
                     SqlLogOrder log = new SqlLogOrder();
                     log.ID = DateTime.Now.Ticks;
                     log.order = m_order;
                     log.time = DateTime.Now.ToUniversalTime();
-                    log.note = String.Format("{0}_{1} : {2}", m_order.code, m_order.service!.name, m_order.state!.name);
+                    log.note = m_note;
                     context.logs!.Add(log);
                 }
                 else 
@@ -255,11 +293,17 @@ namespace ServerWater2.APIs
                     context.orders!.Add(m_order);
                     await context.SaveChangesAsync();
 
+                    ItemNote image = new ItemNote();
+                    image.note = String.Format("{0}_{1} : {2}", m_order.code, m_order.service!.name, m_order.state!.name);
+                    image.images = new List<string>();
+
+                    string m_note = JsonConvert.SerializeObject(image);
+
                     SqlLogOrder log = new SqlLogOrder();
                     log.ID = DateTime.Now.Ticks;
                     log.order = m_order;
                     log.time = DateTime.Now.ToUniversalTime();
-                    log.note = String.Format("{0}_{1} : {2}", m_order.code, m_order.service!.name, m_order.state!.name);
+                    log.note = m_note;
                     context.logs!.Add(log);
                 }
 
@@ -425,8 +469,11 @@ namespace ServerWater2.APIs
                     m_data.messagers.Add(JsonConvert.SerializeObject(itemNotify));
                 }
 
+                ItemNote image = new ItemNote();
+                image.note = string.Format("{0} : {1} ", order.state!.name, order.code);
+                image.images = new List<string>();
 
-                string note = string.Format("{0} : {1} ", order.state!.name, order.code);
+                string note = JsonConvert.SerializeObject(image);
 
                 bool flag = await setStateOrder(m_user.ID, order.code, note, "", "");
 
@@ -488,7 +535,11 @@ namespace ServerWater2.APIs
                 m_order.customer = m_customer;
                 m_order.lastestTime = DateTime.Now.ToUniversalTime();
 
-                string note = string.Format("KH : {0} - MDB : {1} Theo DH : {2}_{3} ", m_customer.name, m_customer.code, m_order.code, m_order.service!.name);
+                ItemNote image = new ItemNote();
+                image.note = string.Format("KH : {0} - MDB : {1} Theo DH : {2}_{3} ", m_customer.name, m_customer.code, m_order.code, m_order.service!.name);
+                image.images = new List<string>();
+
+                string note = JsonConvert.SerializeObject(image);
 
                 bool flag = await setStateOrder(user.ID, m_order.code, note, m_customer.latitude, m_customer.longitude);
                 if (flag)
@@ -544,7 +595,11 @@ namespace ServerWater2.APIs
                 order.manager = m_user;
                 order.lastestTime = DateTime.Now.ToUniversalTime();
 
-                string note = string.Format("{0} : {1} -  DH : {1}  ", m_user.user, order.state!.name , order.code);
+                ItemNote image = new ItemNote();
+                image.note = string.Format("{0} : {1} -  DH : {1}  ", m_user.user, order.state!.name, order.code);
+                image.images = new List<string>();
+
+                string note = JsonConvert.SerializeObject(image);
                 bool flag = await setStateOrder(m_user.ID, order.code, note, "", "");
                 if (flag)
                 {
@@ -601,8 +656,12 @@ namespace ServerWater2.APIs
                     }
 
                     if(order.manager == null)
-                    {                      
-                        note = string.Format("{0} : {1} -  DH : {1}  ", m_user.user, order.state!.name, order.code);
+                    {
+                        ItemNote m_image = new ItemNote();
+                        m_image.note = string.Format("{0} : {1} -  DH : {1}  ", m_user.user, order.state!.name, order.code);
+                        m_image.images = new List<string>();
+
+                        note = JsonConvert.SerializeObject(m_image);
                         bool flag1 =  await setStateOrder(m_user.ID, order.code, note, "", "");
 
                     }
@@ -636,8 +695,12 @@ namespace ServerWater2.APIs
                 {
                     m_data.messagers.Add(JsonConvert.SerializeObject(itemNotify));
                 }
+                ItemNote image = new ItemNote();
+                image.note = string.Format("{0} : {1} -  DH : {1}  ", order.state!.name, m_user.user, order.code);
+                image.images = new List<string>();
 
-                note = string.Format("{0} : {1} -  DH : {1}  ", order.state!.name, m_user.user, order.code);
+                note = JsonConvert.SerializeObject(image);
+              
                 bool flag = await setStateOrder(m_user.ID, order.code, note, "", "");
                 if (flag)
                 {
@@ -696,7 +759,7 @@ namespace ServerWater2.APIs
                     {
                         return "";
                     }
-                    Console.WriteLine(data.Length);
+                    //Console.WriteLine(data.Length);
                     codefile = await Program.api_file.saveFileAsync(DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss.image"), data);
                     if (string.IsNullOrEmpty(codefile))
                     {
@@ -719,8 +782,8 @@ namespace ServerWater2.APIs
 
                     string note = JsonConvert.SerializeObject(image);
 
-                    bool flag = await setStateOrder(user.ID, code, note, m_log.latitude, m_log.longitude);
-                    await setAction(token, code, "action6", note);
+                   // bool flag = await setStateOrder(user.ID, code, note, m_log.latitude, m_log.longitude);
+                    bool flag = await setAction(token, code, "action6", note);
                     if (flag)
                     {
                         flagblock = false;
@@ -765,13 +828,21 @@ namespace ServerWater2.APIs
                     {
                         return false;
                     }
+                    ItemNote? m_note = JsonConvert.DeserializeObject<ItemNote>(m_log.note);
 
-                    ItemImage image = new ItemImage();
-                    image.code = code;
-                    image.user = user.user;
-                    image.time = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                    ItemNote image = new ItemNote();
+                    if (m_note != null)
+                    {
+                        if (m_note.images.Count > 0)
+                        {
+                            m_note.images.Remove(code);
+                        }
+                        image.note = "Remove Before Image";
+                        image.images = m_note.images;
 
-                    string note = "Remove Before :" + JsonConvert.SerializeObject(image);
+
+                    }
+                    string note = JsonConvert.SerializeObject(image);
 
                     bool flag = await setStateOrder(user.ID, order, note, m_log.latitude, m_log.longitude);
                     return flag;
@@ -845,12 +916,22 @@ namespace ServerWater2.APIs
                 m_order.state = m_state;
                 m_order.lastestTime = DateTime.Now.ToUniversalTime();
 
-                if (string.IsNullOrEmpty(note))
+                ItemNote image = new ItemNote();
+                if (!string.IsNullOrEmpty(note))
                 {
-                    note = string.Format("{0} {1} : {2}", m_user.user, m_order.state!.name, m_order.code);
-                }
+                    image.note = note;
+                    image.images = new List<string>();
 
-                bool flag = await setStateOrder(m_user.ID, m_order.code, note, x, y);
+
+                }
+                else
+                {
+                    image.note = string.Format("{0} {1} : {2}", m_user.user, m_order.state!.name, m_order.code);
+                    image.images = new List<string>();
+                }
+                string m_note = JsonConvert.SerializeObject(image);
+
+                bool flag = await setStateOrder(m_user.ID, m_order.code, m_note, x, y);
                 if (flag)
                 {
                     int rows = await context.SaveChangesAsync();
@@ -932,12 +1013,22 @@ namespace ServerWater2.APIs
                 m_order.state = m_state;
                 m_order.lastestTime = DateTime.Now.ToUniversalTime();
 
-                if (string.IsNullOrEmpty(note))
+                ItemNote image = new ItemNote();
+                if (!string.IsNullOrEmpty(note))
                 {
-                    note = string.Format("{0} {1} : {2}", m_user.user, m_order.state!.name, m_order.code);
-                }
+                    image.note = note;
+                    image.images = new List<string>();
 
-                bool flag = await setStateOrder(m_user.ID, m_order.code, note, "", "");
+
+                }
+                else
+                {
+                    image.note = string.Format("{0} {1} : {2}", m_user.user, m_order.state!.name, m_order.code);
+                    image.images = new List<string>();
+                }
+                string m_note = JsonConvert.SerializeObject(image);
+
+                bool flag = await setStateOrder(m_user.ID, m_order.code, m_note, "", "");
                 if (flag)
                 {
                     int rows = await context.SaveChangesAsync();
@@ -998,14 +1089,16 @@ namespace ServerWater2.APIs
                     }
                     flagblock = true;
 
-                    ItemImage image = new ItemImage();
-                    image.code = codefile;
-                    image.user = user.user;
-                    image.time = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                    ItemNote image = new ItemNote();
+                    image.note = m_log.note;
+                    image.images.Add(codefile);
 
-                    string note = "Add After :" + JsonConvert.SerializeObject(image);
 
-                    bool flag = await setStateOrder(user.ID, code, note, m_log.latitude, m_log.longitude);
+                    string note = JsonConvert.SerializeObject(image);
+
+                    bool flag = await setAction(token, code, "action7", note);
+
+                    //bool flag = await setStateOrder(user.ID, code, note, m_log.latitude, m_log.longitude);
                     if (flag)
                     {
                         flagblock = false;
@@ -1051,13 +1144,27 @@ namespace ServerWater2.APIs
                     {
                         return false;
                     }
+                    ItemNote? m_note = JsonConvert.DeserializeObject<ItemNote>(m_log.note);
+                   
+                    ItemNote image = new ItemNote();
+                    if (m_note != null)
+                    {
+                        if (m_note.images.Count > 0)
+                        {
+                            m_note.images.Remove(code);
+                        }
+                        image.note = "Remove After Image";
+                        image.images = m_note.images;
 
-                    ItemImage image = new ItemImage();
-                    image.code = code;
-                    image.user = user.user;
-                    image.time = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
 
-                    string note = "Remove After :" + JsonConvert.SerializeObject(image);
+                    }
+                    string note = JsonConvert.SerializeObject(image);
+                    /* ItemImage image = new ItemImage();
+                     image.code = code;
+                     image.user = user.user;
+                     image.time = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+
+                     string note = "Remove After :" + JsonConvert.SerializeObject(image);*/
 
                     bool flag = await setStateOrder(user.ID, order, note, m_log.latitude, m_log.longitude);
                     return flag;
@@ -1096,12 +1203,25 @@ namespace ServerWater2.APIs
                         return "";
                     }
 
-                    ItemImage image = new ItemImage();
-                    image.code = codefile;
-                    image.user = user.user;
-                    image.time = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                    ItemNote image = new ItemNote();
+                    image.note = "Add Sign";
+                    image.images.Add(codefile);
 
-                    string note = "Add Sign :" + JsonConvert.SerializeObject(image);
+                   /* ItemNote? image = JsonConvert.DeserializeObject<ItemNote>(m_log.note);
+                    if (image != null)
+                    {
+                        if (m_note.images.Count > 0)
+                        {
+                            foreach (string item in m_note.images)
+                            {
+                                image.images.Add(item);
+                            }
+                        }
+
+                    }
+                    m_log.note = JsonConvert.SerializeObject(image);*/
+
+                    string note = JsonConvert.SerializeObject(image);
 
                     bool flag = await setStateOrder(user.ID, code, note, "", "");
                     if (flag)
@@ -1132,7 +1252,7 @@ namespace ServerWater2.APIs
                         return false;
                     }
 
-                    SqlLogOrder? m_log = context.logs!.Include(s => s.order).Where(s => s.order!.code.CompareTo(code) == 0 && s.order!.isDelete == false).Include(s => s.order).ThenInclude(s => s!.state).OrderByDescending(s => s.time).FirstOrDefault();
+                    SqlLogOrder? m_log = context.logs!.Include(s => s.order).Where(s => s.order!.code.CompareTo(order) == 0 && s.order!.isDelete == false).Include(s => s.order).ThenInclude(s => s!.state).OrderByDescending(s => s.time).FirstOrDefault();
                     if (m_log == null)
                     {
                         return false;
@@ -1146,16 +1266,25 @@ namespace ServerWater2.APIs
                     {
                         return false;
                     }
+                    ItemNote? m_note = JsonConvert.DeserializeObject<ItemNote>(m_log.note);
+                    ItemNote image = new ItemNote();
 
-                    ItemImage image = new ItemImage();
-                    image.code = code;
-                    image.user = user.user;
-                    image.time = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                    if (m_note != null)
+                    {
+                        if(m_note.images.Count > 0)
+                        {
+                            m_note.images.Remove(code);
+                        }
+                        image.note = "Remove Sign";
+                        image.images = m_note.images;
 
-                    string note = "Remove Sign :" + JsonConvert.SerializeObject(image);
+                        
+                    }
+                    string note = JsonConvert.SerializeObject(image);
 
                     bool flag = await setStateOrder(user.ID, order, note, "", "");
                     return flag;
+
                 }
             }
             catch (Exception ex)
@@ -1241,7 +1370,11 @@ namespace ServerWater2.APIs
                 m_order.isFinish = true;
                 m_order.lastestTime = DateTime.Now.ToUniversalTime();
 
-                string note = string.Format("{0} : {1} ", m_order.state!.name, m_order.code);
+                ItemNote image = new ItemNote();
+                image.note = string.Format("{0} : {1} ", m_order.state!.name, m_order.code);
+                image.images = new List<string>();
+
+                string note = JsonConvert.SerializeObject(image);
                 bool flag = await setStateOrder(m_user.ID, m_order.code, note, "", "");
                 if (flag)
                 {
@@ -1318,7 +1451,11 @@ namespace ServerWater2.APIs
                 m_order.state = m_state;
                 m_order.lastestTime = DateTime.Now.ToUniversalTime();
 
-                string note = string.Format("{0} : {1} ", m_order.state!.name, m_order.code);
+                ItemNote image = new ItemNote();
+                image.note = string.Format("{0} : {1} ", m_order.state!.name, m_order.code);
+                image.images = new List<string>();
+
+                string note = JsonConvert.SerializeObject(image);
                 bool flag = await setStateOrder(m_user.ID, m_order.code, note, "", "");
                 if (flag)
                 {
