@@ -13,51 +13,28 @@ namespace ServerWater2.APIs
     {
         public MyUser()
         {
-            Thread t = new Thread(async ()  =>
+            Thread t = new Thread(async () =>
             {
                 while (true)
                 {
                     Thread.Sleep(1000);
                     for (int i = 0; i < Program.httpNotifications.Count; i++)
                     {
+                        if (!string.IsNullOrEmpty(Program.httpNotifications[i].mToken))
+                        {
+
+                        }
+
+                        Thread.Sleep(10000);
                         if (Program.httpNotifications[i].messagers.Count > 10)
                         {
                             Program.httpNotifications.RemoveAt(i);
                             i--;
                         }
-
-                        if (!string.IsNullOrEmpty(Program.httpNotifications[i].mToken))
-                        {
-                            using (DataContext context = new DataContext())
-                            {
-                                SqlUser? m_user = context.users!.Where(s => s.token.CompareTo(Program.httpNotifications[i].mToken) == 0 && s.isdeleted == false).FirstOrDefault();
-                                if (m_user != null)
-                                {
-                                    if (!string.IsNullOrEmpty(m_user.notifications))
-                                    {
-                                        List<ItemNotifyOrder>? items = JsonConvert.DeserializeObject<List<ItemNotifyOrder>>(m_user.notifications);
-                                        if (items != null)
-                                        {
-                                            if (items.Count > 0)
-                                            {
-                                                foreach (ItemNotifyOrder m_item in items)
-                                                {
-                                                    Program.httpNotifications[i].messagers.Add(JsonConvert.SerializeObject(m_item));
-                                                }
-
-                                                m_user.notifications = "";
-                                                await context.SaveChangesAsync();
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            Thread.Sleep(10000);
-                        }
                     }
                 }
-            })
-            { IsBackground = true };
+            });
+            // { IsBackground = true };
             t.Start();
         }
         public async Task initAsync()
@@ -150,22 +127,53 @@ namespace ServerWater2.APIs
                 int rows = await context.SaveChangesAsync();
             }
         }
-       /* public long checkAdmin(string token)
-        {
-            using (DataContext context = new DataContext())
-            {
-                SqlUser? user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role).FirstOrDefault();
-                if (user == null)
-                {
-                    return -1;
-                }
-                if (user.role!.code.CompareTo("admin") != 0)
-                {
-                    return -1;
-                }
-                return 0;
-            }
-        }*/
+        //public async Task<List<string>> checkNotification(string token, string state)
+        //{
+        //    using (DataContext context = new DataContext())
+        //    {
+        //        SqlUser? m_user = context.users!.Where(s => s.token.CompareTo(token) == 0 && s.isdeleted == false && s.isClear == false).FirstOrDefault();
+        //        if (m_user != null)
+        //        {
+        //            if (!string.IsNullOrEmpty(m_user.notifications))
+        //            {
+        //                List<ItemNotifyOrder>? items = JsonConvert.DeserializeObject<List<ItemNotifyOrder>>(m_user.notifications);
+        //                if (items != null)
+        //                {
+        //                    if (items.Count > 0)
+        //                    {
+                               
+        //                        foreach (ItemNotifyOrder m_item in items)
+        //                        {
+
+        //                            List<HttpNotification> datas = Program.httpNotifications.Where(s => s.state.CompareTo(state) == 0).ToList();
+        //                            foreach (HttpNotification m_data in datas)
+        //                            {
+        //                                m_data.messagers.Add(notification);
+        //                            }
+        //                        }
+        //                        if (!httpNotification.isOnline)
+        //                        {
+        //                            m_user.isClear = true;
+        //                            if (m_user.isClear)
+        //                            {
+        //                                m_user.notifications = "";
+        //                            }
+        //                        }
+        //                        else
+        //                        {
+        //                            m_user.isClear = false;
+        //                        }
+
+        //                        await context.SaveChangesAsync();
+        //                    }
+        //                    return 
+        //                }
+        //            }
+
+        //        }
+        //    }
+
+        //}
 
         public long checkAdmin(string token)
         {
@@ -183,7 +191,7 @@ namespace ServerWater2.APIs
                 return -1;
             }
         }
-        
+
         public long checkSystem(string token)
         {
             using (DataContext context = new DataContext())
@@ -230,7 +238,7 @@ namespace ServerWater2.APIs
                 {
                     return new InfoUserSystem();
                 }
-                  
+
                 InfoUserSystem info = new InfoUserSystem();
                 info.user = user.user;
                 info.token = user.token;
@@ -316,7 +324,7 @@ namespace ServerWater2.APIs
                 {
                     return false;
                 }
-              
+
                 if (own_user.role!.code.CompareTo("admin") != 0)
                 {
                     if (user.CompareTo(own_user.user) != 0)
@@ -367,7 +375,7 @@ namespace ServerWater2.APIs
                         }
                         tmp.password = password;
                     }
-                    
+
                     if (!string.IsNullOrEmpty(displayName))
                     {
                         own_user.displayName = displayName;

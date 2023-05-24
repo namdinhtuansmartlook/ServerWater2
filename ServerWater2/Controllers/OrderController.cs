@@ -261,24 +261,29 @@ namespace ServerWater2.Controllers
 
         [HttpPut]
         [Route("{code}/addImageWorkOrder")]
-        public async Task<IActionResult> AddImageWorkOrder([FromHeader] string token, string code, IFormFile image )
+        public async Task<IActionResult> AddImageWorkOrder([FromHeader] string token, string code, List<IFormFile> images )
         {
             long id = Program.api_user.checkUser(token);
             if (id >= 0)
             {
-                using (MemoryStream ms = new MemoryStream())
+                foreach (var image in images)
                 {
-                    image.CopyTo(ms);
-                    string tmp = await Program.api_order.addImageWorkingAsync(token, code, ms.ToArray());
-                    if (!string.IsNullOrEmpty(tmp))
+                    using (MemoryStream ms = new MemoryStream())
                     {
-                        return Ok(tmp);
-                    }
-                    else
-                    {
-                        return BadRequest();
+                        image.CopyTo(ms);
+                        string tmp = await Program.api_order.addImageWorkingAsync(token, code, ms.ToArray());
+                        if (!string.IsNullOrEmpty(tmp))
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            return BadRequest();
+                        }
                     }
                 }
+                return BadRequest();
+
             }
             else
             {

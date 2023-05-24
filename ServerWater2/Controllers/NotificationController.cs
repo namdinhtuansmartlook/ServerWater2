@@ -60,7 +60,9 @@ namespace ServerWater2.Controllers
                 httpNotification.id = id;
                 httpNotification.state = state;
                 httpNotification.mToken = token;
-               // httpNotification.isRequest = false;
+                //httpNotification.messagers = await Program.api_user.checkNotification(token, state);
+
+                // httpNotification.isRequest = false;
                 Program.httpNotifications.Add(httpNotification);
 
                 while (true)
@@ -89,6 +91,10 @@ namespace ServerWater2.Controllers
                     }
                     if (cancellationToken.IsCancellationRequested)
                     {
+                        while (!notification.isOnline)
+                        {
+                            Thread.Sleep(1000);
+                        }
                         Program.httpNotifications.Remove(notification);
                         break;
                     }

@@ -18,6 +18,7 @@ namespace ServerWater2.Models
         public string des { get; set; } = "";
         public string avatar { get; set; } = "";
         public string notifications { get; set; } = ""; 
+        public bool isClear { get; set; } = false; 
         public SqlRole? role { get; set; }
         public List<SqlOrder>? receiverOrders { get; set; }
         public List<SqlOrder>? managerOrders { get; set; }

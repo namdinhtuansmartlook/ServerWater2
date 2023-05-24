@@ -21,6 +21,7 @@ public class Program
         public string id { get; set; } = "";
         public string mToken { get; set; } = "";
         public string state { get; set; } = "";
+        public bool isOnline { get; set; } = false;
         public List<string> messagers { get; set; } = new List<string>();
 
     }

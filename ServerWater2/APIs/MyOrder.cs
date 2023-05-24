@@ -127,13 +127,28 @@ namespace ServerWater2.APIs
             public string time { get; set; } = "";
         }
 
-        public async Task<bool> saveNotification(string notifications)
+        public async Task<bool> saveNotification(string state, string notifications)
         {
             using(DataContext context = new DataContext())
             {
-                List<SqlUser>? users = context.users!.Where(s => s.isdeleted == false).AsNoTracking().ToList();
+                List<SqlUser>? users = context.users!.Where(s => s.isdeleted == false && s.isClear == false).Include(s => s.role).ToList();
                 if (users.Count > 0)
                 {
+                    if (state.CompareTo("0") == 0)
+                    {
+                        users = users.Where(s => s.role!.code.CompareTo("admin") == 0 || s.role!.code.CompareTo("receiver") == 0).ToList();
+
+                    }
+                    else if (state.CompareTo("1") == 0)
+                    {
+                        users = users.Where(s => s.role!.code.CompareTo("manager") == 0 ).ToList();
+
+                    }
+                    else
+                    {
+                        users = users.Where(s => s.role!.code.CompareTo("staff") == 0).ToList();
+
+                    }
                     foreach (SqlUser m_user in users)
                     {
                         if (string.IsNullOrEmpty(m_user.notifications))
@@ -151,6 +166,7 @@ namespace ServerWater2.APIs
                                     items.Add(item);
                                 }
                             }
+                            m_user.notifications = JsonConvert.SerializeObject(items);
                         }
                     }
 
@@ -243,8 +259,8 @@ namespace ServerWater2.APIs
                 itemNotify.time = m_order.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
 
                 string notification = JsonConvert.SerializeObject(itemNotify);
-                bool flag =await saveNotification(notification);
-                if(flag)
+                bool flag =await saveNotification(itemNotify.state, notification);
+                if (flag)
                 {
                     List<HttpNotification> datas = Program.httpNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0).ToList();
                     foreach (HttpNotification m_data in datas)
@@ -448,7 +464,7 @@ namespace ServerWater2.APIs
                 //    return false;
                 //}
 
-                SqlOrder? m_order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).Include(s => s.state).FirstOrDefault();
+                SqlOrder? m_order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).Include(s => s.state).Include(s => s.service).FirstOrDefault();
                 if (m_order == null)
                 {
                     return false;
@@ -639,6 +655,12 @@ namespace ServerWater2.APIs
             public string time { get; set; } = "";
         }
 
+        public class ItemNote
+        {
+            public string note { get; set; } = "";
+            public List<string> images { get; set; } = new List<string>();
+        }
+
         public async Task<string> addImageWorkingAsync(string token, string code, byte[] data)
         {
             try
@@ -664,7 +686,7 @@ namespace ServerWater2.APIs
                     {
                         return "";
                     }
-
+                    Console.WriteLine(data.Length);
                     codefile = await Program.api_file.saveFileAsync(DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss.image"), data);
                     if (string.IsNullOrEmpty(codefile))
                     {
@@ -680,14 +702,15 @@ namespace ServerWater2.APIs
                     }
                     flagblock = true;
 
-                    ItemImage image = new ItemImage();
-                    image.code = codefile;
-                    image.user = user.user;
-                    image.time = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                    ItemNote image = new ItemNote();
+                    image.note = m_log.note;
+                    image.images.Add(codefile);
+                   
 
-                    string note = "Add Before :" + JsonConvert.SerializeObject(image);
+                    string note = JsonConvert.SerializeObject(image);
 
                     bool flag = await setStateOrder(user.ID, code, note, m_log.latitude, m_log.longitude);
+                    await setAction(token, code, "action6", note);
                     if (flag)
                     {
                         flagblock = false;
