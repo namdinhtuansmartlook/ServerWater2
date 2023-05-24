@@ -127,8 +127,12 @@ namespace ServerWater2.APIs
             public string time { get; set; } = "";
         }
 
-        public async Task<bool> saveNotification(string state, string notifications)
+        public async Task<bool> saveNotification(string state, string notification)
         {
+            if(string.IsNullOrEmpty(notification))
+            {
+                return false;
+            }
             using(DataContext context = new DataContext())
             {
                 List<SqlUser>? users = context.users!.Where(s => s.isdeleted == false && s.isClear == false).Include(s => s.role).ToList();
@@ -149,22 +153,28 @@ namespace ServerWater2.APIs
                         users = users.Where(s => s.role!.code.CompareTo("staff") == 0).ToList();
 
                     }
+
+
+                    ItemNotifyOrder? item = JsonConvert.DeserializeObject<ItemNotifyOrder>(notification);
+                    if(item == null)
+                    {
+                        return false;
+                    }
+
                     foreach (SqlUser m_user in users)
                     {
                         if (string.IsNullOrEmpty(m_user.notifications))
                         {
-                            m_user.notifications = notifications;
+                            List<ItemNotifyOrder> items = new List<ItemNotifyOrder>();
+                            items.Add(item);
+                            m_user.notifications = JsonConvert.SerializeObject(items);
                         }
                         else
                         {
                             List<ItemNotifyOrder>? items = JsonConvert.DeserializeObject<List<ItemNotifyOrder>>(m_user.notifications);
                             if (items != null)
                             {
-                                ItemNotifyOrder? item = JsonConvert.DeserializeObject<ItemNotifyOrder>(notifications);
-                                if (item != null)
-                                {
-                                    items.Add(item);
-                                }
+                                items.Add(item);
                             }
                             m_user.notifications = JsonConvert.SerializeObject(items);
                         }

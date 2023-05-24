@@ -60,10 +60,13 @@ namespace ServerWater2.Controllers
                 httpNotification.id = id;
                 httpNotification.state = state;
                 httpNotification.mToken = token;
-                //httpNotification.messagers = await Program.api_user.checkNotification(token, state);
-
-                // httpNotification.isRequest = false;
+                if (!httpNotification.isOnline)
+                {
+                    Program.api_user.checkNotification(token, httpNotification.isOnline, httpNotification.messagers);
+                }
                 Program.httpNotifications.Add(httpNotification);
+                
+
 
                 while (true)
                 {
@@ -73,9 +76,8 @@ namespace ServerWater2.Controllers
                     {
                         break;
                     }
-                    List<string> messagers = notification.messagers;
-                    notification.messagers.Clear();
 
+                    List<string> messagers = notification.messagers;
                     if (messagers.Count == 0)
                     {
                         string msg = string.Format("data: {0}\r\r", DateTime.Now);
@@ -89,10 +91,14 @@ namespace ServerWater2.Controllers
                         await Response.Body.FlushAsync();
                         await Task.Delay(100);
                     }
+
+                    notification.messagers.Clear();
                     if (cancellationToken.IsCancellationRequested)
                     {
-                        while (!notification.isOnline)
+                        while(!notification.isOnline)
                         {
+                            notification.isOnline = true;
+                            Program.api_user.checkNotification(token, notification.isOnline, notification.messagers);
                             Thread.Sleep(1000);
                         }
                         Program.httpNotifications.Remove(notification);
