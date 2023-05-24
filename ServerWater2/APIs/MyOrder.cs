@@ -120,10 +120,57 @@ namespace ServerWater2.APIs
             }
         }
 
-        public class ItemNotifyOrder {
+        public class ItemNotifyOrder
+        {
             public string note { get; set; } = "";
             public string state { get; set; } = "";
             public string time { get; set; } = "";
+        }
+
+        public async Task<bool> saveNotification(string notifications)
+        {
+            using(DataContext context = new DataContext())
+            {
+                List<SqlUser>? users = context.users!.Where(s => s.isdeleted == false).AsNoTracking().ToList();
+                if (users.Count > 0)
+                {
+                    foreach (SqlUser m_user in users)
+                    {
+                        if (string.IsNullOrEmpty(m_user.notifications))
+                        {
+                            m_user.notifications = notifications;
+                        }
+                        else
+                        {
+                            List<ItemNotifyOrder>? items = JsonConvert.DeserializeObject<List<ItemNotifyOrder>>(m_user.notifications);
+                            if (items != null)
+                            {
+                                ItemNotifyOrder? item = JsonConvert.DeserializeObject<ItemNotifyOrder>(notifications);
+                                if (item != null)
+                                {
+                                    items.Add(item);
+                                }
+                            }
+                        }
+                    }
+
+                    int rows = await context.SaveChangesAsync();
+                    if(rows > 0)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+
+
+            }
         }
 
 
@@ -195,10 +242,15 @@ namespace ServerWater2.APIs
                 itemNotify.state = m_order.state.code.ToString();
                 itemNotify.time = m_order.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
 
-                List<HttpNotification> datas = Program.httpNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0).ToList();
-                foreach (HttpNotification m_data in datas)
+                string notification = JsonConvert.SerializeObject(itemNotify);
+                bool flag =await saveNotification(notification);
+                if(flag)
                 {
-                    m_data.messagers.Add(JsonConvert.SerializeObject(itemNotify));
+                    List<HttpNotification> datas = Program.httpNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0).ToList();
+                    foreach (HttpNotification m_data in datas)
+                    {
+                        m_data.messagers.Add(notification);
+                    }
                 }
 
                 int rows = await context.SaveChangesAsync();
@@ -1006,7 +1058,7 @@ namespace ServerWater2.APIs
                     {
                         return "";
                     }
-                    if (m_log.order!.state!.code < 0)
+                    if (m_log.order!.state!.code < 3)
                     {
                         return "";
                     }
@@ -1052,7 +1104,7 @@ namespace ServerWater2.APIs
                     {
                         return false;
                     }
-                    if (m_log.order!.state!.code < 0)
+                    if (m_log.order!.state!.code < 3)
                     {
                         return false;
                     }

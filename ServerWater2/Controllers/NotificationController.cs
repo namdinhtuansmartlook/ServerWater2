@@ -59,6 +59,7 @@ namespace ServerWater2.Controllers
                 Program.HttpNotification httpNotification = new Program.HttpNotification();
                 httpNotification.id = id;
                 httpNotification.state = state;
+                httpNotification.mToken = token;
                // httpNotification.isRequest = false;
                 Program.httpNotifications.Add(httpNotification);
 

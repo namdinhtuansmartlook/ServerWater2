@@ -17,6 +17,7 @@ namespace ServerWater2.Models
         public string phoneNumber { get; set; } = "";
         public string des { get; set; } = "";
         public string avatar { get; set; } = "";
+        public string notifications { get; set; } = ""; 
         public SqlRole? role { get; set; }
         public List<SqlOrder>? receiverOrders { get; set; }
         public List<SqlOrder>? managerOrders { get; set; }

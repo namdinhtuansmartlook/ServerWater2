@@ -1,7 +1,11 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using ServerWater2.Models;
+using System.Xml.Linq;
 using static ServerWater2.APIs.MyCustomer;
+using static ServerWater2.APIs.MyOrder;
+using static ServerWater2.Program;
 
 namespace ServerWater2.APIs
 {
@@ -9,6 +13,52 @@ namespace ServerWater2.APIs
     {
         public MyUser()
         {
+            Thread t = new Thread(async ()  =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1000);
+                    for (int i = 0; i < Program.httpNotifications.Count; i++)
+                    {
+                        if (Program.httpNotifications[i].messagers.Count > 10)
+                        {
+                            Program.httpNotifications.RemoveAt(i);
+                            i--;
+                        }
+
+                        if (!string.IsNullOrEmpty(Program.httpNotifications[i].mToken))
+                        {
+                            using (DataContext context = new DataContext())
+                            {
+                                SqlUser? m_user = context.users!.Where(s => s.token.CompareTo(Program.httpNotifications[i].mToken) == 0 && s.isdeleted == false).FirstOrDefault();
+                                if (m_user != null)
+                                {
+                                    if (!string.IsNullOrEmpty(m_user.notifications))
+                                    {
+                                        List<ItemNotifyOrder>? items = JsonConvert.DeserializeObject<List<ItemNotifyOrder>>(m_user.notifications);
+                                        if (items != null)
+                                        {
+                                            if (items.Count > 0)
+                                            {
+                                                foreach (ItemNotifyOrder m_item in items)
+                                                {
+                                                    Program.httpNotifications[i].messagers.Add(JsonConvert.SerializeObject(m_item));
+                                                }
+
+                                                m_user.notifications = "";
+                                                await context.SaveChangesAsync();
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            Thread.Sleep(10000);
+                        }
+                    }
+                }
+            })
+            { IsBackground = true };
+            t.Start();
         }
         public async Task initAsync()
         {
@@ -180,6 +230,7 @@ namespace ServerWater2.APIs
                 {
                     return new InfoUserSystem();
                 }
+                  
                 InfoUserSystem info = new InfoUserSystem();
                 info.user = user.user;
                 info.token = user.token;
