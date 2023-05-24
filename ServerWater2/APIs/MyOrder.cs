@@ -462,20 +462,24 @@ namespace ServerWater2.APIs
                 itemNotify.note = String.Format("{0}_{1}", order.code, order.service!.name);
                 itemNotify.state = order.state.code.ToString();
                 itemNotify.time = order.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
-
-                List<HttpNotification> datas = Program.httpNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0).ToList();
-                foreach (HttpNotification m_data in datas)
+                
+                string notification = JsonConvert.SerializeObject(itemNotify);
+                bool flag = await saveNotification(itemNotify.state, notification);
+                if (flag)
                 {
-                    m_data.messagers.Add(JsonConvert.SerializeObject(itemNotify));
+                    List<HttpNotification> datas = Program.httpNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0).ToList();
+                    foreach (HttpNotification m_data in datas)
+                    {
+                        m_data.messagers.Add(notification);
+                    }
                 }
-
                 ItemNote image = new ItemNote();
                 image.note = string.Format("{0} : {1} ", order.state!.name, order.code);
                 image.images = new List<string>();
 
                 string note = JsonConvert.SerializeObject(image);
 
-                bool flag = await setStateOrder(m_user.ID, order.code, note, "", "");
+                flag = await setStateOrder(m_user.ID, order.code, note, "", "");
 
                 if (flag)
                 {
@@ -689,11 +693,16 @@ namespace ServerWater2.APIs
                 itemNotify.note = String.Format("{0}_{1}", order.code, order.service!.name);
                 itemNotify.state = order.state.code.ToString();
                 itemNotify.time = order.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
-
-                List<HttpNotification> datas = Program.httpNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0).ToList();
-                foreach (HttpNotification m_data in datas)
+                string notification = JsonConvert.SerializeObject(itemNotify);
+                
+                bool flag = await saveNotification(itemNotify.state, notification);
+                if (flag)
                 {
-                    m_data.messagers.Add(JsonConvert.SerializeObject(itemNotify));
+                    List<HttpNotification> datas = Program.httpNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0).ToList();
+                    foreach (HttpNotification m_data in datas)
+                    {
+                        m_data.messagers.Add(notification);
+                    }
                 }
                 ItemNote image = new ItemNote();
                 image.note = string.Format("{0} : {1} -  DH : {1}  ", order.state!.name, m_user.user, order.code);
@@ -701,7 +710,7 @@ namespace ServerWater2.APIs
 
                 note = JsonConvert.SerializeObject(image);
               
-                bool flag = await setStateOrder(m_user.ID, order.code, note, "", "");
+                flag = await setStateOrder(m_user.ID, order.code, note, "", "");
                 if (flag)
                 {
                     int rows = await context.SaveChangesAsync();
