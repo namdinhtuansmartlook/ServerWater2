@@ -537,6 +537,13 @@ namespace ServerWater2.Controllers
         }
 
         [HttpGet]
+        [Route("getInfoOrder")]
+        public IActionResult GetInfoOrder([FromHeader] string token, string code)
+        {
+            return Ok(Program.api_order.getInfoOrder(token, code));
+        }
+
+        [HttpGet]
         [Route("getFindOrder")]
         public IActionResult GetFindOrder(string code)
         {

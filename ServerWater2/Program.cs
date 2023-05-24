@@ -15,23 +15,13 @@ public class Program
         public List<string> host { get; set; } = new List<string>();
     }
     
-    public class DataNotification
-    {
-        public string state { get; set; } = "";
-        public bool isRequest { get; set; } = false;
-        public List<string> messagers { get; set; } = new List<string>();
-    }
-
-    public class ItemDataNotification
-    {
-        public List<string> messagers { get; set; } = new List<string>();
-    }
-
+    
     public class HttpNotification
     {
         public string id { get; set; } = "";
         public string state { get; set; } = "";
-        public List<DataNotification> datas { get; set; } = new List<DataNotification>();
+        public bool isRequest { get; set; } = false;
+        public List<string> messagers { get; set; } = new List<string>();
 
     }
 
@@ -47,7 +37,7 @@ public class Program
     public static MyAction api_action = new MyAction();
     public static MyLogOrder api_log = new MyLogOrder();
     public static List<HttpNotification> httpNotifications = new List<HttpNotification>();
-    public static List<DataNotification> dataNotifications = new List<DataNotification>();
+    //public static List<DataNotification> dataNotifications = new List<DataNotification>();
 
 
     public static MyCustomer api_customer = new MyCustomer();

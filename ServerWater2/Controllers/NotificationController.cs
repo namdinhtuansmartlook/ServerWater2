@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
+using System.Linq;
 using static ServerWater2.Program;
 
 namespace ServerWater2.Controllers
@@ -69,38 +70,21 @@ namespace ServerWater2.Controllers
                     {
                         break;
                     }
-                    notification.datas = Program.dataNotifications.Where(s => s.state.CompareTo(notification.state) == 0 && s.isRequest == false).ToList();
+                    List<string> messagers = notification.messagers;
+                    notification.messagers.Clear();
 
-                    
-                    if (notification.datas.Count == 0)
+                    if (messagers.Count == 0)
                     {
                         string msg = string.Format("data: {0}\r\r", DateTime.Now);
                         await Response.WriteAsync(msg);
                         await Response.Body.FlushAsync();
                     }
-                    foreach (DataNotification s in notification.datas)
+                    foreach (string s in messagers)
                     {
-                        if(s.messagers.Count > 0)
-                        {
-                            for (int i = 0; i < s.messagers.Count; i++)
-                            {
-                                Log.Information(s.state +":" + s.messagers[i]);
-                                await Response.WriteAsync(string.Format("data: {0}\r\r", s.messagers[i]));
-                                await Response.Body.FlushAsync();
-                                await Task.Delay(100);
-                                s.messagers.RemoveAt(0);
-                                i--;
-                                s.isRequest = true;
-                            }
-                          
-                        }
-                        else
-                        {
-                            string msg = string.Format("data: {0}\r\r", DateTime.Now);
-                            await Response.WriteAsync(msg);
-                            await Response.Body.FlushAsync();
-                        }
-                       
+                        Log.Information(s);
+                        await Response.WriteAsync(string.Format("data: {0}\r\r", s));
+                        await Response.Body.FlushAsync();
+                        await Task.Delay(100);
                     }
                     if (cancellationToken.IsCancellationRequested)
                     {
