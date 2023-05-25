@@ -1,6 +1,7 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using Serilog;
 using ServerWater2.Models;
 using System.Xml.Linq;
 using static ServerWater2.APIs.MyCustomer;
@@ -126,35 +127,42 @@ namespace ServerWater2.APIs
         {
             using (DataContext context = new DataContext())
             {
-                SqlUser? m_user = context.users!.Where(s => s.token.CompareTo(token) == 0 && s.isdeleted == false).FirstOrDefault();
-                if (m_user != null)
+                try
                 {
-                    m_user.isClear = true;
-                    if (!string.IsNullOrEmpty(m_user.notifications))
+                    SqlUser? m_user = context.users!.Where(s => s.token.CompareTo(token) == 0 && s.isdeleted == false).FirstOrDefault();
+                    if (m_user != null)
                     {
-                        List<ItemNotifyOrder>? items = JsonConvert.DeserializeObject<List<ItemNotifyOrder>>(m_user.notifications);
-                        if (items != null)
+                        m_user.isClear = true;
+                        if (!string.IsNullOrEmpty(m_user.notifications))
                         {
-                            if (items.Count > 0)
+                            List<ItemNotifyOrder>? items = JsonConvert.DeserializeObject<List<ItemNotifyOrder>>(m_user.notifications);
+                            if (items != null)
                             {
-
-                                foreach (ItemNotifyOrder m_item in items)
+                                if (items.Count > 0)
                                 {
-                                    messagers.Add(JsonConvert.SerializeObject(m_item));
+
+                                    foreach (ItemNotifyOrder m_item in items)
+                                    {
+                                        messagers.Add(JsonConvert.SerializeObject(m_item));
+                                    }
                                 }
                             }
+
                         }
 
+                        m_user.notifications = "";
+                        if (flag)
+                        {
+                            m_user.isClear = false;
+
+                        }
+
+                        await context.SaveChangesAsync();
                     }
-
-                    m_user.notifications = "";
-                    if (flag)
-                    {
-                        m_user.isClear = false;
-
-                    }
-
-                    await context.SaveChangesAsync();
+                }
+                catch(Exception ex)
+                {
+                    Log.Error(ex.ToString());
                 }
             }
 

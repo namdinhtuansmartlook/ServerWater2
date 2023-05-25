@@ -168,67 +168,73 @@ namespace ServerWater2.APIs
             }
             using(DataContext context = new DataContext())
             {
-                List<SqlUser>? users = context.users!.Where(s => s.isdeleted == false && s.isClear == false).Include(s => s.role).ToList();
-                if (users.Count > 0)
+                try
                 {
-                    if (state.CompareTo("0") == 0)
+                    List<SqlUser>? users = context.users!.Where(s => s.isdeleted == false && s.isClear == false).Include(s => s.role).ToList();
+                    if (users.Count > 0)
                     {
-                        users = users.Where(s => s.role!.code.CompareTo("admin") == 0 || s.role!.code.CompareTo("receiver") == 0).ToList();
-
-                    }
-                    else if (state.CompareTo("1") == 0)
-                    {
-                        users = users.Where(s => s.role!.code.CompareTo("manager") == 0 ).ToList();
-
-                    }
-                    else
-                    {
-                        users = users.Where(s => s.role!.code.CompareTo("staff") == 0).ToList();
-
-                    }
-
-
-                    ItemNotifyOrder? item = JsonConvert.DeserializeObject<ItemNotifyOrder>(notification);
-                    if(item == null)
-                    {
-                        return false;
-                    }
-
-                    foreach (SqlUser m_user in users)
-                    {
-                        if (string.IsNullOrEmpty(m_user.notifications))
+                        if (state.CompareTo("0") == 0)
                         {
-                            List<ItemNotifyOrder> items = new List<ItemNotifyOrder>();
-                            items.Add(item);
-                            m_user.notifications = JsonConvert.SerializeObject(items);
+                            users = users.Where(s => s.role!.code.CompareTo("admin") == 0 || s.role!.code.CompareTo("receiver") == 0).ToList();
+
+                        }
+                        else if (state.CompareTo("1") == 0)
+                        {
+                            users = users.Where(s => s.role!.code.CompareTo("manager") == 0).ToList();
+
                         }
                         else
                         {
-                            List<ItemNotifyOrder>? items = JsonConvert.DeserializeObject<List<ItemNotifyOrder>>(m_user.notifications);
-                            if (items != null)
-                            {
-                                items.Add(item);
-                            }
-                            m_user.notifications = JsonConvert.SerializeObject(items);
-                        }
-                    }
+                            users = users.Where(s => s.role!.code.CompareTo("staff") == 0).ToList();
 
-                    int rows = await context.SaveChangesAsync();
-                    if(rows > 0)
-                    {
-                        return true;
+                        }
+
+
+                        ItemNotifyOrder? item = JsonConvert.DeserializeObject<ItemNotifyOrder>(notification);
+                        if (item == null)
+                        {
+                            return false;
+                        }
+
+                        foreach (SqlUser m_user in users)
+                        {
+                            if (string.IsNullOrEmpty(m_user.notifications))
+                            {
+                                List<ItemNotifyOrder> items = new List<ItemNotifyOrder>();
+                                items.Add(item);
+                                m_user.notifications = JsonConvert.SerializeObject(items);
+                            }
+                            else
+                            {
+                                List<ItemNotifyOrder>? items = JsonConvert.DeserializeObject<List<ItemNotifyOrder>>(m_user.notifications);
+                                if (items != null)
+                                {
+                                    items.Add(item);
+                                }
+                                m_user.notifications = JsonConvert.SerializeObject(items);
+                            }
+                        }
+
+                        int rows = await context.SaveChangesAsync();
+                        if (rows > 0)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
                     }
                     else
                     {
                         return false;
                     }
                 }
-                else
+                catch(Exception ex)
                 {
+                    Log.Error(ex.ToString());
                     return false;
                 }
-
-
             }
         }
 
