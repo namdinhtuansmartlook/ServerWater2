@@ -31,6 +31,7 @@ namespace ServerWater2.APIs
             public ItemAction action { get; set; } = new ItemAction();
             public DateTime time { get; set; }
             public string note { get; set; } = "";
+            public List<string> images { get; set; } = new List<string>();
             public string latitude { get; set; } = "";
             public string longitude { get; set; } = "";
         }
@@ -172,6 +173,11 @@ namespace ServerWater2.APIs
 
                         itemLog.time = item.time;
                         itemLog.note = item.note;
+                        if(item.images == null)
+                        {
+                            item.images = new List<string>();
+                        }
+                        itemLog.images = item.images;
                         itemLog.latitude = item.latitude;
                         itemLog.longitude = item.longitude;
 
@@ -201,6 +207,7 @@ namespace ServerWater2.APIs
             public ItemAction action { get; set; } = new ItemAction();
             public string time { get; set; } = "";
             public string note { get; set; } = "";
+            public List<string> images { get; set; } = new List<string>();
             public string latitude { get; set; } = "";
             public string longitude { get; set; } = "";
 
@@ -245,6 +252,11 @@ namespace ServerWater2.APIs
 
                     tmp.time = item.time.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
                     tmp.note = item.note;
+                    if(item.images == null)
+                    {
+                        item.images = new List<string>();
+                    }
+                    tmp.images = item.images;
                     tmp.latitude = item.latitude;
                     tmp.longitude = item.longitude;
 

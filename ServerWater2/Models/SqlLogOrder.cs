@@ -13,6 +13,7 @@ namespace ServerWater2.Models
         public SqlAction? action { get; set; } 
         public DateTime time { get; set; }
         public string note { get; set; } = "";
+        public List<string>? images { get; set; }
         public string latitude { get; set; } = "";
         public string longitude { get; set; } = "";
     }
