@@ -155,12 +155,12 @@ namespace ServerWater2.APIs
 
         public class ItemNotifyOrder
         {
-            public string note { get; set; } = "";
+            public string order { get; set; } = "";
             public string state { get; set; } = "";
             public string time { get; set; } = "";
         }
 
-        public async Task<bool> saveNotification(string state, string notification)
+        public async Task<bool> saveNotification(int state, string notification)
         {
             if(string.IsNullOrEmpty(notification))
             {
@@ -173,12 +173,12 @@ namespace ServerWater2.APIs
                     List<SqlUser>? users = context.users!.Where(s => s.isdeleted == false && s.isClear == false).Include(s => s.role).ToList();
                     if (users.Count > 0)
                     {
-                        if (state.CompareTo("0") == 0)
+                        if (state == 0)
                         {
                             users = users.Where(s => s.role!.code.CompareTo("admin") == 0 || s.role!.code.CompareTo("receiver") == 0).ToList();
 
                         }
-                        else if (state.CompareTo("1") == 0)
+                        else if (state == 1)
                         {
                             users = users.Where(s => s.role!.code.CompareTo("manager") == 0).ToList();
 
@@ -315,12 +315,12 @@ namespace ServerWater2.APIs
                 }
 
                 ItemNotifyOrder itemNotify = new ItemNotifyOrder();
-                itemNotify.note = String.Format("{0}_{1}", m_order.code, m_order.service!.name);
-                itemNotify.state = m_order.state.code.ToString();
+                itemNotify.order= m_order.code;
+                itemNotify.state = m_order.state.name;
                 itemNotify.time = m_order.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
 
                 string notification = JsonConvert.SerializeObject(itemNotify);
-                bool flag =await saveNotification(itemNotify.state, notification);
+                bool flag =await saveNotification(m_order.state.code, notification);
                 if (flag)
                 {
                     List<HttpNotification> datas = Program.httpNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0).ToList();
@@ -466,12 +466,12 @@ namespace ServerWater2.APIs
                 order.lastestTime = DateTime.Now.ToUniversalTime();
 
                 ItemNotifyOrder itemNotify = new ItemNotifyOrder();
-                itemNotify.note = String.Format("{0}_{1}", order.code, order.service!.name);
-                itemNotify.state = order.state.code.ToString();
+                itemNotify.order = order.code;
+                itemNotify.state = order.state.name;
                 itemNotify.time = order.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
                 
                 string notification = JsonConvert.SerializeObject(itemNotify);
-                bool flag = await saveNotification(itemNotify.state, notification);
+                bool flag = await saveNotification(order.state.code, notification);
                 if (flag)
                 {
                     List<HttpNotification> datas = Program.httpNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0).ToList();
@@ -697,12 +697,12 @@ namespace ServerWater2.APIs
                 order.lastestTime = DateTime.Now.ToUniversalTime();
 
                 ItemNotifyOrder itemNotify = new ItemNotifyOrder();
-                itemNotify.note = String.Format("{0}_{1}", order.code, order.service!.name);
-                itemNotify.state = order.state.code.ToString();
+                itemNotify.order = order.code;
+                itemNotify.state = order.state.name;
                 itemNotify.time = order.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
                 string notification = JsonConvert.SerializeObject(itemNotify);
                 
-                bool flag = await saveNotification(itemNotify.state, notification);
+                bool flag = await saveNotification(order.state.code, notification);
                 if (flag)
                 {
                     List<HttpNotification> datas = Program.httpNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0).ToList();
