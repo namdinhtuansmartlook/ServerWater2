@@ -1399,8 +1399,11 @@ namespace ServerWater2.APIs
 
                 SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role)
                                                 .Include(s => s.receiverOrders!).ThenInclude(s => s.state)
+                                                .Include(s => s.receiverOrders!).ThenInclude(s => s.customer)
                                                 .Include(s => s.managerOrders!).ThenInclude(s => s.state)
+                                                .Include(s => s.managerOrders!).ThenInclude(s => s.customer)
                                                 .Include(s => s.workerOrders!).ThenInclude(s => s.state)
+                                                .Include(s => s.workerOrders!).ThenInclude(s => s.customer)
                                                 .FirstOrDefault();
                 if (m_user == null)
                 {
@@ -1444,7 +1447,7 @@ namespace ServerWater2.APIs
                 }
                 else
                 {
-                    m_order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).Include(s => s.state).FirstOrDefault();
+                    m_order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).Include(s => s.state).Include(s => s.customer).FirstOrDefault();
                     if (m_order == null)
                     {
                         return false;
