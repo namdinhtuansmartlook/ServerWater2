@@ -323,7 +323,7 @@ namespace ServerWater2.APIs
                 bool flag =await saveNotification(m_order.state.code, notification);
                 if (flag)
                 {
-                    List<HttpNotification> datas = Program.httpNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0).ToList();
+                    List<HttpNotification> datas = Program.httpNotifications.Where(s => s.state.CompareTo(m_order.state.code.ToString()) == 0).ToList();
                     foreach (HttpNotification m_data in datas)
                     {
                         m_data.messagers.Add(notification);
@@ -474,7 +474,7 @@ namespace ServerWater2.APIs
                 bool flag = await saveNotification(order.state.code, notification);
                 if (flag)
                 {
-                    List<HttpNotification> datas = Program.httpNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0).ToList();
+                    List<HttpNotification> datas = Program.httpNotifications.Where(s => s.state.CompareTo(order.state.code.ToString()) == 0).ToList();
                     foreach (HttpNotification m_data in datas)
                     {
                         m_data.messagers.Add(notification);
@@ -705,7 +705,7 @@ namespace ServerWater2.APIs
                 bool flag = await saveNotification(order.state.code, notification);
                 if (flag)
                 {
-                    List<HttpNotification> datas = Program.httpNotifications.Where(s => s.state.CompareTo(itemNotify.state) == 0).ToList();
+                    List<HttpNotification> datas = Program.httpNotifications.Where(s => s.state.CompareTo(order.state.code.ToString()) == 0).ToList();
                     foreach (HttpNotification m_data in datas)
                     {
                         m_data.messagers.Add(notification);
