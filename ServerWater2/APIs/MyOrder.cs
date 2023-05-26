@@ -1725,7 +1725,7 @@ namespace ServerWater2.APIs
                     return new ItemInfoOrder();
                 }
 
-                SqlOrder? item = item = context.orders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0)
+                SqlOrder? item = context.orders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0)
                                                        .Include(s => s.customer)
                                                        .Include(s => s.receiver)
                                                        .Include(s => s.manager)
