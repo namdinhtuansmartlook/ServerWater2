@@ -2023,7 +2023,7 @@ namespace ServerWater2.APIs
 
                     //ItemOrderRequest m_log = getLogOrder(item.ID.ToString());
                     //tmp.logActions.Add(m_log);
-                    tmp.logActions = getOrderLogs(item.ID.ToString());
+                    //tmp.logActions = getOrderLogs(item.ID.ToString());
                     tmp.createTime = item.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
                     tmp.lastestTime = item.lastestTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
 
