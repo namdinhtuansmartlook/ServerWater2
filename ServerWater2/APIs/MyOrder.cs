@@ -1725,27 +1725,7 @@ namespace ServerWater2.APIs
                     return new ItemInfoOrder();
                 }
 
-                SqlOrder? item = null;
-
-                if (m_user.role!.code.CompareTo("staff") == 0)
-                {
-                    item = m_user.workerOrders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).FirstOrDefault();
-                    if(item == null)
-                    {
-                        return new ItemInfoOrder();
-                    }
-                }
-                else if (m_user.role!.code.CompareTo("manager") == 0)
-                {
-                    item = m_user.managerOrders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).FirstOrDefault();
-                    if (item == null)
-                    {
-                        return new ItemInfoOrder();
-                    }
-                }
-                else
-                {
-                    item = context.orders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0)
+                SqlOrder? item = context.orders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0)
                                                        .Include(s => s.customer)
                                                        .Include(s => s.receiver)
                                                        .Include(s => s.manager)
@@ -1754,11 +1734,11 @@ namespace ServerWater2.APIs
                                                        .Include(s => s.type)
                                                        .Include(s => s.state)
                                                        .FirstOrDefault();
-                    if(item == null)
-                    {
-                        return new ItemInfoOrder();
-                    }
+                if (item == null)
+                {
+                    return new ItemInfoOrder();
                 }
+
 
                 ItemInfoOrder tmp = new ItemInfoOrder();
 
