@@ -18,7 +18,7 @@ namespace ServerWater2.Controllers
         {
             _logger = logger;
         }
-        public class ItemOrder
+        public class HttpItemOrder
         {
             public string customer { get; set; } = "";
             public string phone { get; set; } = "";
@@ -32,7 +32,7 @@ namespace ServerWater2.Controllers
         }
         [HttpPost]
         [Route("createOrder")]
-        public async Task<IActionResult> CreateOrderAsync(ItemOrder item)
+        public async Task<IActionResult> CreateOrderAsync(HttpItemOrder item)
         {
            
 
@@ -85,16 +85,16 @@ namespace ServerWater2.Controllers
 
         [HttpPut]
         [Route("setAction")]
-        public async Task<IActionResult> SetAction([FromHeader] string token,[FromBody] ItemHttpSetAction tmp)
+        public async Task<IActionResult> SetAction([FromHeader] string token,[FromBody] ItemHttpSetAction items)
         {
-            if(string.IsNullOrEmpty(token) || string.IsNullOrEmpty(tmp.code)  || string.IsNullOrEmpty(tmp.action))
+            if(string.IsNullOrEmpty(token) || string.IsNullOrEmpty(items.code)  || string.IsNullOrEmpty(items.action))
             {
                 return BadRequest();
             }
-            bool flag = await Program.api_order.setAction(token, tmp.code, tmp.action, tmp.note);
-            if (flag)
+            string tmp = await Program.api_order.setAction(token, items.code, items.action, items.note);
+            if (string.IsNullOrEmpty(tmp))
             {
-                return Ok();
+                return Ok(tmp);
             }
             else
             {

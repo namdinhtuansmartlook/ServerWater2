@@ -7,6 +7,7 @@ using static ServerWater2.APIs.MyOrder;
 using static ServerWater2.APIs.MyService;
 using static ServerWater2.APIs.MyState;
 using static ServerWater2.APIs.MyType;
+using static ServerWater2.Controllers.OrderController;
 
 namespace ServerWater2.APIs
 {
@@ -25,7 +26,7 @@ namespace ServerWater2.APIs
 
         public class ItemLog
         {
-            public string id { get; set; } = "";
+            public long id { get; set; } = -1;
             public ItemUser user { get; set; } = new ItemUser();
             public ItemLogOrder order { get; set; } = new ItemLogOrder();
             public ItemAction action { get; set; } = new ItemAction();
@@ -60,7 +61,7 @@ namespace ServerWater2.APIs
                     {
                         ItemLog itemLog = new ItemLog();
 
-                        itemLog.id = item.ID.ToString();
+                        itemLog.id = item.ID;
                         if (item.user != null)
                         {
                             itemLog.user.user = item.user.user;
@@ -70,8 +71,8 @@ namespace ServerWater2.APIs
 
                         if (item.order != null)
                         {
-                            ItemLogOrder tmp = new ItemLogOrder();
-                            tmp.id = item.order.ID;
+                            ItemLogOrder itemOrder = new ItemLogOrder();
+                            itemOrder.id = item.order.ID;
 
                             ItemOrder m_order = new ItemOrder();
                             m_order.code = item.order.code;
@@ -156,9 +157,10 @@ namespace ServerWater2.APIs
                             m_order.createTime = item.order.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
                             m_order.lastestTime = item.order.lastestTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
 
-                            tmp.order = m_order;
+                            itemOrder.order = m_order;
 
-                            itemLog.order = tmp;
+                            itemLog.order = itemOrder;
+
                         }
 
                         if (item.action != null)
