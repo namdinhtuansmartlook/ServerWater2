@@ -64,6 +64,8 @@ namespace ServerWater2.Controllers
             public string code { get; set; } = "";
             public string action { get; set; } = "";
             public string note { get; set; } = "";
+            public string latitude { get; set; } = "";
+            public string longitude { get; set; } = "";
         }
 
         [HttpPost]
@@ -91,7 +93,7 @@ namespace ServerWater2.Controllers
             {
                 return BadRequest();
             }
-            string tmp = await Program.api_order.setAction(token, items.code, items.action, items.note);
+            string tmp = await Program.api_order.setAction(token, items.code, items.action, items.note, items.latitude, items.longitude);
             if (!string.IsNullOrEmpty(tmp))
             {
                 return Ok(tmp);
@@ -260,16 +262,16 @@ namespace ServerWater2.Controllers
 
 
         [HttpPut]
-        [Route("{code}/addImageWorkOrder")]
-        public async Task<IActionResult> AddImageWorkOrder([FromHeader] string token, string code, IFormFile image )
+        [Route("{id}/addImageWorkOrder")]
+        public async Task<IActionResult> AddImageWorkOrder([FromHeader] string token, string id, IFormFile image )
         {
-            long id = Program.api_user.checkUser(token);
-            if (id >= 0)
+            long ID = Program.api_user.checkUser(token);
+            if (ID >= 0)
             {
                 using (MemoryStream ms = new MemoryStream())
                 {
                     image.CopyTo(ms);
-                    string tmp = await Program.api_order.addImageWorkingAsync(token, code, ms.ToArray());
+                    string tmp = await Program.api_order.addImageWorkingAsync(token, id, ms.ToArray());
                     if (!string.IsNullOrEmpty(tmp))
                     {
                         return Ok(tmp);
@@ -289,13 +291,13 @@ namespace ServerWater2.Controllers
         }
 
         [HttpDelete]
-        [Route("{code}/removeImageWorkOrder")]
-        public async Task<IActionResult> RemoveImageWorkOrder([FromHeader] string token, string code, string image)
+        [Route("{id}/removeImageWorkOrder")]
+        public async Task<IActionResult> RemoveImageWorkOrder([FromHeader] string token, string id, string image)
         {
-            long id = Program.api_user.checkUser(token);
-            if (id >= 0)
+            long ID = Program.api_user.checkUser(token);
+            if (ID >= 0)
             {
-                bool flag = await Program.api_order.removeImageWorkingAsync(token, code, image);
+                bool flag = await Program.api_order.removeImageWorkingAsync(token, id, image);
                 if (flag)
                 {
                     return Ok();
@@ -343,16 +345,16 @@ namespace ServerWater2.Controllers
         }
 
         [HttpPut]
-        [Route("{code}/addImageFinishOrder")]
-        public async Task<IActionResult> AddImageFinishOrder([FromHeader] string token, string code, IFormFile image)
+        [Route("{id}/addImageFinishOrder")]
+        public async Task<IActionResult> AddImageFinishOrder([FromHeader] string token, string id, IFormFile image)
         {
-            long id = Program.api_user.checkUser(token);
-            if (id >= 0)
+            long ID = Program.api_user.checkUser(token);
+            if (ID >= 0)
             {
                 using (MemoryStream ms = new MemoryStream())
                 {
                     image.CopyTo(ms);
-                    string tmp = await Program.api_order.addImageFinishAsync(token, code, ms.ToArray());
+                    string tmp = await Program.api_order.addImageFinishAsync(token, id, ms.ToArray());
                     if (!string.IsNullOrEmpty(tmp))
                     {
                         return Ok(tmp);
@@ -371,13 +373,13 @@ namespace ServerWater2.Controllers
         }
 
         [HttpDelete]
-        [Route("{code}/removeImageFinishOrder")]
-        public async Task<IActionResult> RemoveImageFinishOrder([FromHeader] string token, string code, string image)
+        [Route("{id}/removeImageFinishOrder")]
+        public async Task<IActionResult> RemoveImageFinishOrder([FromHeader] string token, string id, string image)
         {
-            long id = Program.api_user.checkUser(token);
-            if (id >= 0)
+            long ID = Program.api_user.checkUser(token);
+            if (ID >= 0)
             {
-                bool flag = await Program.api_order.removeImageFinishAsync(token, code, image);
+                bool flag = await Program.api_order.removeImageFinishAsync(token, id, image);
                 if (flag)
                 {
                     return Ok();

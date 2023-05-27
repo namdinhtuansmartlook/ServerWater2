@@ -86,7 +86,7 @@ namespace ServerWater2.APIs
             }
         }
 
-        public async Task<string> setAction(string token, string order, string action, string note)
+        public async Task<string> setAction(string token, string order, string action, string note, string latitude, string longitude)
         {
             
             using (DataContext context = new DataContext())
@@ -103,22 +103,40 @@ namespace ServerWater2.APIs
                     return "";
                 }
 
-                SqlLogOrder? m_log = context.logs!.Include(s => s.order).Where(s => s.order!.code.CompareTo(order) == 0 && s.order!.isDelete == false).OrderByDescending(s => s.time).FirstOrDefault();
+               /* SqlLogOrder? m_log = context.logs!.Include(s => s.order).Where(s => s.order!.code.CompareTo(order) == 0 && s.order!.isDelete == false).OrderByDescending(s => s.time).FirstOrDefault();
                 if (m_log == null)
+                {
+                    return "";
+                }*/
+
+                SqlOrder? m_order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(order) == 0)
+                                                   .Include(s => s.state)
+                                                   .FirstOrDefault();
+                if (m_order == null)
                 {
                     return "";
                 }
 
-                m_log.action = m_action;
+                SqlLogOrder log = new SqlLogOrder();
+                log.ID = DateTime.Now.Ticks;
+                log.order = m_order;
+                log.user = m_user;
+                log.latitude = latitude;
+                log.longitude = longitude;
+                log.note = note;
+                log.time = DateTime.Now.ToUniversalTime();
+                context.logs!.Add(log);
+
+               /* m_log.action = m_action;
                 if (!string.IsNullOrEmpty(note))
                 {
                     m_log.note = note;
                 }
-                m_log.time = DateTime.Now.ToUniversalTime();
+                m_log.time = DateTime.Now.ToUniversalTime();*/
                 int rows = await context.SaveChangesAsync();
                 if(rows > 0)
                 {
-                    return m_log.ID.ToString();
+                    return log.ID.ToString();
                 }
                 else
                 {
@@ -1099,16 +1117,16 @@ namespace ServerWater2.APIs
                             return "";
                         }
 
-                        m_log = context.logs!.Include(s => s.order).Where(s => s.order!.code.CompareTo(code) == 0 && s.order!.isDelete == false).Include(s => s.order).ThenInclude(s => s!.state).OrderByDescending(s => s.time).FirstOrDefault();
+                        m_log = context.logs!.Where(s => s.ID == id).Include(s => s.order).ThenInclude(s => s!.state).FirstOrDefault();
                         if (m_log == null)
                         {
                             return "";
                         }
-                        if (m_log.order!.state!.code != 5)
+                        if (m_log.order!.state!.code > 5)
                         {
                             return "";
                         }
-
+                        //Console.WriteLine(data.Length);
                         codefile = await Program.api_file.saveFileAsync(DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss.image"), data);
                         if (string.IsNullOrEmpty(codefile))
                         {
@@ -1120,6 +1138,7 @@ namespace ServerWater2.APIs
                         }
                         m_log.images.Add(codefile);
 
+                        // bool flag = await setStateOrder(user.ID, code, "Add image before", m_log.latitude, m_log.longitude);
                         int rows = await context.SaveChangesAsync();
                         if (rows > 0)
                         {
@@ -1188,12 +1207,12 @@ namespace ServerWater2.APIs
                             return false;
                         }
 
-                        SqlLogOrder? m_log = context.logs!.Include(s => s.order).Where(s => s.order!.code.CompareTo(order) == 0 && s.order!.isDelete == false).Include(s => s.order).ThenInclude(s => s!.state).OrderByDescending(s => s.time).FirstOrDefault();
+                        SqlLogOrder? m_log = context.logs!.Include(s => s.order).Where(s => s.ID == id).Include(s => s.order).ThenInclude(s => s!.state).OrderByDescending(s => s.time).FirstOrDefault();
                         if (m_log == null)
                         {
                             return false;
                         }
-                        if (m_log.order!.state!.code != 5)
+                        if (m_log.order!.state!.code > 5)
                         {
                             return false;
                         }
@@ -1215,21 +1234,14 @@ namespace ServerWater2.APIs
                              {
                                  m_note.images.Remove(code);
                              }
-                             image.note = "Remove After Image";
+                             image.note = "Remove Before Image";
                              image.images = m_note.images;
 
 
                          }
-                         string note = JsonConvert.SerializeObject(image);*/
-                        /* ItemImage image = new ItemImage();
-                         image.code = code;
-                         image.user = user.user;
-                         image.time = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                         string note = JsonConvert.SerializeObject(image);
 
-                         string note = "Remove After :" + JsonConvert.SerializeObject(image);*/
-
-                        //bool flag = await setStateOrder(user.ID, order, note, m_log.latitude, m_log.longitude);
-
+                         bool flag = await setStateOrder(user.ID, order, note, m_log.latitude, m_log.longitude);*/
                         int rows = await context.SaveChangesAsync();
                         if (rows > 0)
                         {
@@ -1260,153 +1272,122 @@ namespace ServerWater2.APIs
             {
                 return "";
             }
-            try
+            using (DataContext context = new DataContext())
             {
-                long id = long.Parse(code);
-                if (id > 0)
+                SqlUser? user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).FirstOrDefault();
+                if (user == null)
                 {
-                    using (DataContext context = new DataContext())
-                    {
-                        SqlUser? user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).FirstOrDefault();
-                        if (user == null)
-                        {
-                            return "";
-                        }
+                    return "";
+                }
 
-                        SqlLogOrder? m_log = context.logs!.Include(s => s.order).Where(s => s.order!.code.CompareTo(code) == 0 && s.order!.isDelete == false).Include(s => s.order).ThenInclude(s => s!.state).OrderByDescending(s => s.time).FirstOrDefault();
-                        if (m_log == null)
-                        {
-                            return "";
-                        }
-                        if (m_log.order!.state!.code < 3)
-                        {
-                            return "";
-                        }
+                SqlLogOrder? m_log = context.logs!.Include(s => s.order).Where(s => s.order!.code.CompareTo(code) == 0 && s.order!.isDelete == false).Include(s => s.order).ThenInclude(s => s!.state).OrderByDescending(s => s.time).FirstOrDefault();
+                if (m_log == null)
+                {
+                    return "";
+                }
+                if (m_log.order!.state!.code < 3)
+                {
+                    return "";
+                }
 
 
-                        SqlLogOrder log = new SqlLogOrder();
-                        log.ID = DateTime.Now.Ticks;
-                        log.order = m_log.order;
-                        log.user = user;
-                        log.latitude = "";
-                        log.longitude = "";
-                        log.note = "Add Sign";
-                        log.images = new List<string>();
-                        log.images.Add(codefile);
-                        log.time = DateTime.Now.ToUniversalTime();
-                        context.logs!.Add(log);
+                SqlLogOrder log = new SqlLogOrder();
+                log.ID = DateTime.Now.Ticks;
+                log.order = m_log.order;
+                log.user = user;
+                log.latitude = "";
+                log.longitude = "";
+                log.note = "Add Sign";
+                log.images = new List<string>();
+                log.images.Add(codefile);
+                log.time = DateTime.Now.ToUniversalTime();
+                context.logs!.Add(log);
 
-                        int rows = await context.SaveChangesAsync();
-                        if (rows > 0)
-                        {
-                            return codefile;
-                        }
-                        else
-                        {
-                            return "";
-                        }
-
-
-                        /* string note = "Add Sign";
-
-                         bool flag = await setStateOrder(user.ID, code, note, "", "");
-                         if (flag)
-                         {
-                             return codefile;
-                         }
-                         else
-                         {
-                             return "";
-                         }*/
-                    }
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
+                {
+                    return codefile;
                 }
                 else
                 {
                     return "";
                 }
+
+
+                /* string note = "Add Sign";
+
+                 bool flag = await setStateOrder(user.ID, code, note, "", "");
+                 if (flag)
+                 {
+                     return codefile;
+                 }
+                 else
+                 {
+                     return "";
+                 }*/
             }
-            catch (Exception ex)
-            {
-                return "";
-            }
+           
         }
 
         public async Task<bool> removeImageSignAsync(string token, string order, string code)
         {
-            try
+            using (DataContext context = new DataContext())
             {
-                long id = long.Parse(order);
-                if (id > 0)
+                SqlUser? user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).FirstOrDefault();
+                if (user == null)
                 {
-                    using (DataContext context = new DataContext())
-                    {
-                        SqlUser? user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).FirstOrDefault();
-                        if (user == null)
-                        {
-                            return false;
-                        }
+                    return false;
+                }
 
-                        SqlLogOrder? m_log = context.logs!.Include(s => s.order).Where(s => s.order!.code.CompareTo(order) == 0 && s.order!.isDelete == false).Include(s => s.order).ThenInclude(s => s!.state).OrderByDescending(s => s.time).FirstOrDefault();
-                        if (m_log == null)
-                        {
-                            return false;
-                        }
-                        if (m_log.order!.state!.code < 3)
-                        {
-                            return false;
-                        }
+                SqlLogOrder? m_log = context.logs!.Include(s => s.order).Where(s => s.order!.code.CompareTo(order) == 0 && s.order!.isDelete == false).Include(s => s.order).ThenInclude(s => s!.state).OrderByDescending(s => s.time).FirstOrDefault();
+                if (m_log == null)
+                {
+                    return false;
+                }
+                if (m_log.order!.state!.code < 3)
+                {
+                    return false;
+                }
 
-                        if (string.IsNullOrEmpty(code))
-                        {
-                            return false;
-                        }
+                if (string.IsNullOrEmpty(code))
+                {
+                    return false;
+                }
 
-                        if (m_log.images != null)
-                        {
-                            m_log.images.Remove(code);
-                            m_log.note = "Remove Sign";
-                        }
+                if (m_log.images != null)
+                {
+                    m_log.images.Remove(code);
+                    m_log.note = "Remove Sign";
+                }
 
-                        int rows = await context.SaveChangesAsync();
-                        if (rows > 0)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                        /* ItemNote? m_note = JsonConvert.DeserializeObject<ItemNote>(m_log.note);
-                         ItemNote image = new ItemNote();
-
-                         if (m_note != null)
-                         {
-                             if(m_note.images.Count > 0)
-                             {
-                                 m_note.images.Remove(code);
-                             }
-                             image.note = "Remove Sign";
-                             image.images = m_note.images;
-
-
-                         }
-                         string note = JsonConvert.SerializeObject(image);
-
-                         bool flag = await setStateOrder(user.ID, order, note, "", "");
-                         return flag;*/
-
-                    }
-
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
+                {
+                    return true;
                 }
                 else
                 {
                     return false;
                 }
+                /* ItemNote? m_note = JsonConvert.DeserializeObject<ItemNote>(m_log.note);
+                 ItemNote image = new ItemNote();
 
-            }
-            catch (Exception ex)
-            {
-                return false;
+                 if (m_note != null)
+                 {
+                     if(m_note.images.Count > 0)
+                     {
+                         m_note.images.Remove(code);
+                     }
+                     image.note = "Remove Sign";
+                     image.images = m_note.images;
+
+
+                 }
+                 string note = JsonConvert.SerializeObject(image);
+
+                 bool flag = await setStateOrder(user.ID, order, note, "", "");
+                 return flag;*/
+
             }
         }
 

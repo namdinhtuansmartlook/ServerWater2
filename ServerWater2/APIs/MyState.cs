@@ -69,7 +69,7 @@ namespace ServerWater2.APIs
                     item.isdeleted = false;
                     context.states!.Add(item);
                 }
-
+                
                 type = context.states!.Where(s => s.code == 5).FirstOrDefault();
                 if (type == null)
                 {
