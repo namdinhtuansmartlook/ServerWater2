@@ -2058,11 +2058,10 @@ namespace ServerWater2.APIs
             using (DataContext context = new DataContext())
             {
 
-                List<SqlOrder>? items = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && (s.code.CompareTo(code) == 0 || s.phone.CompareTo(code) == 0 || s.addressWater.CompareTo(code) == 0))
+                List<SqlOrder>? items = context.orders!.Include(s => s.customer).Where(s => s.isDelete == false && s.isFinish == false && (s.code.CompareTo(code) == 0 || s.phone.CompareTo(code) == 0 || s.addressWater.CompareTo(code) == 0) || s.customer!.code.CompareTo(code) == 0)
                                                         .Include(s => s.type)
                                                         .Include(s => s.service)
                                                         .Include(s => s.state)
-                                                        .Include(s => s.customer)
                                                         .Include(s => s.receiver)
                                                         .Include(s => s.manager)
                                                         .Include(s => s.worker)
