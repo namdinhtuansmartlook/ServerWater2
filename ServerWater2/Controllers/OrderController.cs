@@ -92,7 +92,7 @@ namespace ServerWater2.Controllers
                 return BadRequest();
             }
             string tmp = await Program.api_order.setAction(token, items.code, items.action, items.note);
-            if (string.IsNullOrEmpty(tmp))
+            if (!string.IsNullOrEmpty(tmp))
             {
                 return Ok(tmp);
             }
