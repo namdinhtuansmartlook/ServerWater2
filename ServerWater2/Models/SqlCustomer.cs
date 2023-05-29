@@ -9,6 +9,7 @@ namespace ServerWater2.Models
         [Key]
         public long ID { get; set; }
         public string code { get; set; } = "";
+        public string route { get; set; } = "";
         public string phone { get; set; } = "";
         public string name { get; set; } = "";
         public string address { get; set; } = "";

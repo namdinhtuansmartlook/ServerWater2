@@ -210,6 +210,7 @@ namespace ServerWater2.APIs
         public class ItemCustomer
         {
             public string maDB { get; set; } = "";
+            public string route { get; set; } = "";
             public string sdt { get; set; } = "";
             public string tenkh { get; set; } = "";
             public string diachi { get; set; } = "";
@@ -235,6 +236,7 @@ namespace ServerWater2.APIs
                     ItemCustomer tmp = new ItemCustomer();
 
                     tmp.maDB = item.code;
+                    tmp.route = string.IsNullOrEmpty(item.route) ? "Coming Soon !!!" : item.route;
                     tmp.sdt = item.phone;
                     tmp.tenkh = item.name;
                     tmp.diachi = item.address;

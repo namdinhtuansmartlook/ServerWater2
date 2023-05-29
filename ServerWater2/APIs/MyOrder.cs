@@ -119,6 +119,7 @@ namespace ServerWater2.APIs
 
                 SqlLogOrder log = new SqlLogOrder();
                 log.ID = DateTime.Now.Ticks;
+                log.action = m_action;
                 log.order = m_order;
                 log.user = m_user;
                 log.latitude = latitude;
@@ -1514,6 +1515,7 @@ namespace ServerWater2.APIs
                     {
                         ItemCustomer customer = new ItemCustomer();
                         customer.maDB = item.customer.code;
+                        customer.route = string.IsNullOrEmpty(item.customer.route) ? "Coming Soon !!!" : item.customer.route;
                         customer.sdt = item.customer.phone;
                         customer.tenkh = item.customer.name;
                         customer.diachi = item.customer.address;
@@ -1687,6 +1689,7 @@ namespace ServerWater2.APIs
                         {
                             ItemCustomer customer = new ItemCustomer();
                             customer.maDB = item.customer.code;
+                            customer.route = string.IsNullOrEmpty(item.customer.route) ? "Coming Soon !!!" : item.customer.route;
                             customer.sdt = item.customer.phone;
                             customer.tenkh = item.customer.name;
                             customer.diachi = item.customer.address;
@@ -1832,6 +1835,7 @@ namespace ServerWater2.APIs
                     {
                         ItemCustomer customer = new ItemCustomer();
                         customer.maDB = item.customer.code;
+                        customer.route = string.IsNullOrEmpty(item.customer.route)?"Coming Soon !!!": item.customer.route;
                         customer.sdt = item.customer.phone;
                         customer.tenkh = item.customer.name;
                         customer.diachi = item.customer.address;
