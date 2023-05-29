@@ -423,16 +423,16 @@ namespace ServerWater2.Controllers
         }
 
         [HttpPut]
-        [Route("{code}/addImageSign")]
-        public async Task<IActionResult> addImageCustomer([FromHeader] string token, string code, IFormFile image)
+        [Route("{id}/addImageSign")]
+        public async Task<IActionResult> addImageCustomer([FromHeader] string token, string id, IFormFile image)
         {
-            long id = Program.api_user.checkUser(token);
-            if (id >= 0)
+            long ID = Program.api_user.checkUser(token);
+            if (ID >= 0)
             {
                 using (MemoryStream ms = new MemoryStream())
                 {
                     image.CopyTo(ms);
-                    string tmp = await Program.api_order.addImageSignAsync(token, code, ms.ToArray());
+                    string tmp = await Program.api_order.addImageSignAsync(token, id, ms.ToArray());
                     if (!string.IsNullOrEmpty(tmp))
                     {
                         return Ok(tmp);
@@ -451,13 +451,13 @@ namespace ServerWater2.Controllers
         }
 
         [HttpDelete]
-        [Route("{code}/removeImageSign")]
-        public async Task<IActionResult> removeImageCustomer([FromHeader] string token, string code, string image)
+        [Route("{id}/removeImageSign")]
+        public async Task<IActionResult> removeImageCustomer([FromHeader] string token, string id, string image)
         {
-            long id = Program.api_user.checkUser(token);
-            if (id >= 0)
+            long ID = Program.api_user.checkUser(token);
+            if (ID >= 0)
             {
-                bool flag = await Program.api_order.removeImageSignAsync(token, code, image);
+                bool flag = await Program.api_order.removeImageSignAsync(token, id, image);
                 if (flag)
                 {
                     return Ok();
