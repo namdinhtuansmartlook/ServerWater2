@@ -45,7 +45,7 @@ namespace ServerWater2.APIs
             }
         }
 
-        public async Task<bool> setStateOrder(long idUser, string code, string note, string latitude, string longitude)
+      /*  public async Task<bool> setStateOrder(long idUser, string code, string note, string latitude, string longitude)
         {
             using (DataContext context = new DataContext())
             {
@@ -84,7 +84,7 @@ namespace ServerWater2.APIs
                     return false;
                 }
             }
-        }
+        }*/
 
         public async Task<string> setAction(string token, string order, string action, string note, string latitude, string longitude)
         {
@@ -472,30 +472,18 @@ namespace ServerWater2.APIs
                         m_data.messagers.Add(notification);
                     }
                 }
-                /*ItemNote image = new ItemNote();
-                image.note = string.Format("{0} : {1} ", order.state!.name, order.code);
-                image.images = new List<string>();*/
-
-                string note = string.Format("{0} : {1} ", order.state!.name, order.code);
-
-                flag = await setStateOrder(m_user.ID, order.code, note, "", "");
-
-                if (flag)
+               
+               
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
                 {
-                    int rows = await context.SaveChangesAsync();
-                    if (rows > 0)
-                    {
-                        return flag;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return true;
                 }
                 else
                 {
                     return false;
                 }
+              
             }
         }
 
@@ -513,16 +501,7 @@ namespace ServerWater2.APIs
                 {
                     return false;
                 }
-               
-                //if(m_customer.orders == null)
-                //{
-                //    m_customer.orders = new List<SqlOrder>();
-                //}
-                //SqlOrder? tmp = m_customer.orders.Where(s => s.code.CompareTo(order) == 0 && s.isDelete == false).FirstOrDefault();
-                //if(tmp != null)
-                //{
-                //    return false;
-                //}
+              
 
                 SqlOrder? m_order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).Include(s => s.state).Include(s => s.service).FirstOrDefault();
                 if (m_order == null)
@@ -538,24 +517,13 @@ namespace ServerWater2.APIs
                 m_order.customer = m_customer;
                 m_order.lastestTime = DateTime.Now.ToUniversalTime();
 
-                /*ItemNote image = new ItemNote();
-                image.note = string.Format("KH : {0} - MDB : {1} Theo DH : {2}_{3} ", m_customer.name, m_customer.code, m_order.code, m_order.service!.name);
-                image.images = new List<string>();*/
-
-                string note = string.Format("KH : {0} - MDB : {1} Theo DH : {2}_{3} ", m_customer.name, m_customer.code, m_order.code, m_order.service!.name);
-
-                bool flag = await setStateOrder(user.ID, m_order.code, note, m_customer.latitude, m_customer.longitude);
-                if (flag)
+               
+              
+              
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
                 {
-                    int rows = await context.SaveChangesAsync();
-                    if (rows > 0)
-                    {
-                        return flag;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return true;
                 }
                 else
                 {
@@ -598,23 +566,12 @@ namespace ServerWater2.APIs
                 order.manager = m_user;
                 order.lastestTime = DateTime.Now.ToUniversalTime();
 
-                /*ItemNote image = new ItemNote();
-                image.note = string.Format("{0} : {1} -  DH : {1}  ", m_user.user, order.state!.name, order.code);
-                image.images = new List<string>();*/
 
-                string note = string.Format("{0} : {1} -  DH : {1}  ", m_user.user, order.state!.name, order.code);
-                bool flag = await setStateOrder(m_user.ID, order.code, note, "", "");
-                if (flag)
+
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
                 {
-                    int rows = await context.SaveChangesAsync();
-                    if (rows > 0)
-                    {
-                        return flag;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return true;
                 }
                 else
                 {
@@ -644,7 +601,7 @@ namespace ServerWater2.APIs
                 }
 
                 SqlOrder? order = null;
-                string note = "";
+                
 
                 if (m_user.role!.code.CompareTo("admin") == 0 || m_user.role!.code.CompareTo("receiver") == 0)
                 {
@@ -657,17 +614,11 @@ namespace ServerWater2.APIs
                     {
                         return false;
                     }
-
                     if(order.manager == null)
                     {
-                        /*ItemNote m_image = new ItemNote();
-                        m_image.note = string.Format("{0} : {1} -  DH : {1}  ", m_user.user, order.state!.name, order.code);
-                        m_image.images = new List<string>();*/
+                        order.manager = m_user;                  }
 
-                        note = string.Format("{0} : {1} -  DH : {1}  ", m_user.user, order.state!.name, order.code);
-                        bool flag1 =  await setStateOrder(m_user.ID, order.code, note, "", "");
-
-                    }
+                   
                 }
                 else
                 {
@@ -703,24 +654,12 @@ namespace ServerWater2.APIs
                         m_data.messagers.Add(notification);
                     }
                 }
-                /*ItemNote image = new ItemNote();
-                image.note = string.Format("{0} : {1} -  DH : {1}  ", order.state!.name, m_user.user, order.code);
-                image.images = new List<string>();
-*/
-                note = string.Format("{0} : {1} -  DH : {1}  ", order.state!.name, m_user.user, order.code);
 
-                flag = await setStateOrder(m_user.ID, order.code, note, "", "");
-                if (flag)
+
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
                 {
-                    int rows = await context.SaveChangesAsync();
-                    if (rows > 0)
-                    {
-                        return flag;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return true;
                 }
                 else
                 {
@@ -798,34 +737,7 @@ namespace ServerWater2.APIs
                     return "";
                 }
 
-                /*using (DataContext context = new DataContext())
-                {
-                    while (flagblock)
-                    {
-                        Thread.Sleep(1);
-                    }
-                    flagblock = true;
-
-                    ItemNote image = new ItemNote();
-                    image.note = m_log.note;
-                    image.images.Add(codefile);
-
-
-                    string note = JsonConvert.SerializeObject(image);
-
-                    bool flag = await setStateOrder(user.ID, code, codefile, m_log.latitude, m_log.longitude);
-                    bool flag = await setAction(token, code, "action6", note);
-                    if (flag)
-                    {
-                        flagblock = false;
-                        return codefile;
-                    }
-                    else
-                    {
-                        flagblock = false;
-                        return "";
-                    }
-                }*/
+               
             }
             catch (Exception ex)
             {
@@ -866,23 +778,7 @@ namespace ServerWater2.APIs
                         {
                             m_log.images.Remove(code);
                         }
-                        /* ItemNote? m_note = JsonConvert.DeserializeObject<ItemNote>(m_log.note);
-
-                         ItemNote image = new ItemNote();
-                         if (m_note != null)
-                         {
-                             if (m_note.images.Count > 0)
-                             {
-                                 m_note.images.Remove(code);
-                             }
-                             image.note = "Remove Before Image";
-                             image.images = m_note.images;
-
-
-                         }
-                         string note = JsonConvert.SerializeObject(image);
-
-                         bool flag = await setStateOrder(user.ID, order, note, m_log.latitude, m_log.longitude);*/
+                       
                         int rows = await context.SaveChangesAsync();
                         if (rows > 0)
                         {
@@ -968,32 +864,12 @@ namespace ServerWater2.APIs
                 m_order.state = m_state;
                 m_order.lastestTime = DateTime.Now.ToUniversalTime();
 
-                /*ItemNote image = new ItemNote();
-                if (!string.IsNullOrEmpty(note))
-                {
-                    image.note = note;
-                    image.images = new List<string>();
 
 
-                }
-                else
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
                 {
-                    image.note = string.Format("{0} {1} : {2}", m_user.user, m_order.state!.name, m_order.code);
-                    image.images = new List<string>();
-                }*/
-
-                bool flag = await setStateOrder(m_user.ID, m_order.code, note, x, y);
-                if (flag)
-                {
-                    int rows = await context.SaveChangesAsync();
-                    if (rows > 0)
-                    {
-                        return flag;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return true;
                 }
                 else
                 {
@@ -1064,33 +940,10 @@ namespace ServerWater2.APIs
                 m_order.state = m_state;
                 m_order.lastestTime = DateTime.Now.ToUniversalTime();
 
-                /*ItemNote image = new ItemNote();
-                if (!string.IsNullOrEmpty(note))
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
                 {
-                    image.note = note;
-                    image.images = new List<string>();
-
-
-                }
-                else
-                {
-                    image.note = string.Format("{0} {1} : {2}", m_user.user, m_order.state!.name, m_order.code);
-                    image.images = new List<string>();
-                }
-                string m_note = JsonConvert.SerializeObject(image);*/
-
-                bool flag = await setStateOrder(m_user.ID, m_order.code, note, "", "");
-                if (flag)
-                {
-                    int rows = await context.SaveChangesAsync();
-                    if (rows > 0)
-                    {
-                        return flag;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return true;
                 }
                 else
                 {
@@ -1155,35 +1008,7 @@ namespace ServerWater2.APIs
                     return "";
                 }
 
-                /* using (DataContext context = new DataContext())
-                 {
-                     while (flagblock)
-                     {
-                         Thread.Sleep(1);
-                     }
-                     flagblock = true;
-
-                     ItemNote image = new ItemNote();
-                     image.note = m_log.note;
-                     image.images.Add(codefile);
-
-
-                     string note = JsonConvert.SerializeObject(image);
-
-                     bool flag = await setAction(token, code, "action7", note);
-
-                     //bool flag = await setStateOrder(user.ID, code, note, m_log.latitude, m_log.longitude);
-                     if (flag)
-                     {
-                         flagblock = false;
-                         return codefile;
-                     }
-                     else
-                     {
-                         flagblock = false;
-                         return "";
-                     }
-                 }*/
+               
             }
             catch (Exception ex)
             {
@@ -1225,23 +1050,7 @@ namespace ServerWater2.APIs
                         {
                             m_log.images.Remove(code);
                         }
-                        /* ItemNote? m_note = JsonConvert.DeserializeObject<ItemNote>(m_log.note);
-
-                         ItemNote image = new ItemNote();
-                         if (m_note != null)
-                         {
-                             if (m_note.images.Count > 0)
-                             {
-                                 m_note.images.Remove(code);
-                             }
-                             image.note = "Remove Before Image";
-                             image.images = m_note.images;
-
-
-                         }
-                         string note = JsonConvert.SerializeObject(image);
-
-                         bool flag = await setStateOrder(user.ID, order, note, m_log.latitude, m_log.longitude);*/
+                      
                         int rows = await context.SaveChangesAsync();
                         if (rows > 0)
                         {
@@ -1369,25 +1178,7 @@ namespace ServerWater2.APIs
                 {
                     return false;
                 }
-                /* ItemNote? m_note = JsonConvert.DeserializeObject<ItemNote>(m_log.note);
-                 ItemNote image = new ItemNote();
-
-                 if (m_note != null)
-                 {
-                     if(m_note.images.Count > 0)
-                     {
-                         m_note.images.Remove(code);
-                     }
-                     image.note = "Remove Sign";
-                     image.images = m_note.images;
-
-
-                 }
-                 string note = JsonConvert.SerializeObject(image);
-
-                 bool flag = await setStateOrder(user.ID, order, note, "", "");
-                 return flag;*/
-
+               
             }
         }
 
@@ -1471,23 +1262,11 @@ namespace ServerWater2.APIs
                 m_order.isFinish = true;
                 m_order.lastestTime = DateTime.Now.ToUniversalTime();
 
-                /*ItemNote image = new ItemNote();
-                image.note = string.Format("{0} : {1} ", m_order.state!.name, m_order.code);
-                image.images = new List<string>();*/
 
-                string note = string.Format("{0} : {1} ", m_order.state!.name, m_order.code);
-                bool flag = await setStateOrder(m_user.ID, m_order.code, note, "", "");
-                if (flag)
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
                 {
-                    int rows = await context.SaveChangesAsync();
-                    if (rows > 0)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return true;
                 }
                 else
                 {
@@ -1552,23 +1331,10 @@ namespace ServerWater2.APIs
                 m_order.state = m_state;
                 m_order.lastestTime = DateTime.Now.ToUniversalTime();
 
-                /*ItemNote image = new ItemNote();
-                image.note = string.Format("{0} : {1} ", m_order.state!.name, m_order.code);
-                image.images = new List<string>();*/
-
-                string note = string.Format("{0} : {1} ", m_order.state!.name, m_order.code);
-                bool flag = await setStateOrder(m_user.ID, m_order.code, note, "", "");
-                if (flag)
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
                 {
-                    int rows = await context.SaveChangesAsync();
-                    if (rows > 0)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return true;
                 }
                 else
                 {
