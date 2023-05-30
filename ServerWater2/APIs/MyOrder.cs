@@ -1478,7 +1478,7 @@ namespace ServerWater2.APIs
                     return new ItemInfoOrder();
                 }
 
-                SqlOrder? item = context.orders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0)
+                SqlOrder? item = context.orders!.Where(s => s.code.CompareTo(code) == 0)
                                                        .Include(s => s.customer)
                                                        .Include(s => s.receiver)
                                                        .Include(s => s.manager)
@@ -1614,7 +1614,7 @@ namespace ServerWater2.APIs
                     return new List<ItemInfoOrder>();
                 }
 
-                List<SqlOrder> orders = context.orders!.Where(s => DateTime.Compare(m_begin.ToUniversalTime(), s.createdTime) <= 0 && DateTime.Compare(m_end.ToUniversalTime(), s.createdTime) > 0 && s.isDelete == false)
+                List<SqlOrder> orders = context.orders!.Where(s => DateTime.Compare(m_begin.ToUniversalTime(), s.createdTime) <= 0 && DateTime.Compare(m_end.ToUniversalTime(), s.createdTime) > 0)
                                                        .Include(s => s.customer)
                                                        .Include(s => s.receiver)
                                                        .Include(s => s.manager)
@@ -1800,7 +1800,7 @@ namespace ServerWater2.APIs
             using (DataContext context = new DataContext())
             {
 
-                List<SqlOrder>? items = context.orders!.Include(s => s.customer).Where(s => s.isDelete == false && s.isFinish == false && (s.code.CompareTo(code) == 0 || s.phone.CompareTo(code) == 0 || s.addressWater.CompareTo(code) == 0) || s.customer!.code.CompareTo(code) == 0)
+                List<SqlOrder>? items = context.orders!.Include(s => s.customer).Where(s => s.isFinish == false && (s.code.CompareTo(code) == 0 || s.phone.CompareTo(code) == 0 || s.addressWater.CompareTo(code) == 0) || s.customer!.code.CompareTo(code) == 0)
                                                         .Include(s => s.type)
                                                         .Include(s => s.service)
                                                         .Include(s => s.state)
