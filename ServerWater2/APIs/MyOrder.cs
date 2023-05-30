@@ -1180,6 +1180,98 @@ namespace ServerWater2.APIs
         {
             using (DataContext context = new DataContext())
             {
+                SqlState? m_state = context.states!.Where(s => s.isdeleted == false && s.code == 7).FirstOrDefault();
+                if (m_state == null)
+                {
+                    return false;
+                }
+
+                SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role)
+                                                .Include(s => s.receiverOrders!).ThenInclude(s => s.state)
+                                                .Include(s => s.receiverOrders!).ThenInclude(s => s.customer)
+                                                .Include(s => s.managerOrders!).ThenInclude(s => s.state)
+                                                .Include(s => s.managerOrders!).ThenInclude(s => s.customer)
+                                                .Include(s => s.workerOrders!).ThenInclude(s => s.state)
+                                                .Include(s => s.workerOrders!).ThenInclude(s => s.customer)
+                                                .FirstOrDefault();
+                if (m_user == null)
+                {
+                    return false;
+                }
+
+
+                SqlOrder? m_order = null;
+
+                if (m_user.role!.code.CompareTo("staff") == 0)
+                {
+                    m_order = m_user.workerOrders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).FirstOrDefault();
+                    if (m_order == null)
+                    {
+                        return false;
+                    }
+                    if (m_order.state!.code != 6)
+                    {
+                        return false;
+                    }
+                    if(m_order.customer == null)
+                    {
+                        return false;
+                    }    
+                }
+                else if (m_user.role!.code.CompareTo("manager") == 0 || m_user.role!.code.CompareTo("survey") == 0)
+                {
+                    m_order = m_user.managerOrders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).FirstOrDefault();
+                    if (m_order == null)
+                    {
+                        return false;
+                    }
+                    if (m_order.state!.code != 6)
+                    {
+                        return false;
+                    }
+                    if (m_order.customer == null)
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    m_order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).Include(s => s.state).Include(s => s.customer).FirstOrDefault();
+                    if (m_order == null)
+                    {
+                        return false;
+                    }
+                    if (m_order.state!.code != 6)
+                    {
+                        return false;
+                    }
+                    if (m_order.customer == null)
+                    {
+                        return false;
+                    }
+                }
+
+                m_order.state = m_state;
+                m_order.isFinish = true;
+                m_order.lastestTime = DateTime.Now.ToUniversalTime();
+
+
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public async Task<bool> confirmSignOrder(string token, string code)
+        {
+            using (DataContext context = new DataContext())
+            {
                 SqlState? m_state = context.states!.Where(s => s.isdeleted == false && s.code == 6).FirstOrDefault();
                 if (m_state == null)
                 {
@@ -1213,10 +1305,6 @@ namespace ServerWater2.APIs
                     {
                         return false;
                     }
-                    if(m_order.customer == null)
-                    {
-                        return false;
-                    }    
                 }
                 else if (m_user.role!.code.CompareTo("manager") == 0 || m_user.role!.code.CompareTo("survey") == 0)
                 {
@@ -1226,10 +1314,6 @@ namespace ServerWater2.APIs
                         return false;
                     }
                     if (m_order.state!.code != 5)
-                    {
-                        return false;
-                    }
-                    if (m_order.customer == null)
                     {
                         return false;
                     }
@@ -1245,14 +1329,9 @@ namespace ServerWater2.APIs
                     {
                         return false;
                     }
-                    if (m_order.customer == null)
-                    {
-                        return false;
-                    }
                 }
 
                 m_order.state = m_state;
-                m_order.isFinish = true;
                 m_order.lastestTime = DateTime.Now.ToUniversalTime();
 
 
@@ -1282,7 +1361,7 @@ namespace ServerWater2.APIs
                     return false;
                 }
 
-                SqlState? m_state = context.states!.Where(s => s.isdeleted == false && s.code == 7).FirstOrDefault();
+                SqlState? m_state = context.states!.Where(s => s.isdeleted == false && s.code == 8).FirstOrDefault();
                 if (m_state == null)
                 {
                     return false;

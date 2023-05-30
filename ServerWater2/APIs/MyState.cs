@@ -81,15 +81,14 @@ namespace ServerWater2.APIs
                     item.isdeleted = false;
                     context.states!.Add(item);
                 }
-
                 type = context.states!.Where(s => s.code == 6).FirstOrDefault();
                 if (type == null)
                 {
                     SqlState item = new SqlState();
                     item.ID = DateTime.Now.Ticks;
                     item.code = 6;
-                    item.name = "Đã Hoàn Thành";
-                    item.des = "Đã Hoàn Thành";
+                    item.name = "Nghiệm Thu";
+                    item.des = "Nghiệm Thu";
                     item.isdeleted = false;
                     context.states!.Add(item);
                 }
@@ -100,6 +99,18 @@ namespace ServerWater2.APIs
                     SqlState item = new SqlState();
                     item.ID = DateTime.Now.Ticks;
                     item.code = 7;
+                    item.name = "Đã Hoàn Thành";
+                    item.des = "Đã Hoàn Thành";
+                    item.isdeleted = false;
+                    context.states!.Add(item);
+                }
+
+                type = context.states!.Where(s => s.code == 8).FirstOrDefault();
+                if (type == null)
+                {
+                    SqlState item = new SqlState();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = 8;
                     item.name = "Hủy";
                     item.des = "Hủy";
                     item.isdeleted = false;

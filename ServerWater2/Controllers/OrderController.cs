@@ -423,6 +423,31 @@ namespace ServerWater2.Controllers
         }
 
         [HttpPut]
+        [Route("{code}/confirmSignOrder")]
+        public async Task<IActionResult> confirmSignOrder([FromHeader] string token, string code)
+        {
+            long id = Program.api_user.checkUser(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_order.confirmSignOrder(token, code);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }
+
+        [HttpPut]
         [Route("{id}/addImageSign")]
         public async Task<IActionResult> addImageCustomer([FromHeader] string token, string id, IFormFile image)
         {
