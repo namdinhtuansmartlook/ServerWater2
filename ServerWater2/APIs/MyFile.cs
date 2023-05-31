@@ -94,7 +94,7 @@ namespace ServerWater2.APIs
         public async Task<byte[]?> getImageChanged(byte[] data)
         {
             //Console.WriteLine("getImageChanged");
-            var client = new RestClient("http://office.stvg.vn:59073/image");
+            var client = new RestClient("http://dev.smartlook.com.vn:59111/image");
             var request = new RestRequest();
             request.Method = Method.Post;
             request.AddHeader("Content-Type", "multipart/form-data");

@@ -1,12 +1,16 @@
 ﻿using ServerWater2.Models;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using System.Drawing;
 
 namespace ServerWater2.APIs
 {
     public class MyCustomer
     {
         public MyCustomer() { }
+
+        public static bool flagblock = false;
+
         public async Task<bool> createCustomerAsync(string code, string phone, string name, string address, string note, string latidude, string longitude)
         {
             if (string.IsNullOrEmpty(code)|| string.IsNullOrEmpty(name))
@@ -135,6 +139,7 @@ namespace ServerWater2.APIs
         {
             try
             {
+                string m_file = "";
                 using (DataContext context = new DataContext())
                 {
                     SqlUser? user = context.users!.Where(s => s.token.CompareTo(token) == 0 && s.isdeleted == false).FirstOrDefault();
@@ -142,33 +147,53 @@ namespace ServerWater2.APIs
                     {
                         return "Error user";
                     }
+                    
+                    byte[]? tmp = await Program.api_file.getImageChanged(image);
+                    if (tmp != null)
+                    {
+                        m_file = await Program.api_file.saveFileAsync(DateTime.Now.Ticks.ToString(), tmp);
+                        if (string.IsNullOrEmpty(m_file))
+                        {
+                            return "Error file";
+                        }
+                    }
+                    else
+                    {
+                        return "Code file empty";
+                    }
+                }
+                using (DataContext context = new DataContext())
+                {
+                    while (flagblock)
+                    {
+                        Thread.Sleep(1);
+                    }
+                    flagblock = true;
                     SqlCustomer? customer = context.customers!.Where(s => s.code.CompareTo(code) == 0 && s.isdeleted == false).FirstOrDefault();
                     if (customer == null)
                     {
                         return "Error customer";
                     }
-                    string m_file = await Program.api_file.saveFileAsync(string.Format("{0}.jpg", DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")), image);
-                    if (string.IsNullOrEmpty(m_file))
-                    {
-                        return "Error file";
-                    }
                     if (customer.images == null)
                     {
                         customer.images = new List<string>();
                     }
-
                     customer.images.Add(m_file);
 
                     int rows = await context.SaveChangesAsync();
                     if (rows > 0)
                     {
+                        flagblock = false;
                         return m_file;
                     }
                     else
                     {
+                        flagblock = false;
                         return "null";
                     }
+
                 }
+
             }
             catch (Exception ex)
             {

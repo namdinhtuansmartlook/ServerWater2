@@ -102,23 +102,27 @@ namespace ServerWater2.Controllers
         [Route("{maDB}/addImageCustomer")]
         public async Task<IActionResult> addImageCustomer([FromHeader] string token, string maDB, IFormFile image)
         {
-
-            using (MemoryStream ms = new MemoryStream())
+            long id = Program.api_user.checkAdmin(token);
+            if(id >= 0)
             {
-                image.CopyTo(ms);
-                string temp = await Program.api_customer.addImageCustomer(token, maDB, ms.ToArray());
-                /*if (!string.IsNullOrEmpty(temp))
+                using (MemoryStream ms = new MemoryStream())
                 {
-                    return Ok(temp);
-                   
-                }
-                else
-                {
-                    return BadRequest();
-                }*/
-                //Console.WriteLine(temp);
-                return Ok(temp);
+                    image.CopyTo(ms);
+                    string temp = await Program.api_customer.addImageCustomer(token, maDB, ms.ToArray());
+                    if (!string.IsNullOrEmpty(temp))
+                    {
+                        return Ok(temp);
 
+                    }
+                    else
+                    {
+                        return BadRequest();
+                    }
+                }
+            }    
+            else
+            {
+                return Unauthorized();
             }
         }
 
@@ -126,15 +130,24 @@ namespace ServerWater2.Controllers
         [Route("{maDB}/removeImageCustomer")]
         public async Task<IActionResult> removeImageCustomer([FromHeader] string token, string maDB, string image)
         {
-            bool flag = await Program.api_customer.removeImageCustomer(token, maDB, image);
-            if (flag)
+            long id = Program.api_user.checkAdmin(token);
+            if (id >= 0)
             {
-                return Ok();
+                bool flag = await Program.api_customer.removeImageCustomer(token, maDB, image);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
             }
             else
             {
-                return BadRequest();
+                return Unauthorized();
             }
+            
         }
 
         [HttpGet]

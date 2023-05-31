@@ -589,7 +589,7 @@ namespace ServerWater2.APIs
                     {
                         return false;
                     }
-                    if(order.state!.code > 2)
+                    if(order.state!.code > 3)
                     {
                         return false;
                     }
@@ -607,7 +607,7 @@ namespace ServerWater2.APIs
                     {
                         return false;
                     }
-                    if (order.state!.code > 2)
+                    if (order.state!.code > 3)
                     {
                         return false;
                     }
