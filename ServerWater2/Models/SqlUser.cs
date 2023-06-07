@@ -23,6 +23,6 @@ namespace ServerWater2.Models
         public List<SqlOrder>? receiverOrders { get; set; }
         public List<SqlOrder>? managerOrders { get; set; }
         public List<SqlOrder>? workerOrders { get; set; }
-        //public List<SqlArea>? areas { get; set; }
+        public List<SqlArea>? areas { get; set; }
     }
 }

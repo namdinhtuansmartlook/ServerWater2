@@ -519,6 +519,78 @@ namespace ServerWater2.APIs
         }
 
 
+        public async Task<bool> addAreaAsync(string area, string user)
+        {
+            using (DataContext context = new DataContext())
+            {
+                SqlArea? m_area = context.areas!.Where(s => s.isdeleted == false && s.code.CompareTo(area) == 0).Include(s => s.users).FirstOrDefault();
+
+                if (m_area == null)
+                {
+                    return false;
+                }
+
+
+                SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.user.CompareTo(user) == 0).FirstOrDefault();
+
+                if (m_user == null)
+                {
+                    return false;
+                }
+                if (m_area.users == null)
+                {
+                    m_area.users = new List<SqlUser>();
+                }
+                m_area.lastestTime = DateTime.Now.ToUniversalTime();
+
+                m_area.users.Add(m_user);
+
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public async Task<bool> removeAreaAsync(string area, string user)
+        {
+            using (DataContext context = new DataContext())
+            {
+                List<SqlArea> areas = context.areas!.Where(s => s.isdeleted == false && s.code.CompareTo(area) == 0).Include(s => s.users).ToList();
+                if (areas.Count <= 0)
+                {
+                    return false;
+                }
+                foreach (SqlArea m_area in areas)
+                {
+                    List<SqlUser> users = m_area.users!.Where(s => s.user.CompareTo(user) == 0).ToList();
+                    if (users.Count <= 0)
+                    {
+                        continue;
+                    }
+                    foreach (SqlUser m_user in users)
+                    {
+                        m_area.users!.Remove(m_user);
+                        m_area.lastestTime = DateTime.Now.ToUniversalTime();
+                    }
+                }
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
         public class infoUser
         {
             public string user { get; set; } = "";

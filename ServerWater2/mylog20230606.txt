@@ -1,0 +1,215 @@
+2023-06-06 14:23:47.841 +07:00 [ERR] Npgsql.PostgresException (0x80004005): 42P07: relation "Customer" already exists
+   at Npgsql.Internal.NpgsqlConnector.<ReadMessage>g__ReadMessageLong|233_0(NpgsqlConnector connector, Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(CommandBehavior behavior, Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(CommandBehavior behavior, Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQueryAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQueryAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQueryAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQueryAsync(IEnumerable`1 migrationCommands, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQueryAsync(IEnumerable`1 migrationCommands, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQueryAsync(IEnumerable`1 migrationCommands, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQueryAsync(IEnumerable`1 migrationCommands, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.MigrateAsync(String targetMigration, CancellationToken cancellationToken)
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 129
+  Exception data:
+    Severity: ERROR
+    SqlState: 42P07
+    MessageText: relation "Customer" already exists
+    File: heap.c
+    Line: 1164
+    Routine: heap_create_with_catalog
+2023-06-06 14:27:26.526 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-06 14:27:37.151 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-06 14:28:34.656 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-06 14:32:31.450 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-06 14:32:48.851 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-06 14:32:59.056 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-06 14:37:42.485 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-06 14:38:23.007 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-06 14:41:45.410 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-06 14:42:04.501 +07:00 [ERR] Npgsql.PostgresException (0x80004005): 42P07: relation "Customer" already exists
+   at Npgsql.Internal.NpgsqlConnector.<ReadMessage>g__ReadMessageLong|233_0(NpgsqlConnector connector, Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(CommandBehavior behavior, Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(CommandBehavior behavior, Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQueryAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQueryAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQueryAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQueryAsync(IEnumerable`1 migrationCommands, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQueryAsync(IEnumerable`1 migrationCommands, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQueryAsync(IEnumerable`1 migrationCommands, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQueryAsync(IEnumerable`1 migrationCommands, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.MigrateAsync(String targetMigration, CancellationToken cancellationToken)
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 129
+  Exception data:
+    Severity: ERROR
+    SqlState: 42P07
+    MessageText: relation "Customer" already exists
+    File: heap.c
+    Line: 1164
+    Routine: heap_create_with_catalog
+2023-06-06 14:44:37.318 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-06 14:44:52.870 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-06 14:45:24.789 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-06 14:49:09.496 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-06 14:49:24.503 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-06 14:50:07.129 +07:00 [INF] Connected to Server : Host=office.stvg.vn:59066;Database=db_stvg_GIS_SW2;Username=postgres;Password=stvg
+2023-06-06 15:25:34.765 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-06 15:25:43.694 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-06 15:26:06.421 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-06 15:27:44.622 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-06 15:27:53.952 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-06 15:28:07.816 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-06 15:28:16.632 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-06 15:28:27.263 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-06 15:28:42.067 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-06 15:28:58.310 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115

@@ -28,7 +28,11 @@ public class Program
 
     public static MyRole api_role = new MyRole();
     //public static MyPoint api_point = new MyPoint();
-    //public static MyArea api_area = new MyArea();
+    public static MyArea api_area = new MyArea();
+    public static MyLayer api_layer = new MyLayer();
+    public static MySchedule api_schedule = new MySchedule();
+    public static MyStatus api_status = new MyStatus();
+    public static MyDevice api_device = new MyDevice();
     public static MyUser api_user = new MyUser();
     public static MyFile api_file = new MyFile();
     public static MyOrder api_order = new MyOrder();
@@ -129,13 +133,14 @@ public class Program
             app.UseRouting();
 
             app.UseAuthorization();
-
+            Log.Information("Connected to Server : " + DataContext.configSql);
 
             app.MapControllers();
             app.MapGet("/", () => string.Format("ServerWater2 of STVG - Version 1 : {0}", DateTime.Now));
             await api_role.initAsync();
             await api_user.initAsync();
             await api_service.initAsync();
+            await api_device.initAsync();
             await api_state.initAsync();
             await api_type.initAsync();
             await api_action.initAsync();

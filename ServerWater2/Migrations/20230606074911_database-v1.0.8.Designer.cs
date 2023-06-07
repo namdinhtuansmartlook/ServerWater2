@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ServerWater2.Models;
@@ -12,9 +13,11 @@ using ServerWater2.Models;
 namespace ServerWater2.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20230606074911_database-v1.0.8")]
+    partial class databasev108
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -93,12 +96,12 @@ namespace ServerWater2.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("ID"));
 
+                    b.Property<long?>("SqlAreaID")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("address")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<long?>("areaID")
-                        .HasColumnType("bigint");
 
                     b.Property<string>("code")
                         .IsRequired()
@@ -136,7 +139,7 @@ namespace ServerWater2.Migrations
 
                     b.HasKey("ID");
 
-                    b.HasIndex("areaID");
+                    b.HasIndex("SqlAreaID");
 
                     b.ToTable("Customer");
                 });
@@ -868,11 +871,9 @@ namespace ServerWater2.Migrations
 
             modelBuilder.Entity("ServerWater2.Models.SqlCustomer", b =>
                 {
-                    b.HasOne("ServerWater2.Models.SqlArea", "area")
+                    b.HasOne("ServerWater2.Models.SqlArea", null)
                         .WithMany("customers")
-                        .HasForeignKey("areaID");
-
-                    b.Navigation("area");
+                        .HasForeignKey("SqlAreaID");
                 });
 
             modelBuilder.Entity("ServerWater2.Models.SqlDevice", b =>

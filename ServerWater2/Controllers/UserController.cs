@@ -178,6 +178,65 @@ namespace ServerWater2.Controllers
             }
 
         }
+        [HttpPut]
+        [Route("{code}/addArea")]
+        public async Task<IActionResult> AddUserAsync([FromHeader] string token, string area, string code)
+        {
+
+            long id = Program.api_user.checkAdmin(token);
+            if (id >= 0)
+            {
+
+                if (string.IsNullOrEmpty(area) || string.IsNullOrEmpty(code))
+                {
+                    return BadRequest();
+                }
+                bool flag = await Program.api_user.addAreaAsync(area, code);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }
+
+        [HttpDelete]
+        [Route("{code}/removeArea")]
+        public async Task<IActionResult> RemoveUserAsync([FromHeader] string token, string area, string code)
+        {
+            long id = Program.api_user.checkAdmin(token);
+            if (id >= 0)
+            {
+
+                if (string.IsNullOrEmpty(code) || string.IsNullOrEmpty(area))
+                {
+                    return BadRequest();
+                }
+                bool flag = await Program.api_user.removeAreaAsync(area, code);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+        }
 
         [HttpGet]
         [Route("getListUser")]
