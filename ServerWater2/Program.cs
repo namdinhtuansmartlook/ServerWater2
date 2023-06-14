@@ -27,7 +27,7 @@ public class Program
     }
 
     public static MyRole api_role = new MyRole();
-    //public static MyPoint api_point = new MyPoint();
+    public static MyPoint api_point = new MyPoint();
     public static MyArea api_area = new MyArea();
     public static MyLayer api_layer = new MyLayer();
     public static MySchedule api_schedule = new MySchedule();

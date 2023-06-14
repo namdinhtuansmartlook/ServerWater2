@@ -353,6 +353,7 @@ namespace ServerWater2.APIs
                 try
                 {
                     List<SqlArea> areas = context.areas!.Where(s => s.isdeleted == false)
+                                                        .Include(s => s.customers)
                                                         .Include(s => s.points!).ThenInclude(s => s.devices!).ThenInclude(s => s.layers)
                                                         .Include(s => s.points!).ThenInclude(s => s.devices!).ThenInclude(s => s.type).ThenInclude(s => s!.values)
                                                         .Include(s => s.points!).ThenInclude(s => s.devices!).ThenInclude(s => s.type).ThenInclude(s => s!.statuss)
@@ -509,6 +510,7 @@ namespace ServerWater2.APIs
                             areaInfo.points.Add(itemPoint);
                         }
 
+                        //customer
                         if(area.customers != null)
                         {
                             foreach (SqlCustomer customer in area.customers)
@@ -1280,6 +1282,8 @@ namespace ServerWater2.APIs
                 }
             }
         }
+
+
 
         /* public class ItemInfoLog
          {

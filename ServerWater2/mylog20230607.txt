@@ -1,0 +1,18 @@
+2023-06-07 10:50:20.479 +07:00 [INF] Connected to Server : Host=office.stvg.vn:59066;Database=db_stvg_GIS_SW2;Username=postgres;Password=stvg
+2023-06-07 13:42:14.829 +07:00 [INF] Connected to Server : Host=office.stvg.vn:59066;Database=db_stvg_GIS_SW2;Username=postgres;Password=stvg
+2023-06-07 15:05:08.471 +07:00 [INF] Connected to Server : Host=office.stvg.vn:59066;Database=db_stvg_GIS_SW2;Username=postgres;Password=stvg
+2023-06-07 15:06:44.063 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-07 15:06:57.923 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in C:\Users\ASUS\Documents\GitHub\ServerWater2\ServerWater2\Program.cs:line 115
+2023-06-07 15:08:22.501 +07:00 [INF] Connected to Server : Host=office.stvg.vn:59066;Database=db_stvg_GIS_SW2;Username=postgres;Password=stvg

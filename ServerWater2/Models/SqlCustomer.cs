@@ -17,8 +17,8 @@ namespace ServerWater2.Models
         public List<string>? images { get; set; }
         public string longitude { get; set; } = "";
         public string latitude { get; set; } = "";
-       public List<SqlOrder>? orders { get; set; }
-       public SqlArea? area { get; set; }
+        public List<SqlOrder>? orders { get; set; }
+        public List<SqlDevice>? devices { get; set; }
         public bool isdeleted { get; set; } = false;
     }
 }

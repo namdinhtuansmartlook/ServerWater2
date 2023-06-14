@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ServerWater2.Models;
@@ -12,9 +13,11 @@ using ServerWater2.Models;
 namespace ServerWater2.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20230607080645_database-v1.0.10")]
+    partial class databasev1010
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -149,9 +152,6 @@ namespace ServerWater2.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("ID"));
 
-                    b.Property<long?>("SqlCustomerID")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("code")
                         .IsRequired()
                         .HasColumnType("text");
@@ -176,8 +176,6 @@ namespace ServerWater2.Migrations
                         .HasColumnType("bigint");
 
                     b.HasKey("ID");
-
-                    b.HasIndex("SqlCustomerID");
 
                     b.HasIndex("typeID");
 
@@ -880,10 +878,6 @@ namespace ServerWater2.Migrations
 
             modelBuilder.Entity("ServerWater2.Models.SqlDevice", b =>
                 {
-                    b.HasOne("ServerWater2.Models.SqlCustomer", null)
-                        .WithMany("devices")
-                        .HasForeignKey("SqlCustomerID");
-
                     b.HasOne("ServerWater2.Models.SqlType", "type")
                         .WithMany()
                         .HasForeignKey("typeID");
@@ -1104,8 +1098,6 @@ namespace ServerWater2.Migrations
 
             modelBuilder.Entity("ServerWater2.Models.SqlCustomer", b =>
                 {
-                    b.Navigation("devices");
-
                     b.Navigation("orders");
                 });
 

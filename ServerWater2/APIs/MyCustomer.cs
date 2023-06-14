@@ -232,7 +232,12 @@ namespace ServerWater2.APIs
                 }
             }
         }
-
+        
+        public class ItemDevice
+        {
+            public string code { get; set; } = "";
+            public string nameDevice { get; set; } = "";
+        }
         
         public class ItemCustomer
         {
@@ -245,13 +250,14 @@ namespace ServerWater2.APIs
             public string x { get; set; } = "";
             public string y { get; set; } = "";
             public List<string> images { get; set; } = new List<string>();
+            public List<ItemDevice> devices { get; set; } = new List<ItemDevice>();
         }
 
         public List<ItemCustomer> listCustomer()
         {
             using (DataContext context = new DataContext())
             {
-                List<SqlCustomer>? customers = context.customers!.Where(s => s.isdeleted == false).ToList();
+                List<SqlCustomer>? customers = context.customers!.Where(s => s.isdeleted == false).Include(s => s.devices).ToList();
                 if (customers.Count == 0)
                 {
                     return new List<ItemCustomer>();
@@ -274,6 +280,18 @@ namespace ServerWater2.APIs
                     {
                         tmp.images = item.images;
                     }
+                    if(item.devices != null)
+                    {
+                        foreach (SqlDevice itemDevice in item.devices)
+                        {
+                            ItemDevice tmpDevice = new ItemDevice();
+
+                            tmpDevice.code = itemDevice.code;
+                            tmpDevice.nameDevice= itemDevice.nameDevice;
+
+                            tmp.devices.Add(tmpDevice);
+                        }
+                    }
                    
 
                     lists.Add(tmp);
@@ -281,33 +299,112 @@ namespace ServerWater2.APIs
                 return lists;
             }
         }
-/*
-        public class ItemInfoValueForDevice
+        public async Task<bool> addDeviceCustomer(string token, string code, string device)
         {
-            public string code { get; set; } = "";
-            public string name { get; set; } = "";
-            public SqlStatus? state { get; set; } = new SqlStatus();
+            using (DataContext context = new DataContext())
+            {
+                SqlUser? user = context.users!.Where(s => s.token.CompareTo(token) == 0 && s.isdeleted == false).FirstOrDefault();
+                if (user == null)
+                {
+                    return false;
+                }
+                SqlCustomer? customer = context.customers!.Where(s => s.code.CompareTo(code) == 0 && s.isdeleted == false).FirstOrDefault();
+                if (customer == null)
+                {
+                    return false;
+                }
 
+                SqlDevice? m_device = context.devices!.Where(s => s.code.CompareTo(device) == 0 && s.isdeleted == false).FirstOrDefault();
+                if(m_device == null)
+                {
+                    return false;
+                }
+
+                if(customer.devices == null)
+                {
+                    customer.devices = new List<SqlDevice>();
+                }
+                customer.devices.Add(m_device);
+
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
         }
 
-        public class ItemInfoCustomerForDevice
+        public async Task<bool> removeDeviceCustomer(string token, string code, string device)
         {
-            public long idkh { get; set; } = 0;
-            public string madb { get; set; } = "";
-            public string tenkh { get; set; } = "";
-            public string diachi { get; set; } = "";
+            using (DataContext context = new DataContext())
+            {
+                SqlUser? user = context.users!.Where(s => s.token.CompareTo(token) == 0 && s.isdeleted == false).FirstOrDefault();
+                if (user == null)
+                {
+                    return false;
+                }
+                SqlCustomer? customer = context.customers!.Where(s => s.code.CompareTo(code) == 0 && s.isdeleted == false).FirstOrDefault();
+                if (customer == null)
+                {
+                    return false;
+                }
 
-            public ItemInfoValueForDevice module { get; set; } = new ItemInfoValueForDevice();
-            public ItemInfoValueForDevice dongho { get; set; } = new ItemInfoValueForDevice();
+                SqlDevice? m_device = context.devices!.Where(s => s.code.CompareTo(device) == 0 && s.isdeleted == false).FirstOrDefault();
+                if (m_device == null)
+                {
+                    return false;
+                }
+
+                if (customer.devices == null)
+                {
+                    return false; 
+                }
+
+                customer.devices.Remove(m_device);
+
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
         }
 
+        /*
+                public class ItemInfoValueForDevice
+                {
+                    public string code { get; set; } = "";
+                    public string name { get; set; } = "";
+                    public SqlStatus? state { get; set; } = new SqlStatus();
 
-        public class DataStatementPlot
-        {
-            public List<string> times { get; set; } = new List<string>();
-            public List<ItemInfoCustomerForDevice> data { get; set; } = new List<ItemInfoCustomerForDevice>();
+                }
 
-        }*/
+                public class ItemInfoCustomerForDevice
+                {
+                    public long idkh { get; set; } = 0;
+                    public string madb { get; set; } = "";
+                    public string tenkh { get; set; } = "";
+                    public string diachi { get; set; } = "";
+
+                    public ItemInfoValueForDevice module { get; set; } = new ItemInfoValueForDevice();
+                    public ItemInfoValueForDevice dongho { get; set; } = new ItemInfoValueForDevice();
+                }
+
+
+                public class DataStatementPlot
+                {
+                    public List<string> times { get; set; } = new List<string>();
+                    public List<ItemInfoCustomerForDevice> data { get; set; } = new List<ItemInfoCustomerForDevice>();
+
+                }*/
 
     }
 }

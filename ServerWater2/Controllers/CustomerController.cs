@@ -164,5 +164,51 @@ namespace ServerWater2.Controllers
                 return Unauthorized();
             }
         }
+
+        [HttpPut]
+        [Route("{maDB}/addDevice")]
+        public async Task<IActionResult> addDevice([FromHeader] string token, string maDB, string device)
+        {
+            long id = Program.api_user.checkAdmin(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_customer.addDeviceCustomer(token, maDB, device);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            else
+            {
+                return Unauthorized();
+            }
+        }
+
+        [HttpDelete]
+        [Route("{maDB}/removeDevice")]
+        public async Task<IActionResult> removeDevice([FromHeader] string token, string maDB, string device)
+        {
+            long id = Program.api_user.checkAdmin(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_customer.removeDeviceCustomer(token, maDB, device);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            else
+            {
+                return Unauthorized();
+            }
+        }
     }
 }
