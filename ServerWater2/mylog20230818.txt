@@ -1,0 +1,1 @@
+2023-08-18 07:26:30.917 +07:00 [INF] Connected to Server at : 8/18/2023 7:26:30 AM with : Host=192.168.1.30:30000;Database=db_stvg_ServerWater2;Username=postgres;Password=stvg 

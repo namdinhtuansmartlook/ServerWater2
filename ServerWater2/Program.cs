@@ -27,9 +27,10 @@ public class Program
     }
 
     public static MyRole api_role = new MyRole();
-    //public static MyPoint api_point = new MyPoint();
-    //public static MyArea api_area = new MyArea();
+    public static MyCertificate api_certificate = new MyCertificate();
+    public static MyArea api_area = new MyArea();
     public static MyUser api_user = new MyUser();
+    public static MyGroup api_group = new MyGroup();
     public static MyFile api_file = new MyFile();
     public static MyOrder api_order = new MyOrder();
     public static MyType api_type = new MyType();
@@ -125,6 +126,8 @@ public class Program
                 await datacontext.Database.MigrateAsync();
             }
 
+            Log.Information(String.Format("Connected to Server at : {0} with : {1} ", DateTime.Now, DataContext.configSql));
+
             app.UseCors("HTTPSystem");
             app.UseRouting();
 
@@ -132,13 +135,16 @@ public class Program
 
 
             app.MapControllers();
-            app.MapGet("/", () => string.Format("ServerWater2 of STVG - Version 1 : {0}", DateTime.Now));
+            app.MapGet("/", () => string.Format("ServerWater2 of STVG - Version : {0}", DateTime.Now));
             await api_role.initAsync();
+            await api_group.initAsync();
+            await api_area.initAsync();
             await api_user.initAsync();
             await api_service.initAsync();
             await api_state.initAsync();
             await api_type.initAsync();
             await api_action.initAsync();
+            await api_certificate.initAsync();
 
             app.Run();
         }

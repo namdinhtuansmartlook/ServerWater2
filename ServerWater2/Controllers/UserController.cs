@@ -119,6 +119,32 @@ namespace ServerWater2.Controllers
                 return Unauthorized();
             }
         }
+
+        [HttpPut]
+        [Route("setGroup")]
+        public async Task<IActionResult> SetGroup([FromHeader] string token, string group, List<string> users)
+        {
+            long ID = Program.api_user.checkAdmin(token);
+            if (ID >= 0)
+            {
+                bool flag = await Program.api_user.setGroup(token, group, users);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }
+
         [HttpPut]
         [Route("setAvatar")]
         public async Task<IActionResult> setAvatarAsync([FromHeader] string token, IFormFile image)

@@ -3,10 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Serilog;
 using ServerWater2.Models;
-using System.Xml.Linq;
-using static ServerWater2.APIs.MyCustomer;
 using static ServerWater2.APIs.MyOrder;
-using static ServerWater2.Program;
 
 namespace ServerWater2.APIs
 {
@@ -104,24 +101,7 @@ namespace ServerWater2.APIs
 
                 int rows = await context.SaveChangesAsync();
             }
-            //Thread t = new Thread(() =>
-            //{
-            //    while (true)
-            //    {
-            //        Thread.Sleep(1000);
-            //        for (int i = 0; i < Program.httpNotifications.Count; i++)
-            //        {
-            //            Thread.Sleep(10000);
-            //            if (Program.httpNotifications[i].messagers.Count > 10)
-            //            {
-            //                Program.httpNotifications.RemoveAt(i);
-            //                i--;
-            //            }
-            //        }
-            //    }
-            //})
-            //{ IsBackground = true };
-            //t.Start();
+            
         }
         public async void checkNotification(string token, bool flag, List<string> messagers)
         {
@@ -411,12 +391,13 @@ namespace ServerWater2.APIs
                 }
 
 
-                SqlUser? tmp = context.users!.Where(s => s.user.CompareTo(user) == 0 && s.isdeleted == false).FirstOrDefault();
+                SqlUser? tmp = context.users!.Where(s => s.user.CompareTo(user) == 0 && s.isdeleted == false).Include(s => s.group).FirstOrDefault();
                 if (tmp == null)
                 {
                     return false;
                 }
 
+                tmp.group = null;
                 tmp.isdeleted = true;
 
                 int rows = await context.SaveChangesAsync();
@@ -431,6 +412,13 @@ namespace ServerWater2.APIs
             }
         }
 
+        public class MyGroup
+        {
+            public string code { get; set; } = "";
+            public string name { get; set; } = "";
+
+        }
+
         public class ItemUser
         {
             public string user { get; set; } = "";
@@ -439,6 +427,7 @@ namespace ServerWater2.APIs
             public string numberPhone { get; set; } = "";
             public string avatar { get; set; } = "";
             public string des { get; set; } = "";
+            public MyGroup group { get; set; } = new MyGroup(); 
             public string role { get; set; } = "";
         }
 
@@ -455,12 +444,8 @@ namespace ServerWater2.APIs
                 {
                     return new List<ItemUser>();
                 }
-                if (own_user.role == null)
-                {
-                    return new List<ItemUser>();
-                }
-
-                List<SqlUser> users = context.users!.Where(s => s.isdeleted == false).Include(s => s.role).ToList();
+               
+                List<SqlUser> users = context.users!.Where(s => s.isdeleted == false).ToList();
                 List<ItemUser> items = new List<ItemUser>();
                 foreach (SqlUser user in users)
                 {
@@ -475,13 +460,52 @@ namespace ServerWater2.APIs
                     {
                         item.role = user.role.name;
                     }
+                    if (user.group != null)
+                    {
+                        item.group.code = user.group.code;
+                        item.group.name = user.group.name;
+                    }
                     items.Add(item);
                 }
                 return items;
             }
         }
 
+        public async Task<bool> setGroup(string token, string group, List<string> users)
+        {
+            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(group))
+            {
+                return false;
+            }
+            using (DataContext context = new DataContext())
+            {
+                SqlUser? own_user = context.users!.Include(s => s.role).Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0 && s.role!.code.CompareTo("admin") == 0).FirstOrDefault();
+                if (own_user == null)
+                {
+                    return false;
+                }
 
+                SqlGroup? m_group = context.groups!.Where(s => s.isdeleted == false && s.code.CompareTo(group) == 0).FirstOrDefault();
+                if (m_group == null)
+                {
+                    return false;
+                }
+
+                foreach(string m_code in users)
+                {
+                    SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0 && s.user.CompareTo(m_code) == 0).FirstOrDefault();
+                    if (m_user == null)
+                    {
+                        Log.Debug("Fail set group for user : {0}", m_code);
+                        continue;
+                    }
+                    m_user.group = m_group;
+                }
+
+                int rows = await context.SaveChangesAsync();
+                return true;
+            }
+        }
 
         public async Task<string> setAvatar(string token, byte[] file)
         {
@@ -518,7 +542,6 @@ namespace ServerWater2.APIs
             }
         }
 
-
         public class infoUser
         {
             public string user { get; set; } = "";
@@ -527,6 +550,7 @@ namespace ServerWater2.APIs
             public string numberPhone { get; set; } = "";
             public string avatar { get; set; } = "";
             public string des { get; set; } = "";
+            public MyGroup group { get; set; } = new MyGroup();
             public string role { get; set; } = "";
         }
         public infoUser getInfoUser(string token)
@@ -548,6 +572,11 @@ namespace ServerWater2.APIs
             temp.displayName = m_user.displayName;
             temp.numberPhone = m_user.phoneNumber;
             temp.des = m_user.des;
+            if(m_user.group != null)
+            {
+                temp.group.code = m_user.group.code; 
+                temp.group.name = m_user.group.name;
+            }    
             temp.avatar = m_user.avatar;
             temp.role = m_user.role!.name;
 

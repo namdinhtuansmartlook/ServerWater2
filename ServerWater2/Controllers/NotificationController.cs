@@ -16,6 +16,7 @@ namespace ServerWater2.Controllers
             public string code { get; set; } = "";
             public int state { get; set; } = 0;
         }
+
         [HttpGet]
         [Route("{token}/callnotification")]
         public async Task callbackfaceAsync([FromRoute] string token, string state)
@@ -113,21 +114,21 @@ namespace ServerWater2.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("test")]
-        public async Task<IActionResult> test(ItemTest item)
-        {
+        //[HttpPost]
+        //[Route("test")]
+        //public async Task<IActionResult> test(ItemTest item)
+        //{
 
 
-            bool order = await Program.api_order.testOrder(item.user, item.code, item.state);
-            if (!order)
-            {
-                return BadRequest();
-            }
-            else
-            {
-                return Ok(order);
-            }
-        }
+        //    bool order = await Program.api_order.testNotificationOrder(item.user, item.code, item.state);
+        //    if (!order)
+        //    {
+        //        return BadRequest();
+        //    }
+        //    else
+        //    {
+        //        return Ok(order);
+        //    }
+        //}
     }
 }

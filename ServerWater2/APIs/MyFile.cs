@@ -141,7 +141,7 @@ namespace ServerWater2.APIs
                 string link = Path.Combine(path, fileName);
                 ItemHost tmp = new ItemHost();
 
-                string data = "Host=office.stvg.vn:59066;Database=db_stvg_ServerWater2;Username=postgres;Password=stvg";
+                string data = "Host=192.168.1.30:30000;Database=db_stvg_ServerWater2;Username=postgres;Password=stvg";
                 tmp.host.Add(data);
 
                 //data = "Host=office.stvg.vn:59061;Database=db_stvg_cba;Username=postgres;Password=stvg";

@@ -164,5 +164,13 @@ namespace ServerWater2.Controllers
                 return Unauthorized();
             }
         }
+
+        [HttpGet]
+        [Route("getListCertificate")]
+        public IActionResult GetListCertificate()
+        {
+            return Ok(Program.api_certificate.getList());
+        }
+
     }
 }

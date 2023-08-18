@@ -281,33 +281,5 @@ namespace ServerWater2.APIs
                 return lists;
             }
         }
-/*
-        public class ItemInfoValueForDevice
-        {
-            public string code { get; set; } = "";
-            public string name { get; set; } = "";
-            public SqlStatus? state { get; set; } = new SqlStatus();
-
-        }
-
-        public class ItemInfoCustomerForDevice
-        {
-            public long idkh { get; set; } = 0;
-            public string madb { get; set; } = "";
-            public string tenkh { get; set; } = "";
-            public string diachi { get; set; } = "";
-
-            public ItemInfoValueForDevice module { get; set; } = new ItemInfoValueForDevice();
-            public ItemInfoValueForDevice dongho { get; set; } = new ItemInfoValueForDevice();
-        }
-
-
-        public class DataStatementPlot
-        {
-            public List<string> times { get; set; } = new List<string>();
-            public List<ItemInfoCustomerForDevice> data { get; set; } = new List<ItemInfoCustomerForDevice>();
-
-        }*/
-
     }
 }

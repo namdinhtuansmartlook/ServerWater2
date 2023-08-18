@@ -17,6 +17,7 @@ using static ServerWater2.Program;
 using static Azure.Core.HttpHeader;
 using static ServerWater2.APIs.MyOrder;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Newtonsoft.Json.Linq;
 
 namespace ServerWater2.APIs
 {
@@ -44,6 +45,48 @@ namespace ServerWater2.APIs
                 }
             }
         }
+
+        //public async Task<bool> testNotificationOrder(string user, string code, int state)
+        //{
+        //    using (DataContext context = new DataContext())
+        //    {
+        //        SqlOrder? order = context.orders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).Include(s => s.group).ThenInclude(s => s!.areas).Include(s => s.area).Include(s => s.certificate).Include(s => s.state).Include(s => s.service).Include(s => s.type).Include(s => s.worker).FirstOrDefault();
+        //        if (order == null)
+        //        {
+        //            return false;
+        //        }
+        //        if (order.group!.areas == null)
+        //        {
+        //            return false;
+        //        }
+
+        //        SqlArea? m_area = order.group.areas!.Where(s => s.code.CompareTo(order.area!.code) == 0 && s.isdeleted == false).FirstOrDefault();
+        //        if (m_area == null)
+        //        {
+        //            return false;
+        //        }
+
+        //        SqlUser? muser = context.users!.Where(s => s.isdeleted == false && s.user.CompareTo(user) == 0).FirstOrDefault();
+        //        if (muser == null)
+        //        {
+        //            return false;
+        //        }
+
+        //        if (state == 0)
+        //        {
+        //            string tmp = await createNewOrder(order.name, order.phone, order.addressCustomer, order.group.code, m_area.code, order.addressContract, order.service!.code, order.type!.code, order.certificate!.code, order.note);
+        //        }
+        //        if (state == 1)
+        //        {
+        //            bool check = await confirmOrder(muser.token, code);
+        //        }
+        //        if (state == 3)
+        //        {
+        //            bool check = await setAssginOrder(muser.token, code, "staff");
+        //        }
+        //        return true;
+        //    }
+        //}
 
         public async Task<bool> setStateOrder(string code, int state)
         {
@@ -531,8 +574,13 @@ namespace ServerWater2.APIs
             }
         }
 
+        public class HttpItemOrder
+        {
+            public string code { get; set; } = "";
+            public List<string> certificates { get; set; } = new List<string>();
+        }
 
-        public async Task<string> createUpdateOrderAsync(string code, string name, string customer, string phone, string addressCustomer, string addressOrder, string addressContract, string service, string type, string note)
+        public async Task<string> createUpdateOrderAsync(string code, string name, string customer, string phone, string addressCustomer, string group, string area, string addressWater, string addressContract, string service, string type, List<string> certificates, string note)
         {
             using (DataContext context = new DataContext())
             {
@@ -546,11 +594,33 @@ namespace ServerWater2.APIs
                     m_order.name = name;
                     m_order.phone = phone;
                     m_order.addressCustomer = addressCustomer;
-                    m_order.addressWater = addressOrder;
+                    m_order.group = context.groups!.Where(s => s.isdeleted == false && s.code.CompareTo(group) == 0).Include(s => s.areas).FirstOrDefault();
+                    if(m_order.group!.areas != null)
+                    {
+                        SqlArea? m_area = m_order.group.areas!.Where(s => s.code.CompareTo(area) == 0 && s.isdeleted == false).FirstOrDefault();
+                        if(m_area == null)
+                        {
+                            return "";
+                        }
+                        m_order.area = m_area;
+                    }    
                     m_order.addressContract = addressContract;
+                    m_order.addressWater = addressWater;
                     m_order.note = note;
                     m_order.service = context.services!.Where(s => s.isdeleted == false && s.code.CompareTo(service) == 0).FirstOrDefault();
                     m_order.type = context.types!.Where(s => s.isdeleted == false && s.code.CompareTo(type) == 0).FirstOrDefault();
+                    m_order.certificates = new List<SqlCertificate>();
+                    foreach (string tmp in certificates)
+                    {
+                        SqlCertificate? m_certificate = context.certificates!.Where(s => s.isdeleted == false && s.code.CompareTo(tmp) == 0).FirstOrDefault();
+                        if(m_certificate == null)
+                        {
+                            Log.Debug("Error certificate !!!");
+                            return "";
+                        }
+                        
+                        m_order.certificates.Add(m_certificate);
+                    }
                     m_order.lastestTime = DateTime.Now.ToUniversalTime();
                     m_order.createdTime = DateTime.Now.ToUniversalTime();
                     m_order.state = context.states!.Where(s => s.isdeleted == false && s.code == 0).FirstOrDefault();
@@ -570,8 +640,8 @@ namespace ServerWater2.APIs
 
                     m_order.customer = context.customers!.Where(s => s.code.CompareTo(code) == 0 && s.name.CompareTo(customer) == 0 && s.isdeleted == false).FirstOrDefault();
                     m_order.addressCustomer = addressCustomer;
-                    m_order.addressWater = addressOrder;
                     m_order.addressContract = addressContract;
+
                     m_order.note = note;
                     m_order.service = context.services!.Where(s => s.isdeleted == false && s.code.CompareTo(service) == 0).FirstOrDefault();
                     m_order.type = context.types!.Where(s => s.isdeleted == false && s.code.CompareTo(type) == 0).FirstOrDefault();
@@ -613,9 +683,9 @@ namespace ServerWater2.APIs
             }
         }
 
-        public async Task<string> createNewOrder(string name, string phone, string addressCustomer, string addressOrder, string addressContract, string service, string type, string note)
+        public async Task<string> createNewOrder(string name, string phone, string addressCustomer, string group, string area,string addressWater, string addressContract, string service, string type, List<string> certificates, string note)
         {
-            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(phone) || string.IsNullOrEmpty(addressCustomer) || string.IsNullOrEmpty(service) || string.IsNullOrEmpty(type))
+            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(phone) || string.IsNullOrEmpty(addressCustomer) || string.IsNullOrEmpty(service) || string.IsNullOrEmpty(type) || certificates == null)
             {
                 return "";
             }
@@ -633,7 +703,7 @@ namespace ServerWater2.APIs
                     return "";
                 }
 
-                string order = await createUpdateOrderAsync("", name, "", phone, addressCustomer, addressOrder, addressContract, service, type, note);
+                string order = await createUpdateOrderAsync("", name, "", phone, addressCustomer, group, area, addressWater, addressContract, service, type, certificates, note);
 
                 if (!string.IsNullOrEmpty(order))
                 {
@@ -642,7 +712,12 @@ namespace ServerWater2.APIs
                     {
                         return "";
                     }
-                    return order;
+                    HttpItemOrder temp = new HttpItemOrder();
+                    temp.code = order;
+                    temp.certificates = certificates;
+
+                    string data = JsonConvert.SerializeObject(temp);
+                    return data;
                 }
                 else
                 {
@@ -651,35 +726,95 @@ namespace ServerWater2.APIs
             }
         }
 
-        public async Task<bool> testOrder(string user, string code, int state)
+        public async Task<string> uploadImageDocument(string code, string certificate, byte[] data)
         {
-            using (DataContext context = new DataContext())
+            try
             {
-                SqlOrder? order = context.orders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).Include(s => s.state).Include(s => s.service).Include(s => s.type).Include(s => s.worker).FirstOrDefault();
-                if (order == null)
+                string codefile = "";
+                long id = long.Parse(code);
+                if (id > 0)
                 {
-                    return false;
+                    using (DataContext context = new DataContext())
+                    {
+                        //Console.WriteLine(data.Length);
+                        codefile = await Program.api_file.saveFileAsync(DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss.image"), data);
+                        if (string.IsNullOrEmpty(codefile))
+                        {
+                            return "";
+                        }
+
+                        SqlOrder? m_order = context.orders!.Where(s => s.ID == id).Include(s => s.certificates).FirstOrDefault();
+                        if (m_order == null || m_order.certificates == null)
+                        {
+                            return "";
+                        }
+
+                        SqlCertificate? m_certificate = m_order.certificates!.Where(s => s.code.CompareTo(certificate) == 0 && s.isdeleted == false).FirstOrDefault();
+                        if (m_certificate == null)
+                        {
+                            return "";
+                        }
+                        List<ItemCertificate> items = new List<ItemCertificate>();
+                        if(string.IsNullOrEmpty(m_order.document))
+                        {
+                            ItemCertificate item = new ItemCertificate();
+                            item.code = m_certificate.code;
+                            item.name = m_certificate.name;
+                            item.images.Add(codefile);
+
+                            items.Add(item);
+                            m_order.document = JsonConvert.SerializeObject(items);
+                        }    
+                        else
+                        {
+                            List<ItemCertificate>? mItems = JsonConvert.DeserializeObject<List<ItemCertificate>>(m_order.document);
+                            if (mItems != null)
+                            {
+                                ItemCertificate? m_item = mItems.Where(s => s.code.CompareTo(certificate) == 0).FirstOrDefault();
+                                if(m_item == null)
+                                {
+                                    ItemCertificate item = new ItemCertificate();
+                                    item.code = m_certificate.code;
+                                    item.name = m_certificate.name;
+                                    item.images.Add(codefile);
+
+                                    mItems.Add(item);
+                                }
+                                else
+                                {
+                                    m_item.images.Add(codefile);
+                                }    
+
+                            }
+                            m_order.document = JsonConvert.SerializeObject(mItems);
+                        }    
+
+                        
+
+                        // bool flag = await setStateOrder(user.ID, code, "Add image before", m_log.latitude, m_log.longitude);
+                        int rows = await context.SaveChangesAsync();
+                        if (rows > 0)
+                        {
+                            return codefile;
+                        }
+                        else
+                        {
+                            return "";
+                        }
+                    }
                 }
-                SqlUser? muser = context.users!.Where(s => s.isdeleted == false && s.user.CompareTo(user) == 0).FirstOrDefault();
-                if (muser == null)
+                else
                 {
-                    return false;
+                    return "";
                 }
 
-                if (state == 0)
-                {
-                    string tmp = await createNewOrder(order.name, order.phone, order.addressCustomer, order.addressWater, order.addressContract, order.service!.code, order.type!.code, order.note);
-                }
-                if (state == 1)
-                {
-                    bool check = await confirmOrder(muser.token, code);
-                }
-                if (state == 3)
-                {
-                    bool check = await setAssginOrder(muser.token, code, "staff");
-                }
-                return true;
+
             }
+            catch (Exception ex)
+            {
+                return "";
+            }
+
         }
 
         public async Task<string> createRequestOrder(string code, string name, string phone, string customer, string addressCustomer, string addressContract, string service, string note)
@@ -696,7 +831,7 @@ namespace ServerWater2.APIs
                     return "";
                 }
 
-                string order = await createUpdateOrderAsync(code, name, customer, phone, addressCustomer, addressCustomer, addressContract, service, "", note);
+                string order = await createUpdateOrderAsync(code, name, customer, phone, addressCustomer, "", "", "", addressContract, service, "", new List<string>(), note);
                 if (!string.IsNullOrEmpty(order))
                 {
                     return order;
@@ -1823,7 +1958,12 @@ namespace ServerWater2.APIs
             return infos;
         }
 
-
+        public class ItemCertificate
+        {
+            public string code { get; set; } = "";
+            public string name { get; set; } = "";
+            public List<string> images { get; set; } = new List<string>();
+        }
         public class ItemProfile
         {
             public string name { get; set; } = "";
@@ -1837,6 +1977,7 @@ namespace ServerWater2.APIs
         {
             public string code { get; set; } = "";
             public ItemProfile profile { get; set; } = new ItemProfile();
+            public List<ItemCertificate> documents = new List<ItemCertificate>();
             public ItemUser receiver { get; set; } = new ItemUser();
             public ItemUser manager { get; set; } = new ItemUser();
             public ItemUser worker { get; set; } = new ItemUser();
@@ -1869,6 +2010,8 @@ namespace ServerWater2.APIs
                                                        .Include(s => s.service)
                                                        .Include(s => s.type)
                                                        .Include(s => s.state)
+                                                       .Include(s => s.group)
+                                                       .Include(s => s.area)
                                                        .FirstOrDefault();
                 if (item == null)
                 {
@@ -1906,6 +2049,18 @@ namespace ServerWater2.APIs
                     }
 
                 }
+
+                if(!string.IsNullOrEmpty(item.document))
+                {
+                    List<ItemCertificate>? certificates = JsonConvert.DeserializeObject<List<ItemCertificate>>(item.document);
+                    if(certificates != null)
+                    {
+                        foreach (ItemCertificate m_item in certificates)
+                        {
+                            tmp.documents.Add(m_item);
+                        }
+                    }    
+                }    
 
                 if (item.receiver != null)
                 {
@@ -1985,12 +2140,14 @@ namespace ServerWater2.APIs
             using (DataContext context = new DataContext())
             {
                 SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role)
+                                                .Include(s => s.group).ThenInclude(s => s!.areas)
                                                 .Include(s => s.workerOrders!).ThenInclude(s => s.receiver)
                                                 .Include(s => s.workerOrders!).ThenInclude(s => s.manager)
                                                 .Include(s => s.workerOrders!).ThenInclude(s => s.customer)
                                                 .Include(s => s.workerOrders!).ThenInclude(s => s.type)
                                                 .Include(s => s.workerOrders!).ThenInclude(s => s.service)
                                                 .Include(s => s.workerOrders!).ThenInclude(s => s.state)
+                                                .Include(s => s.workerOrders!).ThenInclude(s => s.group)
                                                 .FirstOrDefault();
                 if (m_user == null)
                 {
@@ -2005,6 +2162,8 @@ namespace ServerWater2.APIs
                                                        .Include(s => s.service)
                                                        .Include(s => s.type)
                                                        .Include(s => s.state)
+                                                       .Include(s => s.group)
+                                                       .Include(s => s.area)
                                                        .OrderByDescending(s => s.createdTime)
                                                        .ToList();
                 if (orders.Count < 1)
@@ -2012,21 +2171,37 @@ namespace ServerWater2.APIs
                     return new List<ItemInfoOrder>();
                 }
                 //Console.WriteLine("Version : 22-05-2023");
+                
                 List<SqlOrder> mOrders = new List<SqlOrder>();
                 if (m_user.role!.code.CompareTo("staff") == 0)
                 {
-                    mOrders = m_user.workerOrders!.Where(s => DateTime.Compare(m_begin.ToUniversalTime(), s.createdTime) <= 0 && DateTime.Compare(m_end.ToUniversalTime(), s.createdTime) > 0 && s.isDelete == false).OrderByDescending(s => s.createdTime).ToList();
+                    if(m_user.group == null)
+                    {
+                        return new List<ItemInfoOrder>();
+                    }
+
+                    mOrders = m_user.workerOrders!.Where(s => s.group!.code.CompareTo(m_user.group.code) == 0 && DateTime.Compare(m_begin.ToUniversalTime(), s.createdTime) <= 0 && DateTime.Compare(m_end.ToUniversalTime(), s.createdTime) > 0 && s.isDelete == false).OrderByDescending(s => s.createdTime).ToList();
                 }
                 else
                 {
                     if (m_user.role!.code.CompareTo("manager") == 0)
                     {
-                        mOrders = orders.Where(s => s.service!.code.CompareTo("LM") == 0 && s.state!.code != 0).ToList();
+                        if (m_user.group == null)
+                        {
+                            return new List<ItemInfoOrder>();
+                        }
+
+                        mOrders = orders.Where(s => s.group!.code.CompareTo(m_user.group.code) == 0 && s.service!.code.CompareTo("LM") == 0 && s.state!.code != 0).ToList();
 
                     }
                     else if (m_user.role!.code.CompareTo("survey") == 0)
                     {
-                        mOrders = orders.Where(s => s.state!.code != 0).ToList();
+                        if (m_user.group == null)
+                        {
+                            return new List<ItemInfoOrder>();
+                        }
+
+                        mOrders = orders.Where(s => s.group!.code.CompareTo(m_user.group.code) == 0 && s.state!.code != 0).ToList();
 
                     }
                     else
@@ -2034,19 +2209,6 @@ namespace ServerWater2.APIs
                         mOrders = orders;
                     }
                 }
-
-                /*  if (Program.api_user.checkSurvey(token) == 0)
-                  {
-                      m_order = orders.Where(s => s.state!.code != 0 && (s.service!.code.CompareTo("SC") == 0 || s.service!.code.CompareTo("TT") == 0)).ToList();
-                  }
-                  if (Program.api_user.checkCS(token) == 0)
-                  {
-                      m_order = orders.Where(s => s.state!.code == 0).ToList();
-                  }
-                  if (Program.api_user.checkAdmin(token) == 0)
-                  {
-                      m_order = orders;
-                  }*/
 
                 foreach (SqlOrder item in mOrders)
                 {
@@ -2079,6 +2241,18 @@ namespace ServerWater2.APIs
                             tmp.customer = customer;
                         }
 
+                    }
+
+                    if (!string.IsNullOrEmpty(item.document))
+                    {
+                        List<ItemCertificate>? certificates = JsonConvert.DeserializeObject<List<ItemCertificate>>(item.document);
+                        if (certificates != null)
+                        {
+                            foreach (ItemCertificate m_item in certificates)
+                            {
+                                tmp.documents.Add(m_item);
+                            }
+                        }
                     }
 
                     if (item.receiver != null)
@@ -2156,6 +2330,7 @@ namespace ServerWater2.APIs
         {
             public string code { get; set; } = "";
             public ItemProfile profile { get; set; } = new ItemProfile();
+            public List<ItemCertificate> documents { get; set; } = new List<ItemCertificate>();
             public ItemUser receiver { get; set; } = new ItemUser();
             public ItemUser manager { get; set; } = new ItemUser();
             public ItemUser worker { get; set; } = new ItemUser();
@@ -2183,14 +2358,14 @@ namespace ServerWater2.APIs
             using (DataContext context = new DataContext())
             {
 
-                List<SqlOrder>? items = context.orders!.Include(s => s.customer).Where(s => s.isFinish == false && (s.code.CompareTo(code) == 0 || s.phone.CompareTo(code) == 0 || s.addressWater.CompareTo(code) == 0) || s.customer!.code.CompareTo(code) == 0)
-                                                        .Include(s => s.type)
-                                                        .Include(s => s.service)
-                                                        .Include(s => s.state)
-                                                        .Include(s => s.receiver)
-                                                        .Include(s => s.manager)
-                                                        .Include(s => s.worker)
-                                                        .ToList();
+                List<SqlOrder>? items = context.orders!.Include(s => s.customer).Where(s => s.isFinish == false && (s.code.CompareTo(code) == 0 || s.phone.CompareTo(code) == 0 || s.addressCustomer.CompareTo(code) == 0) || s.customer!.code.CompareTo(code) == 0)
+                                                       .Include(s => s.type)
+                                                       .Include(s => s.service)
+                                                       .Include(s => s.state)
+                                                       .Include(s => s.receiver)
+                                                       .Include(s => s.manager)
+                                                       .Include(s => s.worker)
+                                                       .ToList();
                 if (items.Count < 1)
                 {
                     return new List<ItemLogOrder>();
@@ -2224,6 +2399,18 @@ namespace ServerWater2.APIs
 
                         tmp.customer = customer;
 
+                    }
+
+                    if (!string.IsNullOrEmpty(item.document))
+                    {
+                        List<ItemCertificate>? certificates = JsonConvert.DeserializeObject<List<ItemCertificate>>(item.document);
+                        if (certificates != null)
+                        {
+                            foreach (ItemCertificate m_item in certificates)
+                            {
+                                tmp.documents.Add(m_item);
+                            }
+                        }
                     }
 
                     if (item.receiver != null)

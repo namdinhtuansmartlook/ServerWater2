@@ -18,15 +18,19 @@ namespace ServerWater2.Controllers
         {
             _logger = logger;
         }
+
         public class HttpItemOrder
         {
             public string customer { get; set; } = "";
             public string phone { get; set; } = "";
             public string addressCustomer { get; set; } = "";
+            public string group { get; set; } = "";
+            public string area { get; set; } = "";
             public string addressWater { get; set; } = "";
             public string addressContract { get; set; } = "";
             public string service { get; set; } = "";
             public string type { get; set; } = "";
+            public List<string> certificates { get; set; } = new List<string>();
             public string note { get; set; } = "";
 
         }
@@ -36,7 +40,7 @@ namespace ServerWater2.Controllers
         {
 
 
-            string order = await Program.api_order.createNewOrder(item.customer, item.phone, item.addressCustomer, item.addressWater, item.addressContract, item.service, item.type, item.note);
+            string order = await Program.api_order.createNewOrder(item.customer, item.phone, item.addressCustomer, item.group, item.area, item.addressWater, item.addressContract, item.service, item.type, item.certificates, item.note);
             if (string.IsNullOrEmpty(order))
             {
                 return BadRequest();
@@ -403,24 +407,6 @@ namespace ServerWater2.Controllers
             }
 
         }
-
-        //public class ItemHttpAddmage
-        //{
-        //    public string latitude { get; set; } = "";
-        //    public string longitude { get; set; } = "";
-        //    public string note { get; set; } = "";
-        //    public IFormFile image { get; set; }
-
-        //}
-
-        //public class ItemHttpRemoveImage
-        //{
-        //    public string image { get; set; } = "";
-        //    public string latitude { get; set; } = "";
-        //    public string longitude { get; set; } = "";
-        //    public string note { get; set; } = "";
-        //}
-
 
 
         [HttpPut]

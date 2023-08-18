@@ -1,1 +1,1 @@
-{"host":["Host=office.stvg.vn:59066;Database=db_stvg_ServerWater2;Username=postgres;Password=stvg"]}
+{ "host": [ "Host=192.168.1.30:30000;Database=db_stvg_ServerWater2;Username=postgres;Password=stvg" ] }

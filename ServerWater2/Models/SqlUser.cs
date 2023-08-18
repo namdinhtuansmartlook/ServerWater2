@@ -20,6 +20,7 @@ namespace ServerWater2.Models
         public string notifications { get; set; } = ""; 
         public bool isClear { get; set; } = false; 
         public SqlRole? role { get; set; }
+        public SqlGroup? group { get; set; }
         public List<SqlOrder>? receiverOrders { get; set; }
         public List<SqlOrder>? managerOrders { get; set; }
         public List<SqlOrder>? workerOrders { get; set; }
