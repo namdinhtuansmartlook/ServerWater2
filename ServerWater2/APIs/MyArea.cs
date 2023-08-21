@@ -128,6 +128,7 @@ namespace ServerWater2.APIs
         {
             public string code { get; set; } = "";
             public string name { get; set; } = "";
+            public string des { get; set; } = "";
         }
 
         public class ItemArea
@@ -161,7 +162,7 @@ namespace ServerWater2.APIs
                                     MyItemGroup m_group = new MyItemGroup();
                                     m_group.code = group.code;
                                     m_group.name = group.name;
-
+                                    m_group.des = group.des;
                                     tmp.groups.Add(m_group);
                                 }    
                             }    

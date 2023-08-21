@@ -8,61 +8,162 @@ namespace ServerWater2.APIs
         {
             using (DataContext context = new DataContext())
             {
-                SqlAction? action = context.actions!.Where(s => s.code.CompareTo("action1") == 0 && s.isdeleted == false).FirstOrDefault();
+                SqlAction? action = context.actions!.Where(s => s.code.CompareTo("XN") == 0 && s.isdeleted == false).FirstOrDefault();
                 if (action == null)
                 {
                     SqlAction item = new SqlAction();
                     item.ID = DateTime.Now.Ticks;
-                    item.code = "action1";
-                    item.name = "Xác nhận";
-                    item.des = "Xác nhận";
+                    item.code = "XN";
+                    item.name = "Đã xác nhận";
+                    item.des = "Đã xác nhận";
                     item.isdeleted = false;
                     context.actions!.Add(item);
                 }
-                action = context.actions!.Where(s => s.code.CompareTo("action2") == 0 && s.isdeleted == false).FirstOrDefault();
+
+                action = context.actions!.Where(s => s.code.CompareTo("DXN") == 0 && s.isdeleted == false).FirstOrDefault();
                 if (action == null)
                 {
                     SqlAction item = new SqlAction();
                     item.ID = DateTime.Now.Ticks;
-                    item.code = "action2";
-                    item.name = "Đã phân công";
-                    item.des = "Đã phân công";
+                    item.code = "DXN";
+                    item.name = "Đợi xác nhận";
+                    item.des = "Đợi xác nhận";
                     item.isdeleted = false;
                     context.actions!.Add(item);
                 }
-                action = context.actions!.Where(s => s.code.CompareTo("action3") == 0 && s.isdeleted == false).FirstOrDefault();
+
+                action = context.actions!.Where(s => s.code.CompareTo("DTN") == 0 && s.isdeleted == false).FirstOrDefault();
                 if (action == null)
                 {
                     SqlAction item = new SqlAction();
                     item.ID = DateTime.Now.Ticks;
-                    item.code = "action3";
-                    item.name = "Đang thực hiện";
-                    item.des = "Đang thực hiện";
+                    item.code = "DTN";
+                    item.name = "Đã tiếp nhận";
+                    item.des = "Đã tiếp nhận";
                     item.isdeleted = false;
                     context.actions!.Add(item);
                 }
-                action = context.actions!.Where(s => s.code.CompareTo("action4") == 0 && s.isdeleted == false).FirstOrDefault();
+
+                action = context.actions!.Where(s => s.code.CompareTo("TKH") == 0 && s.isdeleted == false).FirstOrDefault();
                 if (action == null)
                 {
                     SqlAction item = new SqlAction();
                     item.ID = DateTime.Now.Ticks;
-                    item.code = "action4";
-                    item.name = "Đã hoàn thành";
-                    item.des = "Đã hoàn thành";
+                    item.code = "TKH";
+                    item.name = "Đã tạo khách hàng";
+                    item.des = "Đã tạo khách hàng";
                     item.isdeleted = false;
                     context.actions!.Add(item);
                 }
-                action = context.actions!.Where(s => s.code.CompareTo("action5") == 0 && s.isdeleted == false).FirstOrDefault();
+
+                action = context.actions!.Where(s => s.code.CompareTo("PCKS") == 0 && s.isdeleted == false).FirstOrDefault();
                 if (action == null)
                 {
                     SqlAction item = new SqlAction();
                     item.ID = DateTime.Now.Ticks;
-                    item.code = "action5";
+                    item.code = "PCKS";
+                    item.name = "Đã phân công khảo sát";
+                    item.des = "Đã phân công khảo sát";
+                    item.isdeleted = false;
+                    context.actions!.Add(item);
+                }
+
+                action = context.actions!.Where(s => s.code.CompareTo("KS") == 0 && s.isdeleted == false).FirstOrDefault();
+                if (action == null)
+                {
+                    SqlAction item = new SqlAction();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = "KS";
+                    item.name = "Đang khảo sát";
+                    item.des = "Đang khảo sát";
+                    item.isdeleted = false;
+                    context.actions!.Add(item);
+                }
+
+                action = context.actions!.Where(s => s.code.CompareTo("HTKS") == 0 && s.isdeleted == false).FirstOrDefault();
+                if (action == null)
+                {
+                    SqlAction item = new SqlAction();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = "HTKS";
+                    item.name = "Hoàn thành khảo sát";
+                    item.des = "Hoàn thành khảo sát";
+                    item.isdeleted = false;
+                    context.actions!.Add(item);
+                }
+
+                action = context.actions!.Where(s => s.code.CompareTo("DPC") == 0 && s.isdeleted == false).FirstOrDefault();
+                if (action == null)
+                {
+                    SqlAction item = new SqlAction();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = "DPC";
+                    item.name = "Đã phân công thi công";
+                    item.des = "Đã phân công thi công";
+                    item.isdeleted = false;
+                    context.actions!.Add(item);
+                }
+
+                action = context.actions!.Where(s => s.code.CompareTo("DH") == 0 && s.isdeleted == false).FirstOrDefault();
+                if (action == null)
+                {
+                    SqlAction item = new SqlAction();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = "DH";
                     item.name = "Đã hủy";
                     item.des = "Đã hủy";
                     item.isdeleted = false;
                     context.actions!.Add(item);
                 }
+
+                action = context.actions!.Where(s => s.code.CompareTo("NT") == 0 && s.isdeleted == false).FirstOrDefault();
+                if (action == null)
+                {
+                    SqlAction item = new SqlAction();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = "NT";
+                    item.name = "Nghiệm thu";
+                    item.des = "Nghiệm thu";
+                    item.isdeleted = false;
+                    context.actions!.Add(item);
+                }
+
+                action = context.actions!.Where(s => s.code.CompareTo("ABDCV") == 0 && s.isdeleted == false).FirstOrDefault();
+                if (action == null)
+                {
+                    SqlAction item = new SqlAction();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = "ABDCV";
+                    item.name = "Hình ảnh bắt đầu công việc";
+                    item.des = "Hình ảnh bắt đầu công việc";
+                    item.isdeleted = false;
+                    context.actions!.Add(item);
+                }
+
+                action = context.actions!.Where(s => s.code.CompareTo("KT") == 0 && s.isdeleted == false).FirstOrDefault();
+                if (action == null)
+                {
+                    SqlAction item = new SqlAction();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = "KT";
+                    item.name = "Kết thúc công việc";
+                    item.des = "Kết thúc công việc";
+                    item.isdeleted = false;
+                    context.actions!.Add(item);
+                }
+
+                action = context.actions!.Where(s => s.code.CompareTo("AKTCV") == 0 && s.isdeleted == false).FirstOrDefault();
+                if (action == null)
+                {
+                    SqlAction item = new SqlAction();
+                    item.ID = DateTime.Now.Ticks;
+                    item.code = "HKTCV";
+                    item.name = "Hình ảnh kết thúc công việc";
+                    item.des = "Hình ảnh kết thúc công việc";
+                    item.isdeleted = false;
+                    context.actions!.Add(item);
+                }
+
                 int rows = await context.SaveChangesAsync();
             }
         }

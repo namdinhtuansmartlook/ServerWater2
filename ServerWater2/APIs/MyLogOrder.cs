@@ -81,7 +81,7 @@ namespace ServerWater2.APIs
                             m_order.profile.name = item.order.name;
                             m_order.profile.phone = item.order.phone;
                             m_order.profile.addressCustomer = item.order.addressCustomer;
-                            m_order.profile.addressWater = string.Format("{0} - {1}", item.order.area!.name, item.order.group!.name);
+                            m_order.profile.addressWater = item.order.addressWater;
                             m_order.profile.addressContract = item.order.addressContract;
 
                             if (item.order.customer != null)

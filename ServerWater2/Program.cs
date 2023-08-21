@@ -32,6 +32,7 @@ public class Program
     public static MyUser api_user = new MyUser();
     public static MyGroup api_group = new MyGroup();
     public static MyFile api_file = new MyFile();
+    public static MyViewForm api_viewform = new MyViewForm();
     public static MyOrder api_order = new MyOrder();
     public static MyType api_type = new MyType();
     public static MyState api_state = new MyState();
@@ -145,6 +146,7 @@ public class Program
             await api_type.initAsync();
             await api_action.initAsync();
             await api_certificate.initAsync();
+            await api_viewform.initAsync();
 
             app.Run();
         }

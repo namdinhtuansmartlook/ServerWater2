@@ -11,6 +11,7 @@ namespace ServerWater2.Models
         public string code { get; set; } = "";
         public string route { get; set; } = "";
         public string phone { get; set; } = "";
+        public string persons { get; set; } = "";
         public string name { get; set; } = "";
         public string address { get; set; } = "";
         public string note { get; set; } = "";

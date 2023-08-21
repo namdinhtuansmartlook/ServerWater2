@@ -19,6 +19,8 @@ namespace ServerWater2.Models
         public DbSet<SqlState>? states { get; set; }       
         //public DbSet<SqlArea>? areas { get; set; }
         public DbSet<SqlFile>? files { get; set; }
+        public DbSet<SqlViewForm>? forms { get; set; }
+
         public DbSet<SqlCustomer>? customers { get; set; }
         public DbSet<SqlAction>? actions { get; set; }
         public static string randomString(int length)

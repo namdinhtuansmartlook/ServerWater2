@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using ServerWater2.APIs;
 using static ServerWater2.APIs.MyCustomer;
 using static ServerWater2.APIs.MyLogOrder;
@@ -23,6 +24,7 @@ namespace ServerWater2.Controllers
         {
             public string customer { get; set; } = "";
             public string phone { get; set; } = "";
+            public string personNumbers { get; set; } = "";
             public string addressCustomer { get; set; } = "";
             public string group { get; set; } = "";
             public string area { get; set; } = "";
@@ -40,7 +42,7 @@ namespace ServerWater2.Controllers
         {
 
 
-            string order = await Program.api_order.createNewOrder(item.customer, item.phone, item.addressCustomer, item.group, item.area, item.addressWater, item.addressContract, item.service, item.type, item.certificates, item.note);
+            string order = await Program.api_order.createNewOrderAsync(item.customer, item.phone, item.personNumbers, item.addressCustomer, item.group, item.area, item.addressWater, item.addressContract, item.service, item.type, item.certificates, item.note);
             if (string.IsNullOrEmpty(order))
             {
                 return BadRequest();
@@ -49,6 +51,27 @@ namespace ServerWater2.Controllers
             {
                 return Ok(order);
             }
+        }
+
+
+        [HttpPut]
+        [Route("{code}/upLoadImageFileCustomer")]
+        public async Task<IActionResult> UpLoadImageDocument(string code, string certificate, IFormFile image)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                image.CopyTo(ms);
+                string tmp = await Program.api_order.uploadImageFileAsync(code, certificate, ms.ToArray());
+                if (!string.IsNullOrEmpty(tmp))
+                {
+                    return Ok(tmp);
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+
         }
 
         public class ItemHttpRequest
@@ -78,7 +101,7 @@ namespace ServerWater2.Controllers
         {
 
 
-            string order = await Program.api_order.createRequestOrder(item.code, item.name, item.phone, item.customer, item.address, item.addressContract, item.type, item.note);
+            string order = await Program.api_order.createRequestOrderAsync(item.code, item.name, item.phone, item.customer, item.address, item.addressContract, item.type, item.note);
             if (string.IsNullOrEmpty(order))
             {
                 return BadRequest();
@@ -89,13 +112,96 @@ namespace ServerWater2.Controllers
             }
         }
         [HttpPut]
-        [Route("{code}/setAssginOrder")]
-        public async Task<IActionResult> SetAssginOrder([FromHeader] string token, string code, string user)
+        [Route("{id}/addImageServeyOrder")]
+        public async Task<IActionResult> AddImageServeyOrder([FromHeader] string token, string id, IFormFile image)
         {
-            long id = Program.api_user.checkSystem(token);
-            if (id >= 0)
+            long ID = Program.api_user.checkUser(token);
+            if (ID >= 0)
             {
-                bool flag = await Program.api_order.setAssginOrder(token, code, user);
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    image.CopyTo(ms);
+                    string tmp = await Program.api_order.addImageSerrveyAsync(token, id, ms.ToArray());
+                    if (!string.IsNullOrEmpty(tmp))
+                    {
+                        return Ok(tmp);
+                    }
+                    else
+                    {
+                        return BadRequest();
+                    }
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }
+
+        [HttpDelete]
+        [Route("{id}/removeImageServeyOrder")]
+        public async Task<IActionResult> RemoveImageServeyOrder([FromHeader] string token, string id, string image)
+        {
+            long ID = Program.api_user.checkUser(token);
+            if (ID >= 0)
+            {
+                bool flag = await Program.api_order.removeImageWorkingAsync(token, id, image);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }
+
+        [HttpPut]
+        [Route("{id}/addImageServeyFinishOrder")]
+        public async Task<IActionResult> AddImageFinishServeyOrder([FromHeader] string token, string id, IFormFile image)
+        {
+            long ID = Program.api_user.checkUser(token);
+            if (ID >= 0)
+            {
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    image.CopyTo(ms);
+                    string tmp = await Program.api_order.addImageFinishServeyAsync(token, id, ms.ToArray());
+                    if (!string.IsNullOrEmpty(tmp))
+                    {
+                        return Ok(tmp);
+                    }
+                    else
+                    {
+                        return BadRequest();
+                    }
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }
+
+        [HttpDelete]
+        [Route("{id}/removeImageServeyFinishOrder")]
+        public async Task<IActionResult> RemoveImageFinishServeyOrder([FromHeader] string token, string id, string image)
+        {
+            long ID = Program.api_user.checkUser(token);
+            if (ID >= 0)
+            {
+                bool flag = await Program.api_order.removeImageFinishServeyAsync(token, id, image);
                 if (flag)
                 {
                     return Ok();
@@ -166,8 +272,6 @@ namespace ServerWater2.Controllers
             }
 
         }
-
-
 
         [HttpPut]
         [Route("{id}/addImageFinishOrder")]
@@ -294,39 +398,13 @@ namespace ServerWater2.Controllers
         }
 
         [HttpPut]
-        [Route("{code}/confirmOrder")]
-        public async Task<IActionResult> ConfirmOrder([FromHeader] string token, string code)
-        {
-            long id = Program.api_user.checkSystem(token);
-            if (id >= 0)
-            {
-                bool flag = await Program.api_order.confirmOrder(token, code);
-                if (flag)
-                {
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest();
-                }
-
-            }
-            else
-            {
-                return Unauthorized();
-            }
-
-        }
-
-
-        [HttpPut]
         [Route("{code}/setCustomer")]
         public async Task<IActionResult> SetCustomer([FromHeader] string token, string maDB, string code)
         {
             long id = Program.api_user.checkSystem(token);
             if (id >= 0)
             {
-                bool flag = await Program.api_order.setCustomer(token, maDB, code);
+                bool flag = await Program.api_order.setCustomerAsync(token, maDB, code);
                 if (flag)
                 {
                     return Ok();
@@ -344,15 +422,14 @@ namespace ServerWater2.Controllers
 
         }
 
-
         [HttpPut]
-        [Route("{code}/setConfirmedOrder")]
-        public async Task<IActionResult> SetConfirmedOrder([FromHeader] string token, string code)
+        [Route("{code}/setAssginServeyOrder")]
+        public async Task<IActionResult> SetAssginServeyOrder([FromHeader] string token, string code, string user)
         {
             long id = Program.api_user.checkSystem(token);
             if (id >= 0)
             {
-                bool flag = await Program.api_order.setConfirmedOrder(token, code);
+                bool flag = await Program.api_order.setAssginSurveyOrder(token, code, user);
                 if (flag)
                 {
                     return Ok();
@@ -370,133 +447,14 @@ namespace ServerWater2.Controllers
 
         }
 
-
-        public class ItemHttpJob
-        {
-            public string code { get; set; } = "";
-            public string latitude { get; set; } = "";
-            public string longitude { get; set; } = "";
-            public string note { get; set; } = "";
-        }
-
-        [HttpPut]
-        [Route("beginWorkOrder")]
-        public async Task<IActionResult> BeginWorkOrder([FromHeader] string token, ItemHttpJob job)
-        {
-            if (string.IsNullOrEmpty(job.code))
-            {
-                return BadRequest();
-            }
-            long id = Program.api_user.checkUser(token);
-            if (id >= 0)
-            {
-                bool flag = await Program.api_order.beginWorkOrder(token, job.code, job.latitude, job.longitude, job.note);
-                if (flag)
-                {
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest();
-                }
-
-            }
-            else
-            {
-                return Unauthorized();
-            }
-
-        }
-
-
-        [HttpPut]
-        [Route("{code}/finishOrder")]
-        public async Task<IActionResult> FinishOrder([FromHeader] string token, string code)
-        {
-            long id = Program.api_user.checkUser(token);
-            if (id >= 0)
-            {
-                bool flag = await Program.api_order.finishOrder(token, code);
-                if (flag)
-                {
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest();
-                }
-
-            }
-            else
-            {
-                return Unauthorized();
-            }
-
-        }
-
-        [HttpPut]
-        [Route("{code}/confirmSignOrder")]
-        public async Task<IActionResult> confirmSignOrder([FromHeader] string token, string code)
-        {
-            long id = Program.api_user.checkUser(token);
-            if (id >= 0)
-            {
-                bool flag = await Program.api_order.confirmSignOrder(token, code);
-                if (flag)
-                {
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest();
-                }
-
-            }
-            else
-            {
-                return Unauthorized();
-            }
-
-        }
-        [HttpPut]
-        [Route("finishWorkOrder")]
-        public async Task<IActionResult> FinishWorkOrder([FromHeader] string token, ItemHttpJob job)
-        {
-            if (string.IsNullOrEmpty(job.code))
-            {
-                return BadRequest();
-            }
-            long id = Program.api_user.checkUser(token);
-            if (id >= 0)
-            {
-                bool flag = await Program.api_order.finishWorkOrder(token, job.code, job.note);
-                if (flag)
-                {
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest();
-                }
-
-            }
-            else
-            {
-                return Unauthorized();
-            }
-
-        }
-
-
-
-        [HttpDelete]
-        [Route("{code}/cancelOrder")]
-        public async Task<IActionResult> CancelOrder([FromHeader] string token, string code)
+        [HttpPost]
+        [Route("{order}/createSurveyOrder")]
+        public async Task<IActionResult> CreateSurveyOrderAsync([FromHeader] string token, string order, string form, string data)
         {
             long id = Program.api_user.checkSystem(token);
             if (id >= 0)
             {
-                bool flag = await Program.api_order.cancelOrder(token, code);
+                bool flag = await Program.api_order.createSurveyOrderAsync(token, order, form, data);
                 if (flag)
                 {
                     return Ok();
@@ -513,6 +471,32 @@ namespace ServerWater2.Controllers
             }
 
         }
+        [HttpPut]
+        [Route("{code}/setAssginWorkerOrder")]
+        public async Task<IActionResult> SetAssginWorkerOrder([FromHeader] string token, string code, string user)
+        {
+            long id = Program.api_user.checkSystem(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_order.setAssginWorkerOrder(token, code, user);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }
+
+
 
         [HttpGet]
         [Route("getListService")]

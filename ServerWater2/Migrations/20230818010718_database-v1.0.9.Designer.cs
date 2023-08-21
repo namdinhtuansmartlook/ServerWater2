@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ServerWater2.Models;
@@ -12,9 +13,11 @@ using ServerWater2.Models;
 namespace ServerWater2.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20230818010718_database-v1.0.9")]
+    partial class databasev109
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -142,10 +145,6 @@ namespace ServerWater2.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("note")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("persons")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -327,10 +326,6 @@ namespace ServerWater2.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("persons")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("phone")
                         .IsRequired()
                         .HasColumnType("text");
@@ -342,9 +337,6 @@ namespace ServerWater2.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<long?>("stateID")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("surveyID")
                         .HasColumnType("bigint");
 
                     b.Property<long?>("typeID")
@@ -368,8 +360,6 @@ namespace ServerWater2.Migrations
                     b.HasIndex("serviceID");
 
                     b.HasIndex("stateID");
-
-                    b.HasIndex("surveyID");
 
                     b.HasIndex("typeID");
 
@@ -558,38 +548,6 @@ namespace ServerWater2.Migrations
                     b.ToTable("User");
                 });
 
-            modelBuilder.Entity("ServerWater2.Models.SqlViewForm", b =>
-                {
-                    b.Property<long>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("ID"));
-
-                    b.Property<string>("code")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("data")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("isdeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("type")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("ID");
-
-                    b.ToTable("ViewForm");
-                });
-
             modelBuilder.Entity("SqlAreaSqlGroup", b =>
                 {
                     b.Property<long>("areasID")
@@ -656,10 +614,6 @@ namespace ServerWater2.Migrations
                         .WithMany()
                         .HasForeignKey("stateID");
 
-                    b.HasOne("ServerWater2.Models.SqlUser", "survey")
-                        .WithMany()
-                        .HasForeignKey("surveyID");
-
                     b.HasOne("ServerWater2.Models.SqlType", "type")
                         .WithMany()
                         .HasForeignKey("typeID");
@@ -681,8 +635,6 @@ namespace ServerWater2.Migrations
                     b.Navigation("service");
 
                     b.Navigation("state");
-
-                    b.Navigation("survey");
 
                     b.Navigation("type");
 

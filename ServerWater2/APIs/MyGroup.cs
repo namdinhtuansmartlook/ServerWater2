@@ -110,6 +110,7 @@ namespace ServerWater2.APIs
                         m_user.group = null;
                     }    
                 }    
+
                 group.isdeleted = true;
 
                 int rows = await context.SaveChangesAsync();
@@ -128,6 +129,7 @@ namespace ServerWater2.APIs
         {
             public string code { get; set; } = "";
             public string name { get; set; } = "";
+            public string des { get; set; } = "";
         }
 
         public class ItemGroup
@@ -161,7 +163,7 @@ namespace ServerWater2.APIs
                                     MyItemArea m_area = new MyItemArea();
                                     m_area.code = area.code;
                                     m_area.name = area.name;
-
+                                    m_area.des = area.des;
                                     tmp.areas.Add(m_area);
                                 }    
                             }    
@@ -264,7 +266,7 @@ namespace ServerWater2.APIs
                     MyItemArea area = new MyItemArea();
                     area.code = item.code;
                     area.name = item.name;
-
+                    area.des = item.des;
                     items.Add(area);
                 }
             }

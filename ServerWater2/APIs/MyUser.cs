@@ -439,13 +439,22 @@ namespace ServerWater2.APIs
             }
             using (DataContext context = new DataContext())
             {
-                SqlUser? own_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role).FirstOrDefault();
+                SqlUser? own_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.group).Include(s => s.role).FirstOrDefault();
                 if (own_user == null)
                 {
                     return new List<ItemUser>();
                 }
-               
-                List<SqlUser> users = context.users!.Where(s => s.isdeleted == false).ToList();
+                List<SqlUser> users = new List<SqlUser>();
+
+                if (own_user.role!.code.CompareTo("admin") == 0)
+                {
+                    users = context.users!.Where(s => s.isdeleted == false).Include(s => s.group).ToList();
+                }
+                else
+                {
+                    users = context.users!.Include(s => s.group).Include(s => s.role).Where(s => s.isdeleted == false && s.role!.code.CompareTo("admin") != 0 && (s.group == null || s.group.ID == own_user.group!.ID)).ToList();
+                }
+                
                 List<ItemUser> items = new List<ItemUser>();
                 foreach (SqlUser user in users)
                 {
@@ -470,8 +479,7 @@ namespace ServerWater2.APIs
                 return items;
             }
         }
-
-        public async Task<bool> setGroup(string token, string group, List<string> users)
+        public async Task<bool> changeGroup(string token, string group)
         {
             if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(group))
             {
@@ -479,8 +487,12 @@ namespace ServerWater2.APIs
             }
             using (DataContext context = new DataContext())
             {
-                SqlUser? own_user = context.users!.Include(s => s.role).Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0 && s.role!.code.CompareTo("admin") == 0).FirstOrDefault();
+                SqlUser? own_user = context.users!.Include(s => s.role).Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0 && s.group != null).Include(s => s.group).FirstOrDefault();
                 if (own_user == null)
+                {
+                    return false;
+                }
+                if(own_user.group!.code.CompareTo(group) == 0)
                 {
                     return false;
                 }
@@ -491,19 +503,54 @@ namespace ServerWater2.APIs
                     return false;
                 }
 
-                foreach(string m_code in users)
+                own_user.group = m_group;
+
+                int rows = await context.SaveChangesAsync();
+                return true;
+            }
+        }
+
+        public async Task<bool> setGroup(string token, string group, List<string> users)
+        {
+            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(group))
+            {
+                return false;
+            }
+            using (DataContext context = new DataContext())
+            {
+                SqlGroup? m_group = context.groups!.Where(s => s.isdeleted == false && s.code.CompareTo(group) == 0).FirstOrDefault();
+                if (m_group == null)
                 {
-                    SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0 && s.user.CompareTo(m_code) == 0).FirstOrDefault();
+                    return false;
+                }
+
+                SqlUser? own_user = context.users!.Include(s => s.role).Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.group).ThenInclude(s => s!.users).FirstOrDefault();
+                if (own_user == null)
+                {
+                    return false;
+                }
+
+                List<SqlUser> mUsers = context.users!.Where(s => s.isdeleted == false && s.group == null).ToList();
+                foreach (string m_code in users)
+                {
+                    SqlUser? m_user = mUsers.Where(s => s.user.CompareTo(m_code) == 0).FirstOrDefault();
                     if (m_user == null)
                     {
-                        Log.Debug("Fail set group for user : {0}", m_code);
+                        Console.WriteLine("Fail set group for user : {0}", m_code);
                         continue;
                     }
                     m_user.group = m_group;
                 }
 
                 int rows = await context.SaveChangesAsync();
-                return true;
+                if (rows > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 
