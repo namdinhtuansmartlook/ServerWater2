@@ -43,8 +43,8 @@ namespace ServerWater2.Models
             modelBuilder.Entity<SqlOrder>().HasOne<SqlUser>(s => s.receiver).WithMany(s => s.receiverOrders);
             modelBuilder.Entity<SqlOrder>().HasOne<SqlUser>(s => s.manager).WithMany(s => s.managerOrders);
             modelBuilder.Entity<SqlOrder>().HasOne<SqlUser>(s => s.worker).WithMany(s => s.workerOrders);
+            modelBuilder.Entity<SqlOrder>().HasOne<SqlUser>(s => s.survey).WithMany(s => s.surveyOrders);
             modelBuilder.Entity<SqlGroup>().HasMany<SqlUser>(s => s.users).WithOne(s => s.group);
-            modelBuilder.Entity<SqlGroup>().HasMany<SqlArea>(s => s.areas).WithMany(s => s.groups);
         }
     }
 

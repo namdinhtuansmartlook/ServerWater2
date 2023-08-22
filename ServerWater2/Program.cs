@@ -34,6 +34,7 @@ public class Program
     public static MyFile api_file = new MyFile();
     public static MyViewForm api_viewform = new MyViewForm();
     public static MyOrder api_order = new MyOrder();
+    public static MyFirebase api_firebase = new MyFirebase();
     public static MyType api_type = new MyType();
     public static MyState api_state = new MyState();
     public static MyService api_service = new MyService();

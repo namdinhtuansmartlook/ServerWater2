@@ -1,8 +1,5 @@
-﻿using Microsoft.AspNetCore.Http.Features;
-using Microsoft.OpenApi.Writers;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using ServerWater2.Models;
-using System.Collections.Generic;
 
 namespace ServerWater2.APIs
 {
@@ -11,6 +8,7 @@ namespace ServerWater2.APIs
         public class ItemJson
         {
             public string key { get; set; } = "";
+            public string index { get; set; } = "";
             public string field { get; set; } = "";
             public string value { get; set; } = "";
             public string label { get; set; } = "";
@@ -33,6 +31,7 @@ namespace ServerWater2.APIs
                     
                     ItemJson itemJson = new ItemJson();
                     itemJson.key = "1";
+                    itemJson.index = "1";
                     itemJson.field = "address";
                     itemJson.value = "110 Bui Ta Han";
                     itemJson.label = "string";
@@ -87,55 +86,7 @@ namespace ServerWater2.APIs
             }    
         }
 
-        public async Task<bool> editFormAsync(string code, string name, List<ItemJson> datas)
-        {
-            using (DataContext context = new DataContext())
-            {
-                SqlViewForm? m_form = context.forms!.Where(s => s.code.CompareTo(code) == 0).FirstOrDefault();
-                if (m_form == null)
-                {
-                    return false;
-                }
-
-                m_form.code = code;
-                m_form.name = name;
-                m_form.data = JsonConvert.SerializeObject(datas);
-
-                int rows = await context.SaveChangesAsync();
-                if (rows > 0)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-        }
-
-        public async Task<bool> deleteFormAsync(string code)
-        {
-            using (DataContext context = new DataContext())
-            {
-                SqlViewForm? m_form = context.forms!.Where(s => s.code.CompareTo(code) == 0).FirstOrDefault();
-                if (m_form == null)
-                {
-                    return false;
-                }
-
-                m_form.isdeleted = true;
-                int rows = await context.SaveChangesAsync();
-                if (rows > 0)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-        }
-
+    
         public async Task<bool> addFieldForm(string code, string key, string field, string label)
         {
             using (DataContext context = new DataContext())
@@ -220,8 +171,6 @@ namespace ServerWater2.APIs
         public class ItemMyJson
         {
             public string code { get; set; } = "";
-            public string name { get; set; } = "";
-            public string type { get; set; } = "";
             public List<ItemJson> datas { get; set; } = new List<ItemJson>();
         }
 
@@ -238,8 +187,6 @@ namespace ServerWater2.APIs
                     {
                         ItemMyJson m_form = new ItemMyJson();
                         m_form.code = m_item.code;
-                        m_form.name = m_item.name;
-                        m_form.type = m_item.type;
 
                         List<ItemJson>? tmp = JsonConvert.DeserializeObject<List<ItemJson>>(m_item.data);
                         if(tmp != null)

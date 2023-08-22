@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿/*using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using System.Linq;
@@ -28,7 +28,7 @@ namespace ServerWater2.Controllers
                 Response.Headers.Add("Cache-Control", "no-cache");
                 Response.Headers.Add("Connection", "keep-alive");
 
-                if(state.CompareTo("0") == 0)
+                if (state.CompareTo("0") == 0)
                 {
                     long ID = Program.api_user.checkAdmin(token);
 
@@ -36,8 +36,8 @@ namespace ServerWater2.Controllers
                     {
                         return;
                     }
-                }    
-                else if(state.CompareTo("1") == 0)
+                }
+                else if (state.CompareTo("1") == 0)
                 {
                     long ID = Program.api_user.checkSystem(token);
 
@@ -45,7 +45,7 @@ namespace ServerWater2.Controllers
                     {
                         return;
                     }
-                }   
+                }
                 else
                 {
                     long ID = Program.api_user.checkUser(token);
@@ -54,7 +54,7 @@ namespace ServerWater2.Controllers
                     {
                         return;
                     }
-                }                   
+                }
 
                 string id = DateTime.Now.Ticks.ToString();
                 Program.HttpNotification httpNotification = new Program.HttpNotification();
@@ -66,7 +66,7 @@ namespace ServerWater2.Controllers
                     Program.api_user.checkNotification(token, httpNotification.isOnline, httpNotification.messagers);
                 }
                 Program.httpNotifications.Add(httpNotification);
-                
+
 
 
                 while (true)
@@ -96,7 +96,7 @@ namespace ServerWater2.Controllers
                     notification.messagers.Clear();
                     if (cancellationToken.IsCancellationRequested)
                     {
-                        while(!notification.isOnline)
+                        while (!notification.isOnline)
                         {
                             notification.isOnline = true;
                             Program.api_user.checkNotification(token, notification.isOnline, notification.messagers);
@@ -114,21 +114,21 @@ namespace ServerWater2.Controllers
             }
         }
 
-        //[HttpPost]
-        //[Route("test")]
-        //public async Task<IActionResult> test(ItemTest item)
-        //{
+        [HttpPost]
+        [Route("test")]
+        public async Task<IActionResult> test(ItemTest item)
+        {
 
 
-        //    bool order = await Program.api_order.testNotificationOrder(item.user, item.code, item.state);
-        //    if (!order)
-        //    {
-        //        return BadRequest();
-        //    }
-        //    else
-        //    {
-        //        return Ok(order);
-        //    }
-        //}
+            bool order = await Program.api_order.testNotificationOrder(item.user, item.code, item.state);
+            if (!order)
+            {
+                return BadRequest();
+            }
+            else
+            {
+                return Ok(order);
+            }
+        }
     }
-}
+}*/

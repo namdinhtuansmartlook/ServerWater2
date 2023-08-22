@@ -17,6 +17,7 @@ namespace ServerWater2.APIs
                     item.code = "P1";
                     item.name = "Phường 1";
                     item.des = "Phường 1";
+                    item.group = context.groups!.Where(s => s.code.CompareTo("NK") == 0 && s.isdeleted == false).FirstOrDefault();
                     item.isdeleted = false;
                     context.areas!.Add(item);
                 }
@@ -28,6 +29,7 @@ namespace ServerWater2.APIs
                     item.code = "P2";
                     item.name = "Phường 2";
                     item.des = "Phường 2";
+                    item.group = context.groups!.Where(s => s.code.CompareTo("NK") == 0 && s.isdeleted == false).FirstOrDefault();
                     item.isdeleted = false;
                     context.areas!.Add(item);
                 }
@@ -36,15 +38,25 @@ namespace ServerWater2.APIs
             }
         }
 
-        public async Task<bool> createAsync(string code, string name, string des)
+        public async Task<bool> createAsync(string code, string name, string des, string group)
         {
-            if (string.IsNullOrEmpty(code) || string.IsNullOrEmpty(name))
+            if (string.IsNullOrEmpty(code) || string.IsNullOrEmpty(name) || string.IsNullOrEmpty(group))
             {
                 return false;
             }
             using (DataContext context = new DataContext())
             {
-                SqlArea? area = context.areas!.Where(s => s.code.CompareTo(code) == 0 && s.isdeleted == false).FirstOrDefault();
+                SqlGroup? m_group = context.groups!.Where(s => s.code.CompareTo(group) == 0 && s.isdeleted == false).Include(s => s.areas).FirstOrDefault();
+                if(m_group == null)
+                {
+                    return false;
+                }
+                if(m_group.areas == null)
+                {
+                    m_group.areas = new List<SqlArea>();
+                }
+
+                SqlArea? area = m_group.areas.Where(s => s.code.CompareTo(code) == 0 && s.isdeleted == false).FirstOrDefault();
                 if (area != null)
                 {
                     return false;
@@ -55,6 +67,8 @@ namespace ServerWater2.APIs
                 item.code = code;
                 item.name = name;
                 item.des = des;
+                m_group.areas.Add(item);
+
                 context.areas!.Add(item);
 
                 int rows = await context.SaveChangesAsync();
@@ -69,11 +83,16 @@ namespace ServerWater2.APIs
             }
         }
 
-        public async Task<bool> editAsync(string code, string name, string des)
+        public async Task<bool> editAsync(string code, string name, string des, string group)
         {
             using (DataContext context = new DataContext())
             {
-                SqlArea? area = context.areas!.Where(s => s.code.CompareTo(code) == 0 && s.isdeleted == false).FirstOrDefault();
+                SqlGroup? m_group = context.groups!.Where(s => s.code.CompareTo(group) == 0 && s.isdeleted == false).Include(s => s.areas).FirstOrDefault();
+                if(m_group == null || m_group.areas == null)
+                {
+                    return false;
+                }
+                SqlArea? area = m_group.areas.Where(s => s.code.CompareTo(code) == 0 && s.isdeleted == false).FirstOrDefault();
                 if (area == null)
                 {
                     return false;
@@ -100,17 +119,23 @@ namespace ServerWater2.APIs
             }
         }
 
-        public async Task<bool> deleteAsync(string code)
+        public async Task<bool> deleteAsync(string area, string group)
         {
             using (DataContext context = new DataContext())
             {
-                SqlArea? area = context.areas!.Where(s => s.code.CompareTo(code) == 0 && s.isdeleted == false).FirstOrDefault();
-                if (area == null)
+                SqlGroup? m_group = context.groups!.Where(s => s.code.CompareTo(group) == 0 && s.isdeleted == false).Include(s => s.areas).FirstOrDefault();
+                if (m_group == null || m_group.areas == null)
                 {
                     return false;
                 }
-
-                area.isdeleted = true;
+                SqlArea? m_area = m_group.areas.Where(s => s.code.CompareTo(area) == 0 && s.isdeleted == false).FirstOrDefault();
+                if (m_area == null)
+                {
+                    return false;
+                }
+                
+                m_group.areas.Remove(m_area);
+                m_area.isdeleted = true;
 
                 int rows = await context.SaveChangesAsync();
                 if (rows > 0)
@@ -128,7 +153,6 @@ namespace ServerWater2.APIs
         {
             public string code { get; set; } = "";
             public string name { get; set; } = "";
-            public string des { get; set; } = "";
         }
 
         public class ItemArea
@@ -136,7 +160,7 @@ namespace ServerWater2.APIs
             public string code { get; set; } = "";
             public string name { get; set; } = "";
             public string des { get; set; } = "";
-            public List<MyItemGroup> groups { get; set; } = new List<MyItemGroup>();
+            public MyItemGroup group { get; set; } = new MyItemGroup();
         }
 
         public List<ItemArea> getListArea()
@@ -144,7 +168,7 @@ namespace ServerWater2.APIs
             List<ItemArea> list = new List<ItemArea>();
             using (DataContext context = new DataContext())
             {
-                List<SqlArea> areas = context.areas!.Where(s => s.isdeleted == false).Include(s => s.groups).ToList();
+                List<SqlArea> areas = context.areas!.Where(s => s.isdeleted == false).Include(s => s.group).ToList();
                 if (areas.Count > 0)
                 {
                     foreach (SqlArea item in areas)
@@ -153,19 +177,11 @@ namespace ServerWater2.APIs
                         tmp.code = item.code;
                         tmp.name = item.name;
                         tmp.des = item.des;
-                        if(item.groups != null)
+
+                        if(item.group != null)
                         {
-                            foreach(SqlGroup group in item.groups)
-                            {
-                                if(group.isdeleted == false)
-                                {
-                                    MyItemGroup m_group = new MyItemGroup();
-                                    m_group.code = group.code;
-                                    m_group.name = group.name;
-                                    m_group.des = group.des;
-                                    tmp.groups.Add(m_group);
-                                }    
-                            }    
+                            tmp.group.code = item.group.code;
+                            tmp.group.name = item.group.name;
                         }    
 
                         list.Add(tmp);

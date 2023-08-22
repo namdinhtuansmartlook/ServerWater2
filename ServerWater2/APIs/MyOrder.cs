@@ -5,23 +5,13 @@ using static ServerWater2.APIs.MyState;
 using Microsoft.EntityFrameworkCore;
 using static ServerWater2.APIs.MyType;
 using static ServerWater2.APIs.MyService;
-using System.Numerics;
-using Microsoft.OpenApi.Writers;
 using static ServerWater2.APIs.MyAction;
 using static ServerWater2.APIs.MyLogOrder;
-using System;
-using Microsoft.Extensions.Options;
-using System.Collections.Generic;
 using Serilog;
 using static ServerWater2.Program;
-using static Azure.Core.HttpHeader;
-using static ServerWater2.APIs.MyOrder;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Newtonsoft.Json.Linq;
-using static ServerWater2.APIs.MyArea;
 using static ServerWater2.APIs.MyGroup;
-using System.Linq;
 using static ServerWater2.APIs.MyViewForm;
+using static ServerWater2.APIs.MyArea;
 
 namespace ServerWater2.APIs
 {
@@ -135,83 +125,83 @@ namespace ServerWater2.APIs
             public string time { get; set; } = "";
         }
 
-        public async Task<bool> saveNotification(int state, string notification)
-        {
-            if (string.IsNullOrEmpty(notification))
-            {
-                return false;
-            }
-            using (DataContext context = new DataContext())
-            {
-                try
-                {
-                    List<SqlUser>? users = context.users!.Where(s => s.isdeleted == false && s.isClear == false).Include(s => s.role).ToList();
-                    if (users.Count > 0)
-                    {
-                        if (state == 0 || state == 5)
-                        {
-                            users = users.Where(s => s.role!.code.CompareTo("admin") == 0 || s.role!.code.CompareTo("receiver") == 0).ToList();
+        //public async Task<bool> saveNotification(int state, string notification)
+        //{
+        //    if (string.IsNullOrEmpty(notification))
+        //    {
+        //        return false;
+        //    }
+        //    using (DataContext context = new DataContext())
+        //    {
+        //        try
+        //        {
+        //            List<SqlUser>? users = context.users!.Where(s => s.isdeleted == false && s.isClear == false).Include(s => s.role).ToList();
+        //            if (users.Count > 0)
+        //            {
+        //                if (state == 0 || state == 5)
+        //                {
+        //                    users = users.Where(s => s.role!.code.CompareTo("admin") == 0 || s.role!.code.CompareTo("receiver") == 0).ToList();
 
-                        }
-                        else if (state == 1)
-                        {
-                            users = users.Where(s => s.role!.code.CompareTo("manager") == 0).ToList();
+        //                }
+        //                else if (state == 1)
+        //                {
+        //                    users = users.Where(s => s.role!.code.CompareTo("manager") == 0).ToList();
 
-                        }
-                        else
-                        {
-                            users = users.Where(s => s.role!.code.CompareTo("staff") == 0).ToList();
+        //                }
+        //                else
+        //                {
+        //                    users = users.Where(s => s.role!.code.CompareTo("staff") == 0).ToList();
 
-                        }
+        //                }
 
 
-                        ItemNotifyOrder? item = JsonConvert.DeserializeObject<ItemNotifyOrder>(notification);
-                        if (item == null)
-                        {
-                            return false;
-                        }
+        //                ItemNotifyOrder? item = JsonConvert.DeserializeObject<ItemNotifyOrder>(notification);
+        //                if (item == null)
+        //                {
+        //                    return false;
+        //                }
 
-                        foreach (SqlUser m_user in users)
-                        {
-                            if (string.IsNullOrEmpty(m_user.notifications))
-                            {
-                                List<ItemNotifyOrder> items = new List<ItemNotifyOrder>();
-                                items.Add(item);
-                                m_user.notifications = JsonConvert.SerializeObject(items);
-                            }
-                            else
-                            {
-                                List<ItemNotifyOrder>? items = JsonConvert.DeserializeObject<List<ItemNotifyOrder>>(m_user.notifications);
-                                if (items != null)
-                                {
-                                    items.Add(item);
-                                }
-                                m_user.notifications = JsonConvert.SerializeObject(items);
-                            }
-                        }
+        //                foreach (SqlUser m_user in users)
+        //                {
+        //                    if (string.IsNullOrEmpty(m_user.notifications))
+        //                    {
+        //                        List<ItemNotifyOrder> items = new List<ItemNotifyOrder>();
+        //                        items.Add(item);
+        //                        m_user.notifications = JsonConvert.SerializeObject(items);
+        //                    }
+        //                    else
+        //                    {
+        //                        List<ItemNotifyOrder>? items = JsonConvert.DeserializeObject<List<ItemNotifyOrder>>(m_user.notifications);
+        //                        if (items != null)
+        //                        {
+        //                            items.Add(item);
+        //                        }
+        //                        m_user.notifications = JsonConvert.SerializeObject(items);
+        //                    }
+        //                }
 
-                        int rows = await context.SaveChangesAsync();
-                        if (rows > 0)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex.ToString());
-                    return false;
-                }
-            }
-        }
+        //                int rows = await context.SaveChangesAsync();
+        //                if (rows > 0)
+        //                {
+        //                    return true;
+        //                }
+        //                else
+        //                {
+        //                    return false;
+        //                }
+        //            }
+        //            else
+        //            {
+        //                return false;
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            Log.Error(ex.ToString());
+        //            return false;
+        //        }
+        //    }
+        //}
 
         public async Task<string> setAction(string token, string order, string action, string note, string latitude, string longitude)
         {
@@ -248,12 +238,6 @@ namespace ServerWater2.APIs
 
                 List<SqlState> states = context.states!.Where(s => s.isdeleted == false).ToList();
                
-
-                
-
-
-                
-
                 switch (action)
                 {
                     case "XN":
@@ -538,66 +522,6 @@ namespace ServerWater2.APIs
 
                 }
 
-                ItemNotifyOrder itemNotify = new ItemNotifyOrder();
-                itemNotify.order = m_order.code;
-                itemNotify.state = m_order.state!.name;
-                itemNotify.time = m_order.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
-
-                string notification = JsonConvert.SerializeObject(itemNotify);
-
-                if (action.CompareTo("DXN") == 0)
-                {
-                    bool check = await saveNotification(m_order.state.code, notification);
-                    if (check)
-                    {
-                        List<HttpNotification> datas = Program.httpNotifications.Where(s => s.state.CompareTo(m_order.state!.code.ToString()) == 0).ToList();
-                        foreach (HttpNotification m_data in datas)
-                        {
-                            m_data.messagers.Add(notification);
-                        }
-                    }
-                }
-                else if(action.CompareTo("XN") == 0)
-                {
-                    bool check = await saveNotification(m_order.state.code, notification);
-                    if (check)
-                    {
-                        List<HttpNotification> datas = Program.httpNotifications.Where(s => s.state.CompareTo(m_order.state!.code.ToString()) == 0).ToList();
-                        foreach (HttpNotification m_data in datas)
-                        {
-                            m_data.messagers.Add(notification);
-                        }
-                    }
-                }    
-                else if(action.CompareTo("PCKS") == 0)
-                {
-                    bool check = await saveNotification(m_order.state.code, notification);
-                    if (check)
-                    {
-                        List<HttpNotification> datas = Program.httpNotifications.Where(s => s.state.CompareTo(m_order.state!.code.ToString()) == 0).ToList();
-                        foreach (HttpNotification m_data in datas)
-                        {
-                            m_data.messagers.Add(notification);
-                        }
-                    }
-                }   
-                else if(action.CompareTo("DPC") == 0)
-                {
-                    bool check = await saveNotification(m_order.state.code, notification);
-                    if (check)
-                    {
-                        List<HttpNotification> datas = Program.httpNotifications.Where(s => s.state.CompareTo(m_order.state!.code.ToString()) == 0).ToList();
-                        foreach (HttpNotification m_data in datas)
-                        {
-                            m_data.messagers.Add(notification);
-                        }
-                    }
-                }   
-                else
-                {
-
-                }    
-
                 SqlLogOrder log = new SqlLogOrder();
                 log.ID = DateTime.Now.Ticks;
                 log.action = m_action;
@@ -702,22 +626,6 @@ namespace ServerWater2.APIs
 
 
 
-                }
-
-                ItemNotifyOrder itemNotify = new ItemNotifyOrder();
-                itemNotify.order = m_order.code;
-                itemNotify.state = m_order.state!.name;
-                itemNotify.time = m_order.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
-
-                string notification = JsonConvert.SerializeObject(itemNotify);
-                bool flag = await saveNotification(m_order.state.code, notification);
-                if (flag)
-                {
-                    List<HttpNotification> datas = Program.httpNotifications.Where(s => s.state.CompareTo(m_order.state.code.ToString()) == 0).ToList();
-                    foreach (HttpNotification m_data in datas)
-                    {
-                        m_data.messagers.Add(notification);
-                    }
                 }
 
                 int rows = await context.SaveChangesAsync();
@@ -1005,16 +913,21 @@ namespace ServerWater2.APIs
             }
         }
 
-        public async Task<bool> createSurveyOrderAsync(string token, string order, string form, string data)
+        public async Task<bool> createSurveyOrderAsync(string token, string order, string data)
         {
             if (string.IsNullOrEmpty(data))
             {
                 return false;
             }
-
             try
             {
-                
+                string m_data = data.Replace("\\", string.Empty) ;
+                ItemMyJson? m_json = JsonConvert.DeserializeObject<ItemMyJson>(m_data);
+                if (m_json == null)
+                {
+                    return false;
+                }
+
                 long id = long.Parse(order);
                 if (id > 0)
                 {
@@ -1026,25 +939,24 @@ namespace ServerWater2.APIs
                             return false;
                         }
 
-                        SqlViewForm? m_form = context.forms!.Where(s => s.code.CompareTo(form) == 0 && s.isdeleted == false).FirstOrDefault();
+                        SqlViewForm? m_form =  context.forms!.Where(s => s.code.CompareTo(m_json.code) == 0 && s.isdeleted == false).FirstOrDefault();
                         if(m_form == null)
                         {
                             return false;
-                        }    
-
-
+                        }
+                        
                         SqlLogOrder? m_log = context.logs!.Where(s => s.ID == id).Include(s => s.order).ThenInclude(s => s!.state).FirstOrDefault();
                         if (m_log == null)
                         {
                             return false;
                         }
-                        if (m_log.order!.state!.code > 4)
+                        if (m_log.order!.state!.code != 4)
                         {
                             return false;
                         }
 
 ;
-                        m_log.note = data;
+                        m_log.note = JsonConvert.SerializeObject(m_json.datas);
                         m_log.time = DateTime.Now.ToUniversalTime();
 
                         int rows = await context.SaveChangesAsync();
@@ -1071,10 +983,16 @@ namespace ServerWater2.APIs
             }
         }
 
-        public async Task<string> addImageSurveyFormAsync(string token, string order, string form, byte[] data)
+        public async Task<string> addImageSurveyFormAsync(string token, string order, string data, byte[] image)
         {
             try
             {
+                ItemMyJson? m_json = JsonConvert.DeserializeObject<ItemMyJson>(data);
+                if (m_json == null)
+                {
+                    return "";
+                }
+
                 string codefile = "";
                 long id = long.Parse(order);
                 if (id > 0)
@@ -1088,7 +1006,7 @@ namespace ServerWater2.APIs
                             return "";
                         }
 
-                        SqlViewForm? m_form = context.forms!.Where(s => s.code.CompareTo(form) == 0 && s.isdeleted == false).FirstOrDefault();
+                        SqlViewForm? m_form = context.forms!.Where(s => s.code.CompareTo(m_json.code) == 0 && s.isdeleted == false).FirstOrDefault();
                         if (m_form == null)
                         {
                             return "";
@@ -1104,10 +1022,9 @@ namespace ServerWater2.APIs
                             return "";
                         }
 
-;                       List<ItemJson>? items = JsonConvert.DeserializeObject<List<ItemJson>>(m_form.data);
-                        if (items != null)
+                        if (m_json.datas != null)
                         {
-                            ItemJson? m_item = items.Where(s => s.label.CompareTo("image") == 0).FirstOrDefault();
+                            ItemJson? m_item = m_json.datas.Where(s => s.label.CompareTo("image") == 0).FirstOrDefault();
                             if(m_item == null)
                             {
                                 return "";
@@ -1116,7 +1033,7 @@ namespace ServerWater2.APIs
                         }
                         m_log.time = DateTime.Now.ToUniversalTime();
 
-                        codefile = await Program.api_file.saveFileAsync(DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss.image"), data);
+                        codefile = await Program.api_file.saveFileAsync(DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss.image"), image);
                         if (string.IsNullOrEmpty(codefile))
                         {
                             return "";
@@ -1155,11 +1072,11 @@ namespace ServerWater2.APIs
         {
             try
             {
-
                 if (string.IsNullOrEmpty(code))
                 {
                     return false;
                 }
+
                 long id = long.Parse(order);
                 if (id > 0)
                 {
@@ -1558,7 +1475,7 @@ namespace ServerWater2.APIs
                 }
 
                 SqlUser? worker = context.users!.Where(s => s.isdeleted == false && s.user.CompareTo(user) == 0).Include(s => s.role).FirstOrDefault();
-                if (worker == null)
+                if (worker == null || worker.role!.code.CompareTo("staff") == 0)
                 {
                     return false;
                 }
@@ -1715,7 +1632,7 @@ namespace ServerWater2.APIs
                         {
                             return "";
                         }
-                        //Console.WriteLine(data.Length);
+
                         codefile = await Program.api_file.saveFileAsync(DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss.image"), data);
                         if (string.IsNullOrEmpty(codefile))
                         {
@@ -1727,7 +1644,6 @@ namespace ServerWater2.APIs
                         }
                         m_log.images.Add(codefile);
 
-                        // bool flag = await setStateOrder(user.ID, code, "Add image before", m_log.latitude, m_log.longitude);
                         int rows = await context.SaveChangesAsync();
                         if (rows > 0)
                         {
@@ -2062,6 +1978,7 @@ namespace ServerWater2.APIs
             public List<ItemCertificate> filesCustomer { get; set; } = new List<ItemCertificate>();
             public ItemUser receiver { get; set; } = new ItemUser();
             public ItemUser manager { get; set; } = new ItemUser();
+            public ItemUser survey { get; set; } = new ItemUser();
             public ItemUser worker { get; set; } = new ItemUser();
             public ItemCustomer customer { get; set; } = new ItemCustomer();
             public string note { get; set; } = "";
@@ -2090,6 +2007,7 @@ namespace ServerWater2.APIs
                                                        .Include(s => s.customer)
                                                        .Include(s => s.receiver)
                                                        .Include(s => s.manager)
+                                                       .Include(s => s.survey)
                                                        .Include(s => s.worker)
                                                        .Include(s => s.service)
                                                        .Include(s => s.type)
@@ -2195,6 +2113,16 @@ namespace ServerWater2.APIs
                     tmp.manager = manager;
                 }
 
+                if (item.survey != null)
+                {
+                    ItemUser survey = new ItemUser();
+                    survey.user = item.survey.user;
+                    survey.displayName = item.survey.displayName;
+                    survey.numberPhone = item.survey.phoneNumber;
+
+                    tmp.survey = survey;
+                }
+
                 if (item.worker != null)
                 {
                     ItemUser worker = new ItemUser();
@@ -2256,14 +2184,8 @@ namespace ServerWater2.APIs
 
                 SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role)
                                                 .Include(s => s.group).ThenInclude(s => s!.areas)
-                                                .Include(s => s.workerOrders!).ThenInclude(s => s.receiver)
-                                                .Include(s => s.workerOrders!).ThenInclude(s => s.manager)
-                                                .Include(s => s.workerOrders!).ThenInclude(s => s.customer)
-                                                .Include(s => s.workerOrders!).ThenInclude(s => s.type)
-                                                .Include(s => s.workerOrders!).ThenInclude(s => s.service)
-                                                .Include(s => s.workerOrders!).ThenInclude(s => s.state)
-                                                .Include(s => s.workerOrders!).ThenInclude(s => s.group)
-                                                .Include(s => s.workerOrders!).ThenInclude(s => s.area)
+                                                .Include(s => s.workerOrders!).ThenInclude(s => s.receiver).Include(s => s.workerOrders!).ThenInclude(s => s.manager).Include(s => s.workerOrders!).ThenInclude(s => s.customer).Include(s => s.workerOrders!).ThenInclude(s => s.type).Include(s => s.workerOrders!).ThenInclude(s => s.service).Include(s => s.workerOrders!).ThenInclude(s => s.state).Include(s => s.workerOrders!).ThenInclude(s => s.group).Include(s => s.workerOrders!).ThenInclude(s => s.area)
+                                                .Include(s => s.surveyOrders!).ThenInclude(s => s.receiver).Include(s => s.surveyOrders!).ThenInclude(s => s.manager).Include(s => s.surveyOrders!).ThenInclude(s => s.customer).Include(s => s.surveyOrders!).ThenInclude(s => s.type).Include(s => s.surveyOrders!).ThenInclude(s => s.service).Include(s => s.surveyOrders!).ThenInclude(s => s.state).Include(s => s.surveyOrders!).ThenInclude(s => s.group).Include(s => s.surveyOrders!).ThenInclude(s => s.area)
                                                 .FirstOrDefault();
                 if (m_user == null)
                 {
@@ -2274,6 +2196,7 @@ namespace ServerWater2.APIs
                                                        .Include(s => s.customer)
                                                        .Include(s => s.receiver)
                                                        .Include(s => s.manager)
+                                                       .Include(s => s.survey)
                                                        .Include(s => s.worker)
                                                        .Include(s => s.service)
                                                        .Include(s => s.type)
@@ -2295,8 +2218,16 @@ namespace ServerWater2.APIs
                     {
                         return new List<ItemInfoOrder>();
                     }
+                    if(m_user.role!.code.CompareTo("staff") == 0)
+                    {
+                        mOrders = m_user.workerOrders!.Where(s => s.group!.code.CompareTo(m_user.group.code) == 0 && DateTime.Compare(m_begin.ToUniversalTime(), s.createdTime) <= 0 && DateTime.Compare(m_end.ToUniversalTime(), s.createdTime) > 0 && s.isDelete == false).OrderByDescending(s => s.createdTime).ToList();
+                    }
+                    else
+                    {
+                        mOrders = m_user.surveyOrders!.Where(s => s.group!.code.CompareTo(m_user.group.code) == 0 && DateTime.Compare(m_begin.ToUniversalTime(), s.createdTime) <= 0 && DateTime.Compare(m_end.ToUniversalTime(), s.createdTime) > 0 && s.isDelete == false).OrderByDescending(s => s.createdTime).ToList();
 
-                    mOrders = m_user.workerOrders!.Where(s => s.group!.code.CompareTo(m_user.group.code) == 0 && DateTime.Compare(m_begin.ToUniversalTime(), s.createdTime) <= 0 && DateTime.Compare(m_end.ToUniversalTime(), s.createdTime) > 0 && s.isDelete == false).OrderByDescending(s => s.createdTime).ToList();
+                    }
+
                 }
                 else
                 {
@@ -2418,6 +2349,16 @@ namespace ServerWater2.APIs
                         tmp.manager = manager;
                     }
 
+                    if (item.survey != null)
+                    {
+                        ItemUser survey = new ItemUser();
+                        survey.user = item.survey.user;
+                        survey.displayName = item.survey.displayName;
+                        survey.numberPhone = item.survey.phoneNumber;
+
+                        tmp.survey = survey;
+                    }
+
                     if (item.worker != null)
                     {
                         ItemUser worker = new ItemUser();
@@ -2478,6 +2419,7 @@ namespace ServerWater2.APIs
             public List<ItemCertificate> documents { get; set; } = new List<ItemCertificate>();
             public ItemUser receiver { get; set; } = new ItemUser();
             public ItemUser manager { get; set; } = new ItemUser();
+            public ItemUser survey { get; set; } = new ItemUser();
             public ItemUser worker { get; set; } = new ItemUser();
             public ItemCustomer customer { get; set; } = new ItemCustomer();
             public string note { get; set; } = "";
@@ -2510,6 +2452,7 @@ namespace ServerWater2.APIs
                                                        .Include(s => s.state)
                                                        .Include(s => s.receiver)
                                                        .Include(s => s.manager)
+                                                       .Include(s => s.survey)
                                                        .Include(s => s.worker)
                                                        .Include(s => s.group)
                                                        .Include(s => s.area)
@@ -2610,6 +2553,16 @@ namespace ServerWater2.APIs
                         tmp.manager = manager;
                     }
 
+                    if (item.survey != null)
+                    {
+                        ItemUser survey = new ItemUser();
+                        survey.user = item.survey.user;
+                        survey.displayName = item.survey.displayName;
+                        survey.numberPhone = item.survey.phoneNumber;
+
+                        tmp.survey = survey;
+                    }
+
                     if (item.worker != null)
                     {
                         ItemUser worker = new ItemUser();
@@ -2681,6 +2634,285 @@ namespace ServerWater2.APIs
             }
 
             return info;
+        }
+
+        public async Task startThreadTimeChecking()
+        {
+            using (DataContext context = new DataContext())
+            {
+                List<SqlOrder> orders = context.orders!.Where(s => s.isFinish == false && s.isDelete == false)
+                                                      .Include(s => s.customer)
+                                                      .Include(s => s.receiver)
+                                                      .Include(s => s.manager)
+                                                      .Include(s => s.survey)
+                                                      .Include(s => s.worker)
+                                                      .Include(s => s.service)
+                                                      .Include(s => s.type)
+                                                      .Include(s => s.state)
+                                                      .Include(s => s.group)
+                                                      .Include(s => s.area)
+                                                      .OrderByDescending(s => s.createdTime)
+                                                      .ToList();
+
+                //bool flag = false;
+                //foreach (SqlOrder m_order in orders)
+                //{
+
+                //    string title = "LuxJapanCare";
+                //    string image = "https://i.stack.imgur.com/snaix.png";
+                //    Dictionary<string, string> data = new Dictionary<string, string> {
+                //                                {"codeOrder", m_order.code},
+                //                                {"state", m_order.state!.code.ToString()},
+                //                        };
+                //    int tmp = await syncAlertToCustomerAsync(m_order.user!.UID, m_order.code);
+                //    List<string>? ids = m_order.user!.notifyID;
+                //    if (ids != null)
+                //    {
+                //        string name = string.IsNullOrEmpty(m_order.user.Name) ? m_order.user.DisplayName : m_order.user.Name;
+
+                //        List<string> tmp_remove = new List<string>();
+                //        foreach (string id in ids)
+                //        {
+                //            switch (tmp)
+                //            {
+                //                case 10:
+                //                    {
+                //                        //check clean air
+
+
+                //                        string body = string.Format("You have an appointment to detect for {0} order at {1}", m_order.code, m_order.cleanHouseOrder!.timeToCheck.ToLocalTime().ToString("HH:mm:ss dd/MM/yyyy"));
+
+                //                        //api_firebase.SendPushNotification("dc7H9RoTR6-NM19bN0QAyL:APA91bHEM8dzock3kJpMRtxp5DszslMD5FVcXnK5GeWeqcHqew7HEW1HsMCgOILOLG0Y_Bw0FJY7tROxUIBPZX_wtb1My3FfwdWqSnmgHBac0DGK8EO1U1gNtoKJWOth5f_IECQS_g1M");
+                //                        flag = await Program.api_firebase.SendPushNotificationAsync(id, title, body, image, data);
+                //                        if (flag == false)
+                //                        {
+                //                            tmp_remove.Add(id);
+                //                        }
+
+                //                        break;
+
+                //                    }
+                //                case 11:
+                //                    {
+                //                        //begin clean house
+
+                //                        string body = string.Format("You have an appointment to work for {0} order at {1}", m_order.code, m_order.cleanHouseOrder!.timeToCleaning.ToLocalTime().ToString("HH:mm:ss dd/MM/yyyy"));
+
+                //                        //api_firebase.SendPushNotification("dc7H9RoTR6-NM19bN0QAyL:APA91bHEM8dzock3kJpMRtxp5DszslMD5FVcXnK5GeWeqcHqew7HEW1HsMCgOILOLG0Y_Bw0FJY7tROxUIBPZX_wtb1My3FfwdWqSnmgHBac0DGK8EO1U1gNtoKJWOth5f_IECQS_g1M");
+                //                        flag = await Program.api_firebase.SendPushNotificationAsync(id, title, body, image, data);
+                //                        if (flag == false)
+                //                        {
+                //                            tmp_remove.Add(id);
+
+                //                        }
+                //                        break;
+                //                    }
+                //                case 20:
+                //                    {
+                //                        //check clean air
+
+                //                        string body = string.Format("You have an appointment to detect for {0} order at {1}", m_order.code, m_order.cleanAirConditioner!.timeToCheck.ToLocalTime().ToString("HH:mm:ss dd/MM/yyyy"));
+
+                //                        //api_firebase.SendPushNotification("dc7H9RoTR6-NM19bN0QAyL:APA91bHEM8dzock3kJpMRtxp5DszslMD5FVcXnK5GeWeqcHqew7HEW1HsMCgOILOLG0Y_Bw0FJY7tROxUIBPZX_wtb1My3FfwdWqSnmgHBac0DGK8EO1U1gNtoKJWOth5f_IECQS_g1M");
+                //                        flag = await Program.api_firebase.SendPushNotificationAsync(id, title, body, image, data);
+                //                        if (flag == false)
+                //                        {
+                //                            tmp_remove.Add(id);
+                //                        }
+                //                        break;
+                //                    }
+                //                case 21:
+                //                    {
+                //                        //begin clean air
+
+                //                        string body = string.Format("You have an appointment to work for {0} order at {1}", m_order.code, m_order.cleanAirConditioner!.timeToCleaning.ToLocalTime().ToString("HH:mm:ss dd/MM/yyyy"));
+
+                //                        //api_firebase.SendPushNotification("dc7H9RoTR6-NM19bN0QAyL:APA91bHEM8dzock3kJpMRtxp5DszslMD5FVcXnK5GeWeqcHqew7HEW1HsMCgOILOLG0Y_Bw0FJY7tROxUIBPZX_wtb1My3FfwdWqSnmgHBac0DGK8EO1U1gNtoKJWOth5f_IECQS_g1M");
+                //                        flag = await Program.api_firebase.SendPushNotificationAsync(id, title, body, image, data);
+                //                        if (flag == false)
+                //                        {
+                //                            tmp_remove.Add(id);
+                //                        }
+                //                        break;
+                //                    }
+                //                default:
+                //                    {
+                //                        //Console.WriteLine(m_order.user!.UID + ": Chưa có order nào cần hẹn nhắc " );
+                //                        break;
+                //                    }
+                //            }
+
+                //        }
+                //        if (tmp_remove.Count > 0)
+                //        {
+                //            foreach (string tmp_id in tmp_remove)
+                //            {
+                //                ids.Remove(tmp_id);
+                //            }
+
+                //            flag = true;
+                //        }
+                //        //if (tmp != -1)
+                //        //{
+                //        //    Console.WriteLine(string.Format("----------********----------"));
+                //        //    foreach (string id in ids)
+                //        //    {
+                //        //        Console.WriteLine(string.Format("Send notification to {0} :", name));
+                //        //        Console.WriteLine("{0} : ", m_order.code);
+                //        //        string id_temp = id.Split(':')[0];
+                //        //        Console.WriteLine(string.Format("{0} - (Token_id : {1}) : {2}", name, id_temp, tmp));
+
+                //        //    }
+                //        //}
+                //    }
+
+                //    if (m_order.survey != null)
+                //    {
+                //        Thread.Sleep(1000);
+                //        tmp = await syncAlertToUserAsync(m_order.survey!.token, m_order.code);
+                //        ids = m_order.survey!.notifyID;
+                //        if (ids != null)
+                //        {
+                //            List<string> tmp_remove = new List<string>();
+                //            foreach (string id in ids)
+                //            {
+                //                switch (tmp)
+                //                {
+                //                    case 12:
+                //                        {
+                //                            //check clean house
+
+                //                            string body = string.Format("You are going to detect for {0} order at {1}", m_order.code, m_order.cleanHouseOrder!.timeToCheck.ToLocalTime().ToString("HH:mm:ss dd/MM/yyyy"));
+
+                //                            //api_firebase.SendPushNotification("dc7H9RoTR6-NM19bN0QAyL:APA91bHEM8dzock3kJpMRtxp5DszslMD5FVcXnK5GeWeqcHqew7HEW1HsMCgOILOLG0Y_Bw0FJY7tROxUIBPZX_wtb1My3FfwdWqSnmgHBac0DGK8EO1U1gNtoKJWOth5f_IECQS_g1M");
+                //                            flag = await Program.api_firebase.SendPushNotificationAsync(id, title, body, image, data);
+                //                            if (flag == false)
+                //                            {
+                //                                tmp_remove.Add(id);
+                //                            }
+
+                //                            break;
+                //                        }
+                //                    case 22:
+                //                        {
+                //                            //check clean air
+
+                //                            //api_firebase.SendPushNotification("dc7H9RoTR6-NM19bN0QAyL:APA91bHEM8dzock3kJpMRtxp5DszslMD5FVcXnK5GeWeqcHqew7HEW1HsMCgOILOLG0Y_Bw0FJY7tROxUIBPZX_wtb1My3FfwdWqSnmgHBac0DGK8EO1U1gNtoKJWOth5f_IECQS_g1M");
+                //                            string body = string.Format("You are going to detect for {0} order at {1}", m_order.code, m_order.cleanAirConditioner!.timeToCheck.ToLocalTime().ToString("HH:mm:ss dd/MM/yyyy"));
+
+                //                            flag = await Program.api_firebase.SendPushNotificationAsync(id, title, body, image, data);
+                //                            if (flag == false)
+                //                            {
+                //                                tmp_remove.Add(id);
+                //                            }
+                //                            break;
+                //                        }
+                //                    default:
+                //                        {
+                //                            //Console.WriteLine(m_order.survey!.displayName + ": Chưa có order nào cần hẹn nhắc ");
+                //                            break;
+                //                        }
+                //                }
+                //            }
+
+                //            if (tmp_remove.Count > 0)
+                //            {
+                //                foreach (string tmp_id in tmp_remove)
+                //                {
+                //                    ids.Remove(tmp_id);
+                //                }
+
+                //                flag = true;
+                //            }
+                //            //if (tmp != -1)
+                //            //{
+                //            //    foreach (string id in ids)
+                //            //    {
+                //            //        Console.WriteLine(string.Format("Send notification to {0} :", m_order.survey!.displayName));
+                //            //        Console.WriteLine("{0} : ", m_order.code);
+                //            //        string id_temp = id.Split(':')[0];
+                //            //        Console.WriteLine(string.Format("{0} - (Token_id : {1}) : {2} ", m_order.survey!.displayName, id_temp, tmp));
+
+                //            //    }
+                //            //}
+                //        }
+
+
+                //    }
+                //    if (m_order.worker != null)
+                //    {
+                //        Thread.Sleep(1000);
+                //        tmp = await syncAlertToUserAsync(m_order.worker!.token, m_order.code);
+                //        ids = m_order.worker!.notifyID;
+                //        if (ids != null)
+                //        {
+
+                //            List<string> tmp_remove = new List<string>();
+                //            foreach (string id in ids)
+                //            {
+                //                switch (tmp)
+                //                {
+                //                    case 13:
+                //                        {
+                //                            //Begin clean house
+
+                //                            string body = string.Format("You are going to begin work for {0} order at {1}", m_order.code, m_order.cleanHouseOrder!.timeToCleaning.ToLocalTime().ToString("HH:mm:ss dd/MM/yyyy"));
+
+                //                            //api_firebase.SendPushNotification("dc7H9RoTR6-NM19bN0QAyL:APA91bHEM8dzock3kJpMRtxp5DszslMD5FVcXnK5GeWeqcHqew7HEW1HsMCgOILOLG0Y_Bw0FJY7tROxUIBPZX_wtb1My3FfwdWqSnmgHBac0DGK8EO1U1gNtoKJWOth5f_IECQS_g1M");
+                //                            flag = await Program.api_firebase.SendPushNotificationAsync(id, title, body, image, data);
+
+                //                            break;
+                //                        }
+                //                    case 23:
+                //                        {
+                //                            //Work clean air
+
+                //                            string body = string.Format("You are going to begin work for {0} order at {1}", m_order.code, m_order.cleanAirConditioner!.timeToCleaning.ToLocalTime().ToString("HH:mm:ss dd/MM/yyyy"));
+
+                //                            //api_firebase.SendPushNotification("dc7H9RoTR6-NM19bN0QAyL:APA91bHEM8dzock3kJpMRtxp5DszslMD5FVcXnK5GeWeqcHqew7HEW1HsMCgOILOLG0Y_Bw0FJY7tROxUIBPZX_wtb1My3FfwdWqSnmgHBac0DGK8EO1U1gNtoKJWOth5f_IECQS_g1M");
+                //                            flag = await Program.api_firebase.SendPushNotificationAsync(id, title, body, image, data);
+                //                            if (flag == false)
+                //                            {
+                //                                tmp_remove.Add(id);
+                //                            }
+                //                            break;
+                //                        }
+                //                    default:
+                //                        {
+                //                            //Console.WriteLine(m_order.survey!.displayName + ": Chưa có order nào cần hẹn nhắc ");
+                //                            break;
+                //                        }
+                //                }
+                //            }
+
+                //            if (tmp_remove.Count > 0)
+                //            {
+                //                foreach (string tmp_id in tmp_remove)
+                //                {
+                //                    ids.Remove(tmp_id);
+                //                }
+                //                flag = true;
+                //            }
+                //            //if (tmp != -1)
+                //            //{
+                //            //    foreach (string id in ids)
+                //            //    {
+                //            //        Console.WriteLine(string.Format("Send notification to {0}", m_order.worker!.displayName));
+                //            //        Console.WriteLine("{0} : ", m_order.code);
+                //            //        string id_temp = id.Split(':')[0];
+                //            //        Console.WriteLine(string.Format("{0} - (Token_id : {1}) : {2}", m_order.worker!.displayName, id_temp, tmp));
+
+                //            //    }
+                //            //}
+                //        }
+                //    }
+                //    if (flag)
+                //    {
+                //        int rows = await context.SaveChangesAsync();
+                //    }
+                //    Thread.Sleep(1000);
+                //}
+            }
         }
 
     }

@@ -81,55 +81,6 @@ namespace ServerWater2.Controllers
 
         }
 
-        [HttpPost]
-        [Route("editForm")]
-        public async Task<IActionResult> EditFormAsync([FromHeader] string token, ItemHttpForm form)
-        {
-            long id = Program.api_user.checkAdmin(token);
-            if (id >= 0)
-            {
-                bool flag = await Program.api_viewform.editFormAsync(form.code, form.name, form.datas);
-                if (flag)
-                {
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest();
-                }
-
-            }
-            else
-            {
-                return Unauthorized();
-            }
-
-        }
-
-        [HttpDelete]
-        [Route("{code}/deleteForm")]
-        public async Task<IActionResult> DeleteFormAsync([FromHeader] string token, string code)
-        {
-            long id = Program.api_user.checkAdmin(token);
-            if (id >= 0)
-            {
-                bool flag = await Program.api_viewform.deleteFormAsync(code);
-                if (flag)
-                {
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest();
-                }
-
-            }
-            else
-            {
-                return Unauthorized();
-            }
-        }
-
         [HttpPut]
         [Route("{form}/addFieldForm")]
         public async Task<IActionResult> AddFieldFormAsync([FromHeader] string token, string form, ItemJson data)

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using Newtonsoft.Json.Linq;
 using ServerWater2.APIs;
 using static ServerWater2.APIs.MyCustomer;
@@ -111,6 +112,85 @@ namespace ServerWater2.Controllers
                 return Ok(order);
             }
         }
+
+        [HttpPost]
+        [Route("{order}/createSurveyOrder")]
+        public async Task<IActionResult> CreateSurveyOrderAsync([FromHeader] string token, string order, string data)
+        {
+            long id = Program.api_user.checkUser(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_order.createSurveyOrderAsync(token, order, data);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }
+        [HttpPut]
+        [Route("{id}/addImageServeyForm")]
+        public async Task<IActionResult> AddImageServeyFormAsync([FromHeader] string token, string id, string data, IFormFile image)
+        {
+            long ID = Program.api_user.checkUser(token);
+            if (ID >= 0)
+            {
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    image.CopyTo(ms);
+                    string tmp = await Program.api_order.addImageSurveyFormAsync(token, id, data, ms.ToArray());
+                    if (!string.IsNullOrEmpty(tmp))
+                    {
+                        return Ok(tmp);
+                    }
+                    else
+                    {
+                        return BadRequest();
+                    }
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }
+
+        [HttpDelete]
+        [Route("{id}/removeImageServeyForm")]
+        public async Task<IActionResult> RemoveImageServeyFormAsync([FromHeader] string token, string id, string image)
+        {
+            long ID = Program.api_user.checkUser(token);
+            if (ID >= 0)
+            {
+                bool flag = await Program.api_order.removeImageSurveyFormAsync(token, id, image);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }
+
         [HttpPut]
         [Route("{id}/addImageServeyOrder")]
         public async Task<IActionResult> AddImageServeyOrder([FromHeader] string token, string id, IFormFile image)
@@ -147,7 +227,7 @@ namespace ServerWater2.Controllers
             long ID = Program.api_user.checkUser(token);
             if (ID >= 0)
             {
-                bool flag = await Program.api_order.removeImageWorkingAsync(token, id, image);
+                bool flag = await Program.api_order.removeImageServeyAsync(token, id, image);
                 if (flag)
                 {
                     return Ok();
@@ -447,30 +527,6 @@ namespace ServerWater2.Controllers
 
         }
 
-        [HttpPost]
-        [Route("{order}/createSurveyOrder")]
-        public async Task<IActionResult> CreateSurveyOrderAsync([FromHeader] string token, string order, string form, string data)
-        {
-            long id = Program.api_user.checkSystem(token);
-            if (id >= 0)
-            {
-                bool flag = await Program.api_order.createSurveyOrderAsync(token, order, form, data);
-                if (flag)
-                {
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest();
-                }
-
-            }
-            else
-            {
-                return Unauthorized();
-            }
-
-        }
         [HttpPut]
         [Route("{code}/setAssginWorkerOrder")]
         public async Task<IActionResult> SetAssginWorkerOrder([FromHeader] string token, string code, string user)
@@ -542,7 +598,15 @@ namespace ServerWater2.Controllers
         [Route("getInfoOrder")]
         public IActionResult GetInfoOrder([FromHeader] string token, string code)
         {
-            return Ok(Program.api_order.getInfoOrder(token, code));
+            long id = Program.api_user.checkUser(token);
+            if (id >= 0)
+            {
+                return Ok(Program.api_order.getInfoOrder(token, code));
+            }
+            else
+            {
+                return Unauthorized();
+            }
         }
 
         [HttpGet]

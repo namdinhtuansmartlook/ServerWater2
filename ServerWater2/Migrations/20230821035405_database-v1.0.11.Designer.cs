@@ -13,7 +13,7 @@ using ServerWater2.Models;
 namespace ServerWater2.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230821034725_database-v1.0.11")]
+    [Migration("20230821035405_database-v1.0.11")]
     partial class databasev1011
     {
         /// <inheritdoc />
@@ -660,7 +660,7 @@ namespace ServerWater2.Migrations
                         .HasForeignKey("stateID");
 
                     b.HasOne("ServerWater2.Models.SqlUser", "survey")
-                        .WithMany()
+                        .WithMany("surveyOrders")
                         .HasForeignKey("surveyID");
 
                     b.HasOne("ServerWater2.Models.SqlType", "type")
@@ -737,6 +737,8 @@ namespace ServerWater2.Migrations
                     b.Navigation("managerOrders");
 
                     b.Navigation("receiverOrders");
+
+                    b.Navigation("surveyOrders");
 
                     b.Navigation("workerOrders");
                 });

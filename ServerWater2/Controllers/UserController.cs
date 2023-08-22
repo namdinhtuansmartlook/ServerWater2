@@ -30,6 +30,7 @@ namespace ServerWater2.Controllers
             return Ok(Program.api_user.login(item.username, item.password));
         }
 
+
         public class ItemUser
         {
             public string user { get; set; } = "";
@@ -39,16 +40,7 @@ namespace ServerWater2.Controllers
             public string role { get; set; } = "";
             public string displayName { get; set; } = "";
             public string numberPhone { get; set; } = "";
-        }
-
-        public class ItemUserV2
-        {
-            public string user { get; set; } = "";
-            public string password { get; set; } = "";
-            public string des { get; set; } = "";
-            public string role { get; set; } = "";
-            public string displayName { get; set; } = "";
-            public string numberPhone { get; set; } = "";
+            public string group { get; set; } = "";
         }
 
         [HttpPost]
@@ -58,7 +50,7 @@ namespace ServerWater2.Controllers
             long id = Program.api_user.checkAdmin(token);
             if (id >= 0)
             {
-                bool flag = await Program.api_user.createUserAsync(token, user.user, user.username, user.password, user.displayName, user.numberPhone, user.des, user.role);
+                bool flag = await Program.api_user.createUserAsync(token, user.user, user.username, user.password, user.displayName, user.numberPhone, user.des, user.role, user.group);
                 if (flag)
                 {
                     return Ok();
@@ -76,12 +68,12 @@ namespace ServerWater2.Controllers
 
         [HttpPut]
         [Route("editUser")]
-        public async Task<IActionResult> editUserAsync([FromHeader] string token, ItemUserV2 user)
+        public async Task<IActionResult> editUserAsync([FromHeader] string token, ItemUser user)
         {
             long id = Program.api_user.checkAdmin(token);
             if (id >= 0)
             {
-                bool flag = await Program.api_user.editUserAsync(token, user.user, user.password, user.displayName, user.numberPhone, user.des, user.role);
+                bool flag = await Program.api_user.editUserAsync(token, user.user, user.password, user.displayName, user.numberPhone, user.des, user.role, user.group);
                 if (flag)
                 {
                     return Ok();
@@ -98,13 +90,13 @@ namespace ServerWater2.Controllers
         }
 
         [HttpDelete]
-        [Route("{code}/deleteUser")]
-        public async Task<IActionResult> deleteUserAsync([FromHeader] string token, string code)
+        [Route("{group}/delete/{code}")]
+        public async Task<IActionResult> deleteUserAsync([FromHeader] string token, string code, string group)
         {
             long id = Program.api_user.checkAdmin(token);
             if (id >= 0)
             {
-                bool flag = await Program.api_user.deleteUserAsync(token, code);
+                bool flag = await Program.api_user.deleteUserAsync(token, code, group);
                 if (flag)
                 {
                     return Ok();
@@ -118,6 +110,31 @@ namespace ServerWater2.Controllers
             {
                 return Unauthorized();
             }
+        }
+
+        [HttpPut]
+        [Route("changePassword")]
+        public async Task<IActionResult> ChangePassword([FromHeader] string token, string oldPassword, string newPassword)
+        {
+            long ID = Program.api_user.checkUser(token);
+            if (ID >= 0)
+            {
+                bool flag = await Program.api_user.changePassword(token, oldPassword, newPassword);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
         }
 
         [HttpPut]
@@ -249,7 +266,15 @@ namespace ServerWater2.Controllers
         [Route("getInfoUser")]
         public IActionResult getInfoUser([FromHeader] string token)
         {
-            return Ok(Program.api_user.getInfoUser(token));
+            long id = Program.api_user.checkUser(token);
+            if (id >= 0)
+            {
+                return Ok(Program.api_user.getInfoUser(token));
+            }
+            else
+            {
+                return Unauthorized();
+            }
         }
 
     }
