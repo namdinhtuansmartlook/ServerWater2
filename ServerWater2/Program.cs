@@ -33,6 +33,7 @@ public class Program
     public static MyGroup api_group = new MyGroup();
     public static MyFile api_file = new MyFile();
     public static MyViewForm api_viewform = new MyViewForm();
+    public static MyItemsCalc api_calc = new MyItemsCalc();
     public static MyOrder api_order = new MyOrder();
     public static MyFirebase api_firebase = new MyFirebase();
     public static MyType api_type = new MyType();

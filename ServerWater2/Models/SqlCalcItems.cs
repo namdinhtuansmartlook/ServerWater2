@@ -3,15 +3,15 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ServerWater2.Models
 {
-    [Table("Group")]
-    public class SqlGroup
+    [Table("CalcItems")]
+    public class SqlCalcItems
     {
         [Key]
         public long ID { get; set; }
         public string code { get; set; } = "";
         public string name { get; set; } = "";
         public string des { get; set; } = "";
-        public List<SqlArea>? areas { get; set; }
+        public string unit { get; set; } = "";
         public bool isdeleted { get; set; } = false;
     }
 }

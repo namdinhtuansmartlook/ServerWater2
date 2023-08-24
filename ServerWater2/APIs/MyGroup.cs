@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ServerWater2.Models;
+using static ServerWater2.APIs.MyUser;
 
 namespace ServerWater2.APIs
 {
@@ -97,23 +98,16 @@ namespace ServerWater2.APIs
         {
             using (DataContext context = new DataContext())
             {
-                SqlGroup? group = context.groups!.Where(s => s.code.CompareTo(code) == 0 && s.isdeleted == false).Include(s => s.users).Include(s => s.areas).FirstOrDefault();
+                SqlGroup? group = context.groups!.Where(s => s.code.CompareTo(code) == 0 && s.isdeleted == false).Include(s => s.areas).FirstOrDefault();
                 if (group == null)
                 {
                     return false;
                 }
-                if(group.users != null)
-                {
-                    foreach(SqlUser m_user in group.users)
-                    {
-                        m_user.group = null;
-                    }    
-                }    
                 if(group.areas != null)
                 {
                     foreach(SqlArea m_area in group.areas)
                     {
-                        m_area.group = null;
+                        m_area.isdeleted = true;
                     }
                 }
 
@@ -138,22 +132,12 @@ namespace ServerWater2.APIs
             public string des { get; set; } = "";
         }
 
-        public class MyItemUser
-        {
-            public string code { get; set; } = "";
-            public string name { get; set; } = "";
-            public string username { get; set; } = "";
-            public string phone { get; set; } = "";
-            public string role { get; set; } = "";
-        }
-
         public class ItemGroup
         {
             public string code { get; set; } = "";
             public string name { get; set; } = "";
             public string des { get; set; } = "";
             public List<MyItemArea> areas { get; set; } = new List<MyItemArea>();
-            public List<MyItemUser> users { get; set; } = new List<MyItemUser>();
         }
 
         public List<ItemGroup> getListGroup()
@@ -161,7 +145,7 @@ namespace ServerWater2.APIs
             List<ItemGroup> list = new List<ItemGroup>();
             using (DataContext context = new DataContext())
             {
-                List<SqlGroup>? groups = context.groups!.Where(s => s.isdeleted == false).Include(s => s.areas).Include(s => s.users!).ThenInclude(s => s.role).ToList();
+                List<SqlGroup>? groups = context.groups!.Where(s => s.isdeleted == false).Include(s => s.areas).ToList();
                 if (groups.Count > 0)
                 {
                     foreach (SqlGroup item in groups)
@@ -181,55 +165,13 @@ namespace ServerWater2.APIs
                                 tmp.areas.Add(m_area);
                             }    
                         }  
-                        if(item.users != null)
-                        {
-                            foreach (SqlUser user in item.users)
-                            {
-                                MyItemUser m_user = new MyItemUser();
-                                m_user.code = user.user;
-                                m_user.name = user.displayName;
-                                m_user.username = user.username;
-                                m_user.phone = user.phoneNumber;
-                                m_user.role = user.role!.name;
-                                tmp.users.Add(m_user);
-                            }
-                        }
+                       
                         list.Add(tmp);
                     }
                 }
                 return list;
             }
 
-        }
-
-        public List<MyItemUser> getListUser(string group)
-        {
-            List<MyItemUser> list = new List<MyItemUser>();
-            using(DataContext context = new DataContext())
-            {
-                SqlGroup? m_group = context.groups!.Where(s => s.code.CompareTo(group) == 0 && s.isdeleted == false).Include(s => s.users!).ThenInclude(s => s.role).FirstOrDefault();
-                if(m_group == null)
-                {
-                    return new List<MyItemUser>();
-                }
-                if(m_group.users == null)
-                {
-                    return new List<MyItemUser>();
-                }
-
-                foreach(SqlUser m_user in m_group.users)
-                {
-                    MyItemUser item = new MyItemUser();
-                    item.code = m_user.user;
-                    item.name = m_user.displayName;
-                    item.username = m_user.username;
-                    item.phone = m_user.phoneNumber;
-                    item.role = m_user.role!.name;
-                    
-                    list.Add(item);
-                }
-            }
-            return list;
         }
 
         public List<MyItemArea> getListArea(string group)

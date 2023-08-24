@@ -913,6 +913,12 @@ namespace ServerWater2.APIs
             }
         }
 
+        public class ItemMyJson
+        {
+            public string code { get; set; } = "";
+            public List<ItemJson> datas { get; set; } = new List<ItemJson>();
+        }
+
         public async Task<bool> createSurveyOrderAsync(string token, string order, string data)
         {
             if (string.IsNullOrEmpty(data))
@@ -921,11 +927,25 @@ namespace ServerWater2.APIs
             }
             try
             {
-                string m_data = data.Replace("\\", string.Empty) ;
-                ItemMyJson? m_json = JsonConvert.DeserializeObject<ItemMyJson>(m_data);
-                if (m_json == null)
+                ItemMyJson? m_json = null;
+                try
                 {
+                    m_json = JsonConvert.DeserializeObject<ItemMyJson>(data);
+                    if (m_json == null)
+                    {
+                        return false;
+                    }
+                }
+                catch(Exception e)
+                {
+                    Log.Debug(string.Format("Data of form : {0}", data));
                     return false;
+                    //string m_data = data.Replace("\\", string.Empty);
+                    //m_json = JsonConvert.DeserializeObject<ItemMyJson>(m_data);
+                    //if (m_json == null)
+                    //{
+                    //    return false;
+                    //}
                 }
 
                 long id = long.Parse(order);
@@ -954,7 +974,6 @@ namespace ServerWater2.APIs
                         {
                             return false;
                         }
-
 ;
                         m_log.note = JsonConvert.SerializeObject(m_json.datas);
                         m_log.time = DateTime.Now.ToUniversalTime();
@@ -1022,15 +1041,7 @@ namespace ServerWater2.APIs
                             return "";
                         }
 
-                        if (m_json.datas != null)
-                        {
-                            ItemJson? m_item = m_json.datas.Where(s => s.label.CompareTo("image") == 0).FirstOrDefault();
-                            if(m_item == null)
-                            {
-                                return "";
-                            }    
-                            m_log.note = m_item.field;
-                        }
+                        m_log.note = JsonConvert.SerializeObject(m_json.datas);
                         m_log.time = DateTime.Now.ToUniversalTime();
 
                         codefile = await Program.api_file.saveFileAsync(DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss.image"), image);
@@ -2183,7 +2194,6 @@ namespace ServerWater2.APIs
                 List<SqlCertificate> sqlCertificates = context.certificates!.Where(s => s.isdeleted == false).ToList();
 
                 SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role)
-                                                .Include(s => s.group).ThenInclude(s => s!.areas)
                                                 .Include(s => s.workerOrders!).ThenInclude(s => s.receiver).Include(s => s.workerOrders!).ThenInclude(s => s.manager).Include(s => s.workerOrders!).ThenInclude(s => s.customer).Include(s => s.workerOrders!).ThenInclude(s => s.type).Include(s => s.workerOrders!).ThenInclude(s => s.service).Include(s => s.workerOrders!).ThenInclude(s => s.state).Include(s => s.workerOrders!).ThenInclude(s => s.group).Include(s => s.workerOrders!).ThenInclude(s => s.area)
                                                 .Include(s => s.surveyOrders!).ThenInclude(s => s.receiver).Include(s => s.surveyOrders!).ThenInclude(s => s.manager).Include(s => s.surveyOrders!).ThenInclude(s => s.customer).Include(s => s.surveyOrders!).ThenInclude(s => s.type).Include(s => s.surveyOrders!).ThenInclude(s => s.service).Include(s => s.surveyOrders!).ThenInclude(s => s.state).Include(s => s.surveyOrders!).ThenInclude(s => s.group).Include(s => s.surveyOrders!).ThenInclude(s => s.area)
                                                 .FirstOrDefault();
@@ -2214,17 +2224,13 @@ namespace ServerWater2.APIs
                 List<SqlOrder> mOrders = new List<SqlOrder>();
                 if (m_user.role!.code.CompareTo("staff") == 0 || m_user.role.code.CompareTo("survey") == 0)
                 {
-                    if(m_user.group == null)
-                    {
-                        return new List<ItemInfoOrder>();
-                    }
                     if(m_user.role!.code.CompareTo("staff") == 0)
                     {
-                        mOrders = m_user.workerOrders!.Where(s => s.group!.code.CompareTo(m_user.group.code) == 0 && DateTime.Compare(m_begin.ToUniversalTime(), s.createdTime) <= 0 && DateTime.Compare(m_end.ToUniversalTime(), s.createdTime) > 0 && s.isDelete == false).OrderByDescending(s => s.createdTime).ToList();
+                        mOrders = m_user.workerOrders!.Where(s => DateTime.Compare(m_begin.ToUniversalTime(), s.createdTime) <= 0 && DateTime.Compare(m_end.ToUniversalTime(), s.createdTime) > 0 && s.isDelete == false).OrderByDescending(s => s.createdTime).ToList();
                     }
                     else
                     {
-                        mOrders = m_user.surveyOrders!.Where(s => s.group!.code.CompareTo(m_user.group.code) == 0 && DateTime.Compare(m_begin.ToUniversalTime(), s.createdTime) <= 0 && DateTime.Compare(m_end.ToUniversalTime(), s.createdTime) > 0 && s.isDelete == false).OrderByDescending(s => s.createdTime).ToList();
+                        mOrders = m_user.surveyOrders!.Where(s => DateTime.Compare(m_begin.ToUniversalTime(), s.createdTime) <= 0 && DateTime.Compare(m_end.ToUniversalTime(), s.createdTime) > 0 && s.isDelete == false).OrderByDescending(s => s.createdTime).ToList();
 
                     }
 
@@ -2233,23 +2239,8 @@ namespace ServerWater2.APIs
                 {
                     if (m_user.role!.code.CompareTo("manager") == 0)
                     {
-                        if (m_user.group == null)
-                        {
-                            return new List<ItemInfoOrder>();
-                        }
-
-                        mOrders = orders.Where(s => s.group!.code.CompareTo(m_user.group.code) == 0 && s.service!.code.CompareTo("LM") == 0 && s.state!.code != 0).ToList();
-
+                        mOrders = orders.Where(s => s.service!.code.CompareTo("LM") == 0 && s.state!.code != 0).ToList();
                     }
-                    else if(m_user.role.code.CompareTo("receiver") == 0)
-                    {
-                        if (m_user.group == null)
-                        {
-                            return new List<ItemInfoOrder>();
-                        }
-
-                        mOrders = orders.Where(s => s.group!.code.CompareTo(m_user.group.code) == 0).ToList();
-                    }    
                     else
                     {
                         mOrders = orders;

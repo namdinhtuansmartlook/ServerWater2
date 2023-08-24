@@ -128,21 +128,6 @@ namespace ServerWater2.Controllers
             }
         }
 
-        [HttpGet]
-        [Route("{code}/getListUser")]
-        public IActionResult GetListUser([FromHeader] string token, string code)
-        {
-            long id = Program.api_user.checkSystem(token);
-            if (id >= 0)
-            {
-                return Ok(Program.api_group.getListUser(code));
-            }
-            else
-            {
-                return Unauthorized();
-            }
-        }
-
         public class ItemHttpArea
         {
             public string code { get; set; } = "";

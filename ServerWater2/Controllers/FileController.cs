@@ -34,19 +34,40 @@ namespace ServerWater2.Controllers
         public class ItemHttpForm
         {
             public string code { get; set; } = "";
-            public string name { get; set; } = "";
-            public string type { get; set; } = "";
             public List<ItemJson> datas { get; set; } = new List<ItemJson>();
         }
 
+        //[HttpGet]
+        //[Route("getListForm")]
+        //public IActionResult GetListForm([FromHeader] string token)
+        //{
+        //    long id = Program.api_user.checkAdmin(token);
+        //    if (id >= 0)
+        //    {
+        //        return Ok(Program.api_viewform.getList());
+        //    }
+        //    else
+        //    {
+        //        return Unauthorized();
+        //    }
+
+        //}
+
         [HttpGet]
-        [Route("getListForm")]
-        public IActionResult GetListForm([FromHeader] string token)
+        [Route("getListCodeForm")]
+        public IActionResult GetList()
         {
-            long id = Program.api_user.checkAdmin(token);
+            return Ok(Program.api_viewform.getListCode());
+        }
+
+        [HttpGet]
+        [Route("{form}/getViewForm")]
+        public IActionResult GetViewForm([FromHeader] string token, string form)
+        {
+            long id = Program.api_user.checkUser(token);
             if (id >= 0)
             {
-                return Ok(Program.api_viewform.getList());
+                return Ok(Program.api_viewform.getForm(form));
             }
             else
             {
@@ -55,6 +76,21 @@ namespace ServerWater2.Controllers
 
         }
 
+        [HttpGet]
+        [Route("{form}/getTableForm")]
+        public IActionResult GetViewForm([FromHeader] string token, string form, string key)
+        {
+            long id = Program.api_user.checkUser(token);
+            if (id >= 0)
+            {
+                return Ok(Program.api_viewform.getForm(form));
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }
 
         [HttpPost]
         [Route("createForm")]
@@ -63,7 +99,7 @@ namespace ServerWater2.Controllers
             long id = Program.api_user.checkAdmin(token);
             if (id >= 0)
             {
-                bool flag = await Program.api_viewform.createFormAsync(form.code, form.name, form.type, form.datas);
+                bool flag = await Program.api_viewform.createFormAsync(form.code, form.datas);
                 if (flag)
                 {
                     return Ok();
@@ -81,6 +117,30 @@ namespace ServerWater2.Controllers
 
         }
 
+        [HttpDelete]
+        [Route("{code}/deleteForm")]
+        public async Task<IActionResult> DeleteFormAsync([FromHeader] string token, string code)
+        {
+            long id = Program.api_user.checkAdmin(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_viewform.deleteFormAsync(code);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+        }
+
         [HttpPut]
         [Route("{form}/addFieldForm")]
         public async Task<IActionResult> AddFieldFormAsync([FromHeader] string token, string form, ItemJson data)
@@ -88,7 +148,7 @@ namespace ServerWater2.Controllers
             long ID = Program.api_user.checkAdmin(token);
             if (ID >= 0)
             {
-                bool flag = await Program.api_viewform.addFieldForm(form, data.key, data.field, data.label);
+                bool flag = await Program.api_viewform.addFieldForm(form, data.key, data.index, data.field, data.label, data.stateImage);
                 if (flag)
                 {
                     return Ok();
@@ -131,31 +191,103 @@ namespace ServerWater2.Controllers
 
         }
 
-        
-        //[HttpPost]
-        //[Route("{order}/testCreateSurveyOrder")]
-        //public async Task<IActionResult> CreateSurveyOrderAsync([FromHeader] string token, string order, string form, string data)
-        //{
-        //    long id = Program.api_user.checkSystem(token);
-        //    if (id >= 0)
-        //    {
-        //        bool flag = await Program.api_order.createSurveyOrderAsync(token, order, form, data);
-        //        if (flag)
-        //        {
-        //            return Ok();
-        //        }
-        //        else
-        //        {
-        //            return BadRequest();
-        //        }
 
-        //    }
-        //    else
-        //    {
-        //        return Unauthorized();
-        //    }
+        public class ItemHttpCalcItems
+        {
+            public string code { get; set; } = "";
+            public string name { get; set; } = "";
+            public string des { get; set; } = "";
+            public string unit { get; set; } = "";
+        }
 
-        //}
+        [HttpGet]
+        [Route("getListItems")]
+        public IActionResult getListAction([FromHeader] string token)
+        {
+            long id = Program.api_user.checkSystem(token);
+            if (id >= 0)
+            {
+                return Ok(Program.api_calc.getList());
+            }
+            else
+            {
+                return Unauthorized();
+            }
 
+        }
+
+        [HttpPost]
+        [Route("createItems")]
+        public async Task<IActionResult> CreateActionAsync([FromHeader] string token, ItemHttpCalcItems item)
+        {
+            long id = Program.api_user.checkSystem(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_calc.createAsync(item.code, item.name, item.des, item.unit);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }
+
+        [HttpPost]
+        [Route("editItems")]
+        public async Task<IActionResult> EditActionAsync([FromHeader] string token, ItemHttpCalcItems item)
+        {
+            long id = Program.api_user.checkAdmin(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_calc.editAsync(item.code, item.name, item.des, item.unit);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }
+
+        [HttpDelete]
+        [Route("{item}/delete")]
+        public async Task<IActionResult> DeleteActionAsync([FromHeader] string token, string item)
+        {
+            long id = Program.api_user.checkAdmin(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_calc.deleteAsync(item);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+        }
     }
 }

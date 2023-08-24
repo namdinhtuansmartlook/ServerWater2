@@ -46,7 +46,6 @@ namespace ServerWater2.APIs
                     item.displayName = "Quản lý vùng";
                     item.des = "Quản lý vùng";
                     item.phoneNumber = "123456789";
-                    item.group = context.groups!.Where(s => s.code.CompareTo("NK") == 0 && s.isdeleted == false).FirstOrDefault();
                     item.isdeleted = false;
                     context.users!.Add(item);
                 }
@@ -63,7 +62,6 @@ namespace ServerWater2.APIs
                     item.displayName = "Chuẩn thu";
                     item.des = "Chuẩn thu";
                     item.phoneNumber = "123456789";
-                    item.group = context.groups!.Where(s => s.code.CompareTo("NK") == 0 && s.isdeleted == false).FirstOrDefault();
                     item.isdeleted = false;
                     context.users!.Add(item);
                 }
@@ -80,7 +78,6 @@ namespace ServerWater2.APIs
                     item.displayName = "Chăm sóc khách hàng";
                     item.des = "Chăm sóc khách hàng";
                     item.phoneNumber = "123456789";
-                    item.group = context.groups!.Where(s => s.code.CompareTo("NK") == 0 && s.isdeleted == false).FirstOrDefault();
                     item.isdeleted = false;
                     context.users!.Add(item);
                 }
@@ -98,7 +95,6 @@ namespace ServerWater2.APIs
                     item.displayName = "Nhân viên";
                     item.des = "Nhân viên";
                     item.phoneNumber = "123456789";
-                    item.group = context.groups!.Where(s => s.code.CompareTo("NK") == 0 && s.isdeleted == false).FirstOrDefault();
                     item.isdeleted = false;
                     context.users!.Add(item);
                 }
@@ -244,48 +240,27 @@ namespace ServerWater2.APIs
             }
         }
 
-        public async Task<bool> createUserAsync(string token, string user, string username, string password, string displayName, string phoneNumber, string des, string role, string group)
+        public async Task<bool> createUserAsync(string token, string user, string username, string password, string displayName, string phoneNumber, string des, string role)
         {
-            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(user) || string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(role) || string.IsNullOrEmpty(displayName) || string.IsNullOrEmpty(phoneNumber) || string.IsNullOrEmpty(group))
+            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(user) || string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(role) || string.IsNullOrEmpty(displayName) || string.IsNullOrEmpty(phoneNumber))
             {
                 return false;
             }
 
             using (var context = new DataContext())
             {
-                SqlUser? own_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.group).ThenInclude(s => s!.users).Include(s => s.role).FirstOrDefault();
+                SqlUser? own_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role).FirstOrDefault();
                 if (own_user == null)
                 {
                     return false;
                 }
-                SqlGroup? m_group = null;
-                if (own_user.role!.code.CompareTo("admin") == 0)
-                {
-                    m_group = context.groups!.Where(s => s.code.CompareTo(group) == 0 && s.isdeleted == false).Include(s => s.users).FirstOrDefault();
-                    if (m_group == null)
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    if (own_user.group == null || own_user.group.code.CompareTo(group) != 0)
-                    {
-                        return false;
-                    }
-                    m_group = own_user.group;
-                }
-                if(m_group.users == null)
-                {
-                    m_group.users = new List<SqlUser>();
-                }
-                
 
-                SqlUser? tmp = m_group.users!.Where(s => s.isdeleted == false && (s.user.CompareTo(user) == 0 || s.username.CompareTo(username) == 0)).FirstOrDefault();
+                SqlUser? tmp = context.users!.Where(s => s.isdeleted == false && (s.user.CompareTo(user) == 0 || s.username.CompareTo(username) == 0)).FirstOrDefault();
                 if (tmp != null)
                 {
                     return false;
                 }
+
                 SqlRole? m_role = context.roles!.Where(s => s.isdeleted == false && s.code.CompareTo(role) == 0).FirstOrDefault();
                 if (m_role == null)
                 {
@@ -302,7 +277,6 @@ namespace ServerWater2.APIs
                 new_user.displayName = displayName;
                 new_user.phoneNumber = phoneNumber;
                 new_user.token = createToken();
-                m_group.users.Add(new_user);
 
                 context.users!.Add(new_user);
                 int rows = await context.SaveChangesAsync();
@@ -310,7 +284,7 @@ namespace ServerWater2.APIs
             }
         }
 
-        public async Task<bool> editUserAsync(string token, string user, string password, string displayName, string phoneNumber, string des, string role, string group)
+        public async Task<bool> editUserAsync(string token, string user, string password, string displayName, string phoneNumber, string des, string role)
         {
             if (string.IsNullOrEmpty(user))
             {
@@ -324,17 +298,7 @@ namespace ServerWater2.APIs
                     return false;
                 }
 
-                SqlGroup? m_group = context.groups!.Where(s => s.code.CompareTo(group) == 0 && s.isdeleted == false).Include(s => s.users!).ThenInclude(s => s.role).FirstOrDefault();
-                if(m_group == null)
-                {
-                    return false;
-                }
-                if(m_group.users == null)
-                {
-                    return false;
-                }    
-
-                SqlUser? tmp = m_group.users!.Where(s => s.user.CompareTo(user) == 0 && s.isdeleted == false).FirstOrDefault();
+                SqlUser? tmp = context.users!.Where(s => s.user.CompareTo(user) == 0 && s.isdeleted == false).FirstOrDefault();
                 if(tmp == null)
                 {
                     return false;
@@ -373,7 +337,7 @@ namespace ServerWater2.APIs
             }
         }
 
-        public async Task<bool> deleteUserAsync(string token, string user, string group)
+        public async Task<bool> deleteUserAsync(string token, string user)
         {
             if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(user))
             {
@@ -387,23 +351,12 @@ namespace ServerWater2.APIs
                     return false;
                 }
 
-                SqlGroup? m_group = context.groups!.Where(s => s.code.CompareTo(group) == 0 && s.isdeleted == false).Include(s => s.users!).ThenInclude(s => s.role).FirstOrDefault();
-                if (m_group == null)
-                {
-                    return false;
-                }
-                if (m_group.users == null)
-                {
-                    return false;
-                }
-
-                SqlUser? tmp = m_group.users!.Where(s => s.user.CompareTo(user) == 0 && s.isdeleted == false).FirstOrDefault();
+                SqlUser? tmp = context.users!.Where(s => s.user.CompareTo(user) == 0 && s.isdeleted == false).FirstOrDefault();
                 if (tmp == null)
                 {
                     return false;
                 }
 
-                m_group.users.Remove(tmp);
                 tmp.isdeleted = true;
 
                 int rows = await context.SaveChangesAsync();
@@ -461,7 +414,6 @@ namespace ServerWater2.APIs
             public string numberPhone { get; set; } = "";
             public string avatar { get; set; } = "";
             public string des { get; set; } = "";
-            public MyGroup group { get; set; } = new MyGroup(); 
             public string role { get; set; } = "";
         }
 
@@ -473,7 +425,7 @@ namespace ServerWater2.APIs
             }
             using (DataContext context = new DataContext())
             {
-                SqlUser? own_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.group).Include(s => s.role).FirstOrDefault();
+                SqlUser? own_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role).FirstOrDefault();
                 if (own_user == null)
                 {
                     return new List<ItemUser>();
@@ -482,11 +434,11 @@ namespace ServerWater2.APIs
 
                 if (own_user.role!.code.CompareTo("admin") == 0)
                 {
-                    users = context.users!.Where(s => s.isdeleted == false).Include(s => s.group).ToList();
+                    users = context.users!.Where(s => s.isdeleted == false).Include(s => s.role).ToList();
                 }
                 else
                 {
-                    users = context.users!.Include(s => s.group).Include(s => s.role).Where(s => s.isdeleted == false && s.role!.code.CompareTo("admin") != 0 && (s.group == null || s.group.ID == own_user.group!.ID)).ToList();
+                    users = context.users!.Include(s => s.role).Where(s => s.isdeleted == false && s.role!.code.CompareTo("admin") != 0).Include(s => s.role).ToList();
                 }
                 
                 List<ItemUser> items = new List<ItemUser>();
@@ -499,21 +451,14 @@ namespace ServerWater2.APIs
                     item.displayName = user.displayName;
                     item.numberPhone = user.phoneNumber;
                     item.avatar = user.avatar;
-                    if (user.role != null)
-                    {
-                        item.role = user.role.name;
-                    }
-                    if (user.group != null)
-                    {
-                        item.group.code = user.group.code;
-                        item.group.name = user.group.name;
-                    }
+                    item.role = user.role!.name;
+
                     items.Add(item);
                 }
                 return items;
             }
         }
-        public async Task<bool> changeGroup(string token, string group)
+        /*public async Task<bool> changeGroup(string token, string group)
         {
             if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(group))
             {
@@ -587,7 +532,7 @@ namespace ServerWater2.APIs
                 }
             }
         }
-
+*/
         public async Task<string> setAvatar(string token, byte[] file)
         {
             if (string.IsNullOrEmpty(token))
@@ -631,7 +576,6 @@ namespace ServerWater2.APIs
             public string numberPhone { get; set; } = "";
             public string avatar { get; set; } = "";
             public string des { get; set; } = "";
-            public MyGroup group { get; set; } = new MyGroup();
             public string role { get; set; } = "";
         }
         public infoUser getInfoUser(string token)
@@ -653,11 +597,6 @@ namespace ServerWater2.APIs
             temp.displayName = m_user.displayName;
             temp.numberPhone = m_user.phoneNumber;
             temp.des = m_user.des;
-            if(m_user.group != null)
-            {
-                temp.group.code = m_user.group.code; 
-                temp.group.name = m_user.group.name;
-            }    
             temp.avatar = m_user.avatar;
             temp.role = m_user.role!.name;
 

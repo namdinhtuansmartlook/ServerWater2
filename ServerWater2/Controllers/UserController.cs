@@ -31,7 +31,7 @@ namespace ServerWater2.Controllers
         }
 
 
-        public class ItemUser
+        public class HttpItemUser
         {
             public string user { get; set; } = "";
             public string username { get; set; } = "";
@@ -40,17 +40,16 @@ namespace ServerWater2.Controllers
             public string role { get; set; } = "";
             public string displayName { get; set; } = "";
             public string numberPhone { get; set; } = "";
-            public string group { get; set; } = "";
         }
 
         [HttpPost]
         [Route("createUser")]
-        public async Task<IActionResult> CreateUserAsync([FromHeader] string token, ItemUser user)
+        public async Task<IActionResult> CreateUserAsync([FromHeader] string token, HttpItemUser user)
         {
-            long id = Program.api_user.checkAdmin(token);
+            long id = Program.api_user.checkSystem(token);
             if (id >= 0)
             {
-                bool flag = await Program.api_user.createUserAsync(token, user.user, user.username, user.password, user.displayName, user.numberPhone, user.des, user.role, user.group);
+                bool flag = await Program.api_user.createUserAsync(token, user.user, user.username, user.password, user.displayName, user.numberPhone, user.des, user.role);
                 if (flag)
                 {
                     return Ok();
@@ -68,12 +67,12 @@ namespace ServerWater2.Controllers
 
         [HttpPut]
         [Route("editUser")]
-        public async Task<IActionResult> editUserAsync([FromHeader] string token, ItemUser user)
+        public async Task<IActionResult> editUserAsync([FromHeader] string token, HttpItemUser user)
         {
-            long id = Program.api_user.checkAdmin(token);
+            long id = Program.api_user.checkSystem(token);
             if (id >= 0)
             {
-                bool flag = await Program.api_user.editUserAsync(token, user.user, user.password, user.displayName, user.numberPhone, user.des, user.role, user.group);
+                bool flag = await Program.api_user.editUserAsync(token, user.user, user.password, user.displayName, user.numberPhone, user.des, user.role);
                 if (flag)
                 {
                     return Ok();
@@ -90,13 +89,13 @@ namespace ServerWater2.Controllers
         }
 
         [HttpDelete]
-        [Route("{group}/delete/{code}")]
-        public async Task<IActionResult> deleteUserAsync([FromHeader] string token, string code, string group)
+        [Route("{code}/delete")]
+        public async Task<IActionResult> deleteUserAsync([FromHeader] string token, string code)
         {
-            long id = Program.api_user.checkAdmin(token);
+            long id = Program.api_user.checkSystem(token);
             if (id >= 0)
             {
-                bool flag = await Program.api_user.deleteUserAsync(token, code, group);
+                bool flag = await Program.api_user.deleteUserAsync(token, code);
                 if (flag)
                 {
                     return Ok();
@@ -120,56 +119,6 @@ namespace ServerWater2.Controllers
             if (ID >= 0)
             {
                 bool flag = await Program.api_user.changePassword(token, oldPassword, newPassword);
-                if (flag)
-                {
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest();
-                }
-
-            }
-            else
-            {
-                return Unauthorized();
-            }
-
-        }
-
-        [HttpPut]
-        [Route("changeGroup")]
-        public async Task<IActionResult> ChangeGroup([FromHeader] string token, string group)
-        {
-            long ID = Program.api_user.checkSystem(token);
-            if (ID >= 0)
-            {
-                bool flag = await Program.api_user.changeGroup(token, group);
-                if (flag)
-                {
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest();
-                }
-
-            }
-            else
-            {
-                return Unauthorized();
-            }
-
-        }
-
-        [HttpPut]
-        [Route("setListUserInGroup")]
-        public async Task<IActionResult> SetGroup([FromHeader] string token, string group, List<string> users)
-        {
-            long ID = Program.api_user.checkSystem(token);
-            if (ID >= 0)
-            {
-                bool flag = await Program.api_user.setGroup(token, group, users);
                 if (flag)
                 {
                     return Ok();

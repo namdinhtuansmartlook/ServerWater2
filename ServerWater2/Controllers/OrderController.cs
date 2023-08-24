@@ -113,14 +113,19 @@ namespace ServerWater2.Controllers
             }
         }
 
+        public class ItemIDSurvey
+        {
+            public string item { get; set; } = "";
+        }
+
         [HttpPost]
         [Route("{order}/createSurveyOrder")]
-        public async Task<IActionResult> CreateSurveyOrderAsync([FromHeader] string token, string order, string data)
+        public async Task<IActionResult> CreateSurveyOrderAsync([FromHeader] string token, string order, [FromBody] ItemIDSurvey data)
         {
             long id = Program.api_user.checkUser(token);
             if (id >= 0)
             {
-                bool flag = await Program.api_order.createSurveyOrderAsync(token, order, data);
+                bool flag = await Program.api_order.createSurveyOrderAsync(token, order, data.item);
                 if (flag)
                 {
                     return Ok();
