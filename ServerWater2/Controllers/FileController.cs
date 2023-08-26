@@ -37,22 +37,6 @@ namespace ServerWater2.Controllers
             public List<ItemJson> datas { get; set; } = new List<ItemJson>();
         }
 
-        //[HttpGet]
-        //[Route("getListForm")]
-        //public IActionResult GetListForm([FromHeader] string token)
-        //{
-        //    long id = Program.api_user.checkAdmin(token);
-        //    if (id >= 0)
-        //    {
-        //        return Ok(Program.api_viewform.getList());
-        //    }
-        //    else
-        //    {
-        //        return Unauthorized();
-        //    }
-
-        //}
-
         [HttpGet]
         [Route("getListCodeForm")]
         public IActionResult GetList()
@@ -76,21 +60,21 @@ namespace ServerWater2.Controllers
 
         }
 
-        [HttpGet]
-        [Route("{form}/getTableForm")]
-        public IActionResult GetViewForm([FromHeader] string token, string form, string key)
-        {
-            long id = Program.api_user.checkUser(token);
-            if (id >= 0)
-            {
-                return Ok(Program.api_viewform.getForm(form));
-            }
-            else
-            {
-                return Unauthorized();
-            }
+        //[HttpGet]
+        //[Route("{form}/getTableForm")]
+        //public IActionResult GetViewForm([FromHeader] string token, string form, string key)
+        //{
+        //    long id = Program.api_user.checkUser(token);
+        //    if (id >= 0)
+        //    {
+        //        return Ok(Program.api_viewform.getForm(form));
+        //    }
+        //    else
+        //    {
+        //        return Unauthorized();
+        //    }
 
-        }
+        //}
 
         [HttpPost]
         [Route("createForm")]

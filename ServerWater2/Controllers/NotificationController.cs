@@ -1,4 +1,5 @@
-﻿/*using Microsoft.AspNetCore.Http;
+﻿using FirebaseAdmin.Messaging;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using System.Linq;
@@ -14,12 +15,12 @@ namespace ServerWater2.Controllers
         {
             public string user { get; set; } = "";
             public string code { get; set; } = "";
-            public int state { get; set; } = 0;
+            public string action { get; set; } = "";
         }
 
         [HttpGet]
         [Route("{token}/callnotification")]
-        public async Task callbackfaceAsync([FromRoute] string token, string state)
+        public async Task callbackfaceAsync([FromRoute] string token)
         {
             CancellationToken cancellationToken = HttpContext.RequestAborted;
             try
@@ -28,81 +29,62 @@ namespace ServerWater2.Controllers
                 Response.Headers.Add("Cache-Control", "no-cache");
                 Response.Headers.Add("Connection", "keep-alive");
 
-                if (state.CompareTo("0") == 0)
+                string tmp = Program.api_user.checkUserNotification(token);
+                if (string.IsNullOrEmpty(tmp))
                 {
-                    long ID = Program.api_user.checkAdmin(token);
-
-                    if (ID < 0)
-                    {
-                        return;
-                    }
-                }
-                else if (state.CompareTo("1") == 0)
-                {
-                    long ID = Program.api_user.checkSystem(token);
-
-                    if (ID < 0)
-                    {
-                        return;
-                    }
-                }
-                else
-                {
-                    long ID = Program.api_user.checkUser(token);
-
-                    if (ID < 0)
-                    {
-                        return;
-                    }
+                    return;
                 }
 
                 string id = DateTime.Now.Ticks.ToString();
                 Program.HttpNotification httpNotification = new Program.HttpNotification();
                 httpNotification.id = id;
-                httpNotification.state = state;
-                httpNotification.mToken = token;
-                if (!httpNotification.isOnline)
-                {
-                    Program.api_user.checkNotification(token, httpNotification.isOnline, httpNotification.messagers);
-                }
+                httpNotification.token = token;
+                httpNotification.messagers = new List<string>();
+                httpNotification.person = tmp;
                 Program.httpNotifications.Add(httpNotification);
 
-
+                if (!httpNotification.isOffline)
+                {
+                    bool flag = await Program.api_user.checkNotification(token, !httpNotification.isOffline);
+                    if (flag)
+                    {
+                        await Task.Delay(100);
+                    }
+                }
 
                 while (true)
                 {
                     await Task.Delay(1000);
+                    
                     Program.HttpNotification? notification = Program.httpNotifications.Where(s => s.id.CompareTo(id) == 0).FirstOrDefault();
                     if (notification == null)
                     {
                         break;
                     }
+                    List<string> list = notification.messagers.ToList();
+                    notification.messagers.Clear();
 
-                    List<string> messagers = notification.messagers;
-                    if (messagers.Count == 0)
+                    if (list.Count == 0)
                     {
                         string msg = string.Format("data: {0}\r\r", DateTime.Now);
                         await Response.WriteAsync(msg);
                         await Response.Body.FlushAsync();
                     }
-                    foreach (string s in messagers)
+                    foreach (string s in list)
                     {
                         Log.Information(s);
                         await Response.WriteAsync(string.Format("data: {0}\r\r", s));
                         await Response.Body.FlushAsync();
                         await Task.Delay(100);
                     }
-
-                    notification.messagers.Clear();
+                    
                     if (cancellationToken.IsCancellationRequested)
                     {
-                        while (!notification.isOnline)
+                        bool flag = await Program.api_user.checkNotification(token, notification.isOffline);
+                        if (flag)
                         {
-                            notification.isOnline = true;
-                            Program.api_user.checkNotification(token, notification.isOnline, notification.messagers);
-                            Thread.Sleep(1000);
+                            Program.httpNotifications.Remove(notification);
                         }
-                        Program.httpNotifications.Remove(notification);
                         break;
                     }
                     Thread.Sleep(1000);
@@ -114,21 +96,21 @@ namespace ServerWater2.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("test")]
-        public async Task<IActionResult> test(ItemTest item)
-        {
+        //[HttpPost]
+        //[Route("test")]
+        //public async Task<IActionResult> test(ItemTest item)
+        //{
 
 
-            bool order = await Program.api_order.testNotificationOrder(item.user, item.code, item.state);
-            if (!order)
-            {
-                return BadRequest();
-            }
-            else
-            {
-                return Ok(order);
-            }
-        }
+        //    bool order = await Program.api_order.testNotificationOrder(item.user, item.code, item.action);
+        //    if (!order)
+        //    {
+        //        return BadRequest();
+        //    }
+        //    else
+        //    {
+        //        return Ok(order);
+        //    }
+        //}
     }
-}*/
+}

@@ -19,9 +19,9 @@ public class Program
     public class HttpNotification
     {
         public string id { get; set; } = "";
-        public string mToken { get; set; } = "";
-        public string state { get; set; } = "";
-        public bool isOnline { get; set; } = false;
+        public string person { get; set; } = "";
+        public bool isOffline { get; set; } = false;
+        public string token { get; set; } = "";
         public List<string> messagers { get; set; } = new List<string>();
 
     }
@@ -35,7 +35,6 @@ public class Program
     public static MyViewForm api_viewform = new MyViewForm();
     public static MyItemsCalc api_calc = new MyItemsCalc();
     public static MyOrder api_order = new MyOrder();
-    public static MyFirebase api_firebase = new MyFirebase();
     public static MyType api_type = new MyType();
     public static MyState api_state = new MyState();
     public static MyService api_service = new MyService();

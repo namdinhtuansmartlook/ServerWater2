@@ -12,6 +12,8 @@ using static ServerWater2.Program;
 using static ServerWater2.APIs.MyGroup;
 using static ServerWater2.APIs.MyViewForm;
 using static ServerWater2.APIs.MyArea;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+using FirebaseAdmin.Messaging;
 
 namespace ServerWater2.APIs
 {
@@ -40,168 +42,151 @@ namespace ServerWater2.APIs
             }
         }
 
-        //public async Task<bool> testNotificationOrder(string user, string code, int state)
-        //{
-        //    using (DataContext context = new DataContext())
-        //    {
-        //        SqlOrder? order = context.orders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).Include(s => s.group).ThenInclude(s => s!.areas).Include(s => s.area).Include(s => s.certificate).Include(s => s.state).Include(s => s.service).Include(s => s.type).Include(s => s.worker).FirstOrDefault();
-        //        if (order == null)
-        //        {
-        //            return false;
-        //        }
-        //        if (order.group!.areas == null)
-        //        {
-        //            return false;
-        //        }
+        public async Task<bool> testNotificationOrder(string user, string code, string action)
+        {
+            using (DataContext context = new DataContext())
+            {
+                SqlOrder? order = context.orders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).Include(s => s.group).ThenInclude(s => s!.areas).Include(s => s.area).Include(s => s.state).Include(s => s.service).Include(s => s.type).Include(s => s.worker).FirstOrDefault();
+                if (order == null)
+                {
+                    return false;
+                }
+                if (order.group!.areas == null)
+                {
+                    return false;
+                }
 
-        //        SqlArea? m_area = order.group.areas!.Where(s => s.code.CompareTo(order.area!.code) == 0 && s.isdeleted == false).FirstOrDefault();
-        //        if (m_area == null)
-        //        {
-        //            return false;
-        //        }
+                SqlUser? muser = context.users!.Where(s => s.isdeleted == false && s.user.CompareTo(user) == 0).FirstOrDefault();
+                if (muser == null)
+                {
+                    return false;
+                }
 
-        //        SqlUser? muser = context.users!.Where(s => s.isdeleted == false && s.user.CompareTo(user) == 0).FirstOrDefault();
-        //        if (muser == null)
-        //        {
-        //            return false;
-        //        }
+                if (action.CompareTo("Moi") == 0)
+                {
+                    string tmp = await createNewOrderAsync(order.name, order.phone, order.persons, order.addressCustomer, order.group.code, order.area!.code, order.addressWater, order.addressContract, order.service!.code, order.type!.code, order.certificates, order.note);
 
-        //        if (state == 0)
-        //        {
-        //            string tmp = await createNewOrder(order.name, order.phone, order.addressCustomer, order.group.code, m_area.code, order.addressContract, order.service!.code, order.type!.code, order.certificate!.code, order.note);
-        //        }
-        //        if (state == 1)
-        //        {
-        //            bool check = await confirmOrder(muser.token, code);
-        //        }
-        //        if (state == 3)
-        //        {
-        //            bool check = await setAssginOrder(muser.token, code, "staff");
-        //        }
-        //        return true;
-        //    }
-        //}
+                }
+                if (action.CompareTo("TN") == 0)
+                {
+                    await setAction(muser.token, code, "XN", "", "", "");
+                    await setAction(muser.token, code, "DTN", "", "", "");
+                }
+                if (action.CompareTo("KS") == 0)
+                {
+                    bool check = await setAssginSurveyOrder(muser.token, code, "CT");
+                }
+                if (action.CompareTo("DL") == 0)
+                {
+                    await setAction(muser.token, code, "HTKS", "", "", "");
+                    bool check = await setAssginWorkerOrder(muser.token, code, "staff");
+                }
+                return true;
+            }
+        }
 
-        //public async Task<bool> setStateOrder(string code, int state)
-        //{
-        //    using (DataContext context = new DataContext())
-        //    {
-
-
-        //        SqlOrder? order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0)
-        //                                            .Include(s => s.state)
-        //                                            .FirstOrDefault();
-        //        if (order == null)
-        //        {
-        //            return false;
-        //        }
-
-        //        SqlState? m_state = context.states!.Where(s => s.isdeleted == false && s.code == state).FirstOrDefault();
-        //        if (m_state == null)
-        //        {
-        //            return false;
-        //        }
-
-        //        order.state = m_state;
-        //        order.lastestTime = DateTime.Now.ToUniversalTime();
-
-
-        //        int rows = await context.SaveChangesAsync();
-        //        if (rows > 0)
-        //        {
-        //            return true;
-        //        }
-        //        else
-        //        {
-        //            return false;
-        //        }
-        //    }
-        //}
 
         public class ItemNotifyOrder
         {
             public string order { get; set; } = "";
-            public string state { get; set; } = "";
-            public string time { get; set; } = "";
+            public string service { get; set; } = "";
+            public string customer { get; set; } = "";
         }
 
-        //public async Task<bool> saveNotification(int state, string notification)
-        //{
-        //    if (string.IsNullOrEmpty(notification))
-        //    {
-        //        return false;
-        //    }
-        //    using (DataContext context = new DataContext())
-        //    {
-        //        try
-        //        {
-        //            List<SqlUser>? users = context.users!.Where(s => s.isdeleted == false && s.isClear == false).Include(s => s.role).ToList();
-        //            if (users.Count > 0)
-        //            {
-        //                if (state == 0 || state == 5)
-        //                {
-        //                    users = users.Where(s => s.role!.code.CompareTo("admin") == 0 || s.role!.code.CompareTo("receiver") == 0).ToList();
+        public async Task<bool> saveNotification(string notification, string token)
+        {
+            if (string.IsNullOrEmpty(notification) || string.IsNullOrEmpty(token))
+            {
+                return false;
+            }
+            using (DataContext context = new DataContext())
+            {
+                try
+                {
+                    ItemNotifyOrder? item = JsonConvert.DeserializeObject<ItemNotifyOrder>(notification);
+                    if (item == null)
+                    {
+                        return false;
+                    }
+                    SqlUser? m_user = context.users!.Where(s => s.token.CompareTo(token) == 0 && s.isdeleted == false && s.isClear == false).FirstOrDefault();
+                    if (m_user == null)
+                    {
+                        return false;
+                    }
+                    Log.Information(String.Format("{0} is offline. Saved notification {1} :", m_user.user, notification));
+                    if (string.IsNullOrEmpty(m_user.notification))
+                    {
+                        List<ItemNotifyOrder> items = new List<ItemNotifyOrder>();
+                        items.Add(item);
+                        m_user.notification = JsonConvert.SerializeObject(items);
+                    }
+                    else
+                    {
+                        List<ItemNotifyOrder>? items = JsonConvert.DeserializeObject<List<ItemNotifyOrder>>(m_user.notification);
+                        if (items != null)
+                        {
+                            items.Add(item);
+                        }
+                        m_user.notification = JsonConvert.SerializeObject(items);
+                    }
 
-        //                }
-        //                else if (state == 1)
-        //                {
-        //                    users = users.Where(s => s.role!.code.CompareTo("manager") == 0).ToList();
+                    int rows = await context.SaveChangesAsync();
+                    if (rows > 0)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex.ToString());
+                    return false;
+                }
 
-        //                }
-        //                else
-        //                {
-        //                    users = users.Where(s => s.role!.code.CompareTo("staff") == 0).ToList();
+                //if (string.IsNullOrEmpty(user))
+                //{
+                //    List<SqlUser>? users = context.users!.Where(s => s.isdeleted == false && s.isClear == false).Include(s => s.role).ToList();
+                //    if (users.Count > 0)
+                //    {
+                //        if (state == 0)
+                //        {
+                //            users = users.Where(s => s.role!.code.CompareTo("admin") == 0 || s.role!.code.CompareTo("receiver") == 0).ToList();
 
-        //                }
+                //        }
+                //        else
+                //        {
+                //            users = users.Where(s => s.role!.code.CompareTo("manager") == 0).ToList();
 
+                //        }
+                //        foreach (SqlUser m_user in users)
+                //        {
+                //            if (string.IsNullOrEmpty(m_user.notification))
+                //            {
+                //                List<ItemNotifyOrder> items = new List<ItemNotifyOrder>();
+                //                items.Add(item);
+                //                m_user.notification = JsonConvert.SerializeObject(items);
+                //            }
+                //            else
+                //            {
+                //                List<ItemNotifyOrder>? items = JsonConvert.DeserializeObject<List<ItemNotifyOrder>>(m_user.notification);
+                //                if (items != null)
+                //                {
+                //                    items.Add(item);
+                //                }
+                //                m_user.notification = JsonConvert.SerializeObject(items);
+                //            }
+                //        }
+                //    }
+                //}
+                //else
+                //{
 
-        //                ItemNotifyOrder? item = JsonConvert.DeserializeObject<ItemNotifyOrder>(notification);
-        //                if (item == null)
-        //                {
-        //                    return false;
-        //                }
-
-        //                foreach (SqlUser m_user in users)
-        //                {
-        //                    if (string.IsNullOrEmpty(m_user.notifications))
-        //                    {
-        //                        List<ItemNotifyOrder> items = new List<ItemNotifyOrder>();
-        //                        items.Add(item);
-        //                        m_user.notifications = JsonConvert.SerializeObject(items);
-        //                    }
-        //                    else
-        //                    {
-        //                        List<ItemNotifyOrder>? items = JsonConvert.DeserializeObject<List<ItemNotifyOrder>>(m_user.notifications);
-        //                        if (items != null)
-        //                        {
-        //                            items.Add(item);
-        //                        }
-        //                        m_user.notifications = JsonConvert.SerializeObject(items);
-        //                    }
-        //                }
-
-        //                int rows = await context.SaveChangesAsync();
-        //                if (rows > 0)
-        //                {
-        //                    return true;
-        //                }
-        //                else
-        //                {
-        //                    return false;
-        //                }
-        //            }
-        //            else
-        //            {
-        //                return false;
-        //            }
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            Log.Error(ex.ToString());
-        //            return false;
-        //        }
-        //    }
-        //}
+                //}
+            }
+        }
 
         public async Task<string> setAction(string token, string order, string action, string note, string latitude, string longitude)
         {
@@ -222,6 +207,7 @@ namespace ServerWater2.APIs
 
                 SqlOrder? m_order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(order) == 0)
                                                    .Include(s => s.state).Include(s => s.worker)
+                                                   .Include(s => s.service)
                                                    .FirstOrDefault();
                 if (m_order == null)
                 {
@@ -237,7 +223,8 @@ namespace ServerWater2.APIs
                 }
 
                 List<SqlState> states = context.states!.Where(s => s.isdeleted == false).ToList();
-               
+                bool writeFlag = false;
+                string person = "";
                 switch (action)
                 {
                     case "XN":
@@ -254,6 +241,8 @@ namespace ServerWater2.APIs
                         m_order.receiver = m_user;
                         m_order.state = states.Where(s => s.code == 1).FirstOrDefault();
                         m_order.lastestTime = DateTime.Now.ToUniversalTime();
+                        writeFlag = true;
+                        person = "1";
 
                         break;
                     case "DTN":
@@ -272,7 +261,7 @@ namespace ServerWater2.APIs
 
                         break;
                     case "PCKS":
-                        if (m_order.survey != null)
+                        if (m_order.state!.code != 2)
                         {
                             return "";
                         }
@@ -280,15 +269,20 @@ namespace ServerWater2.APIs
                         m_order.survey = m_user;
                         m_order.state = states.Where(s => s.code == 3).FirstOrDefault();
                         m_order.lastestTime = DateTime.Now.ToUniversalTime();
+                        writeFlag = true;
+                        person = "2";
 
-                        
                         break;
                     case "KS":
                         if (m_order.state!.code > 3)
                         {
                             return "";
                         }
-                       
+                        if (m_order.survey == null)
+                        {
+                            m_order.survey = m_user;
+                        }
+
                         m_order.state = states.Where(s => s.code == 4).FirstOrDefault();
                         m_order.lastestTime = DateTime.Now.ToUniversalTime();
                         break;
@@ -297,20 +291,32 @@ namespace ServerWater2.APIs
                         {
                             return "";
                         }
+                        if(m_order.survey == null)
+                        {
+                            m_order.survey = m_user;
+                        }
                        
                         m_order.state = states.Where(s => s.code == 5).FirstOrDefault();
                         m_order.lastestTime = DateTime.Now.ToUniversalTime();
-                        
-                        
+                        writeFlag = true;
+                        person = "0";
+
                         break;
                     case "DPC":
-                        if(m_order.worker != null)
+                        if(m_order.state!.code > 5)
                         {
                             return "";
                         }    
+                        if(m_order.worker == null)
+                        {
+                            m_order.worker = m_user;
+                        }
+
                         m_order.worker = m_user;
                         m_order.state = states.Where(s => s.code == 6).FirstOrDefault();
                         m_order.lastestTime = DateTime.Now.ToUniversalTime();
+                        writeFlag = true;
+                        person = "3";
 
                         break;
                     case "ABDCV":
@@ -522,6 +528,30 @@ namespace ServerWater2.APIs
 
                 }
 
+                if(writeFlag)
+                {
+                    ItemNotifyOrder item = new ItemNotifyOrder();
+                    item.order = order;
+                    item.service = m_order.service!.code;
+                    item.customer = m_order.name;
+                    string data = JsonConvert.SerializeObject(item);
+                    if(m_user.role!.code.CompareTo("survey") == 0 || m_user.role!.code.CompareTo("staff") == 0)
+                    {
+                        bool flag = await saveNotification(data, m_user.token);
+                        if (!flag)
+                        {
+                            Log.Debug(string.Format("Save Notification : {0} for user : {1}", flag, m_user.displayName));
+                        }
+                    }
+
+                    List<HttpNotification> notifications = Program.httpNotifications.Where(s => s.person.CompareTo(person) == 0).ToList();
+                    foreach (HttpNotification notification in notifications)
+                    {
+                        Log.Debug("Order : {0} - Customer : {1}", order, item.customer);
+                        notification.messagers.Add(data);
+                    }
+                }
+
                 SqlLogOrder log = new SqlLogOrder();
                 log.ID = DateTime.Now.Ticks;
                 log.action = m_action;
@@ -655,7 +685,7 @@ namespace ServerWater2.APIs
                 }
 
                 SqlService? m_service = context.services!.Where(s => s.code.CompareTo(service) == 0 && s.isdeleted == false).FirstOrDefault();
-                if (m_type == null)
+                if (m_service == null)
                 {
                     return "";
                 }
@@ -668,6 +698,21 @@ namespace ServerWater2.APIs
                     if (string.IsNullOrEmpty(action))
                     {
                         return "";
+                    }
+                    else
+                    {
+                        ItemNotifyOrder item = new ItemNotifyOrder();
+                        item.order = order;
+                        item.service = m_service.name;
+                        item.customer = name;
+                        string m_item = JsonConvert.SerializeObject(item);
+                        
+                        List<HttpNotification>? notifications = Program.httpNotifications.Where(s => s.person.CompareTo("0") == 0).ToList();
+                        foreach (HttpNotification notification in notifications)
+                        {
+                            Log.Debug("Order : {0} - Customer : {1}", order, item.customer);
+                            notification.messagers.Add(m_item);
+                        }
                     }
                     HttpItemOrder temp = new HttpItemOrder();
                     temp.code = order;
@@ -970,11 +1015,7 @@ namespace ServerWater2.APIs
                         {
                             return false;
                         }
-                        if (m_log.order!.state!.code != 4)
-                        {
-                            return false;
-                        }
-;
+                       
                         m_log.note = JsonConvert.SerializeObject(m_json.datas);
                         m_log.time = DateTime.Now.ToUniversalTime();
 
@@ -1001,197 +1042,6 @@ namespace ServerWater2.APIs
                 return false;
             }
         }
-
-        public async Task<string> addImageSurveyFormAsync(string token, string order, string data, byte[] image)
-        {
-            try
-            {
-                ItemMyJson? m_json = JsonConvert.DeserializeObject<ItemMyJson>(data);
-                if (m_json == null)
-                {
-                    return "";
-                }
-
-                string codefile = "";
-                long id = long.Parse(order);
-                if (id > 0)
-                {
-                    using (DataContext context = new DataContext())
-                    {
-                        //anh tra di
-                        SqlUser? user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).FirstOrDefault();
-                        if (user == null)
-                        {
-                            return "";
-                        }
-
-                        SqlViewForm? m_form = context.forms!.Where(s => s.code.CompareTo(m_json.code) == 0 && s.isdeleted == false).FirstOrDefault();
-                        if (m_form == null)
-                        {
-                            return "";
-                        }
-
-                        SqlLogOrder? m_log = context.logs!.Where(s => s.ID == id).Include(s => s.order).ThenInclude(s => s!.state).FirstOrDefault();
-                        if (m_log == null)
-                        {
-                            return "";
-                        }
-                        if (m_log.order!.state!.code > 3)
-                        {
-                            return "";
-                        }
-
-                        m_log.note = JsonConvert.SerializeObject(m_json.datas);
-                        m_log.time = DateTime.Now.ToUniversalTime();
-
-                        codefile = await Program.api_file.saveFileAsync(DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss.image"), image);
-                        if (string.IsNullOrEmpty(codefile))
-                        {
-                            return "";
-                        }
-                        if (m_log.images == null)
-                        {
-                            m_log.images = new List<string>();
-                        }
-                        m_log.images.Add(codefile);
-
-                        int rows = await context.SaveChangesAsync();
-                        if (rows > 0)
-                        {
-                            return codefile;
-                        }
-                        else
-                        {
-                            return "";
-                        }
-                    }
-                }
-                else
-                {
-                    return "";
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                return "";
-            }
-        }
-
-        public async Task<bool> removeImageSurveyFormAsync(string token, string order, string code)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(code))
-                {
-                    return false;
-                }
-
-                long id = long.Parse(order);
-                if (id > 0)
-                {
-                    using (DataContext context = new DataContext())
-                    {
-                        SqlUser? user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).FirstOrDefault();
-                        if (user == null)
-                        {
-                            return false;
-                        }
-
-                        SqlLogOrder? m_log = context.logs!.Include(s => s.order).Where(s => s.ID == id).Include(s => s.order).ThenInclude(s => s!.state).OrderByDescending(s => s.time).FirstOrDefault();
-                        if (m_log == null)
-                        {
-                            return false;
-                        }
-                        if (m_log.order!.state!.code > 3)
-                        {
-                            return false;
-                        }
-                        if(m_log.note.CompareTo("image") != 0)
-                        {
-                            return false;
-                        }    
-                        if (m_log.images != null)
-                        {
-                            m_log.images.Remove(code);
-                        }
-
-                        int rows = await context.SaveChangesAsync();
-                        return true;                    }
-                }
-                else
-                {
-                    return false;
-                }
-
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
-        }
-
-        public async Task<bool> createCalcOrderAsync(string token, string order, string form, string data)
-        {
-            try
-            {
-                long id = long.Parse(order);
-                if (id > 0)
-                {
-
-                    using (DataContext context = new DataContext())
-                    {
-                        SqlUser? user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).FirstOrDefault();
-                        if (user == null)
-                        {
-                            return false;
-                        }
-
-                        SqlViewForm? m_form = context.forms!.Where(s => s.code.CompareTo(form) == 0 && s.isdeleted == false).FirstOrDefault();
-                        if (m_form == null)
-                        {
-                            return false;
-                        }
-
-                        SqlLogOrder? m_log = context.logs!.Where(s => s.ID == id).Include(s => s.order).ThenInclude(s => s!.state).FirstOrDefault();
-                        if (m_log == null)
-                        {
-                            return false;
-                        }
-                        if (m_log.order!.state!.code > 4)
-                        {
-                            return false;
-                        }
-
-;
-                        m_log.note = data;
-                        m_log.time = DateTime.Now.ToUniversalTime();
-
-                        int rows = await context.SaveChangesAsync();
-                        if (rows > 0)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                }
-                else
-                {
-                    return false;
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
-        }
-
         public async Task<string> addImageSerrveyAsync(string token, string code, byte[] data)
         {
             try
@@ -1213,11 +1063,7 @@ namespace ServerWater2.APIs
                         {
                             return "";
                         }
-                        if (m_log.order!.state!.code != 4)
-                        {
-                            return "";
-                        }
-
+                        
                         codefile = await Program.api_file.saveFileAsync(DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss.image"), data);
                         if (string.IsNullOrEmpty(codefile))
                         {
@@ -1252,7 +1098,6 @@ namespace ServerWater2.APIs
                 return "";
             }
         }
-
         public async Task<bool> removeImageServeyAsync(string token, string order, string code)
         {
             try
@@ -1273,20 +1118,12 @@ namespace ServerWater2.APIs
                         {
                             return false;
                         }
-                        if (m_log.order!.state!.code != 4)
-                        {
-                            return false;
-                        }
-
+                        
                         if (string.IsNullOrEmpty(code))
                         {
                             return false;
                         }
-                        if (m_log.images != null)
-                        {
-                            m_log.images.Remove(code);
-                        }
-
+                       
                         int rows = await context.SaveChangesAsync();
                         if (rows > 0)
                         {
@@ -1309,67 +1146,6 @@ namespace ServerWater2.APIs
                 return false;
             }
         }
-        public async Task<string> addImageFinishServeyAsync(string token, string code, byte[] data)
-        {
-            try
-            {
-                string codefile = "";
-                long id = long.Parse(code);
-                if (id > 0)
-                {
-                    using (DataContext context = new DataContext())
-                    {
-                        SqlUser? user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).FirstOrDefault();
-                        if (user == null)
-                        {
-                            return "";
-                        }
-
-                        SqlLogOrder? m_log = context.logs!.Where(s => s.ID == id).Include(s => s.order).ThenInclude(s => s!.state).FirstOrDefault();
-                        if (m_log == null)
-                        {
-                            return "";
-                        }
-                        if (m_log.order!.state!.code != 4)
-                        {
-                            return "";
-                        }
-
-                        codefile = await Program.api_file.saveFileAsync(DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss.image"), data);
-                        if (string.IsNullOrEmpty(codefile))
-                        {
-                            return "";
-                        }
-                        if (m_log.images == null)
-                        {
-                            m_log.images = new List<string>();
-                        }
-                        m_log.images.Add(codefile);
-
-                        int rows = await context.SaveChangesAsync();
-                        if (rows > 0)
-                        {
-                            return codefile;
-                        }
-                        else
-                        {
-                            return "";
-                        }
-                    }
-                }
-                else
-                {
-                    return "";
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                return "";
-            }
-        }
-
         public async Task<bool> removeImageFinishServeyAsync(string token, string order, string code)
         {
             try
@@ -1486,7 +1262,7 @@ namespace ServerWater2.APIs
                 }
 
                 SqlUser? worker = context.users!.Where(s => s.isdeleted == false && s.user.CompareTo(user) == 0).Include(s => s.role).FirstOrDefault();
-                if (worker == null || worker.role!.code.CompareTo("staff") == 0)
+                if (worker == null || worker.role!.code.CompareTo("survey") == 0)
                 {
                     return false;
                 }
@@ -1879,6 +1655,29 @@ namespace ServerWater2.APIs
             public string time { get; set; } = "";
         }
 
+        public ItemAction getActionUpdate(string code)
+        {
+            if (string.IsNullOrEmpty(code))
+            {
+                return new ItemAction();
+            }
+
+            ItemAction info = new ItemAction();
+            using (DataContext context = new DataContext())
+            {
+                SqlLogOrder? m_log = context.logs!.Include(s => s.order).Where(s => s.order!.code.CompareTo(code) == 0).OrderByDescending(s => s.time).Include(s => s.action).FirstOrDefault();
+                if (m_log == null)
+                {
+                    return new ItemAction();
+                }
+
+                info.code = m_log.action!.code;
+                info.name = m_log.action!.name;
+            }
+            return info;
+        }
+
+
         public ItemOrderRequest getLogOrder(string code)
         {
             if (string.IsNullOrEmpty(code))
@@ -2182,12 +1981,34 @@ namespace ServerWater2.APIs
             }
         }
 
-        public List<ItemInfoOrder> getListOrder(string token, DateTime begin, DateTime end)
+        public class ItemOrder
+        {
+            public string code { get; set; } = "";
+            public MyItemGroup group { get; set; } = new MyItemGroup();
+            public MyItemArea area { get; set; } = new MyItemArea();
+            public ItemProfile profile { get; set; } = new ItemProfile();
+            public List<ItemCertificate> filesCustomer { get; set; } = new List<ItemCertificate>();
+            public ItemUser receiver { get; set; } = new ItemUser();
+            public ItemUser manager { get; set; } = new ItemUser();
+            public ItemUser survey { get; set; } = new ItemUser();
+            public ItemUser worker { get; set; } = new ItemUser();
+            public ItemCustomer customer { get; set; } = new ItemCustomer();
+            public string note { get; set; } = "";
+            public ItemType type { get; set; } = new ItemType();
+            public ItemService service { get; set; } = new ItemService();
+            public ItemStateOrder state { get; set; } = new ItemStateOrder();
+            public ItemAction action { get; set; } = new ItemAction();
+            public string createTime { get; set; } = "";
+            public string lastestTime { get; set; } = "";
+
+        }
+
+        public List<ItemOrder> getListOrder(string token, DateTime begin, DateTime end)
         {
             DateTime m_begin = new DateTime(begin.Year, begin.Month, begin.Day, 0, 0, 0);
             DateTime m_end = new DateTime(end.Year, end.Month, end.Day, 23, 59, 59);
 
-            List<ItemInfoOrder> list = new List<ItemInfoOrder>();
+            List<ItemOrder> list = new List<ItemOrder>();
 
             using (DataContext context = new DataContext())
             {
@@ -2199,7 +2020,7 @@ namespace ServerWater2.APIs
                                                 .FirstOrDefault();
                 if (m_user == null)
                 {
-                    return new List<ItemInfoOrder>();
+                    return new List<ItemOrder>();
                 }
 
                 List<SqlOrder> orders = context.orders!.Where(s => DateTime.Compare(m_begin.ToUniversalTime(), s.createdTime) <= 0 && DateTime.Compare(m_end.ToUniversalTime(), s.createdTime) > 0)
@@ -2217,7 +2038,7 @@ namespace ServerWater2.APIs
                                                        .ToList();
                 if (orders.Count < 1)
                 {
-                    return new List<ItemInfoOrder>();
+                    return new List<ItemOrder>();
                 }
                 //Console.WriteLine("Version : 22-05-2023");
                 
@@ -2249,7 +2070,7 @@ namespace ServerWater2.APIs
 
                 foreach (SqlOrder item in mOrders)
                 {
-                    ItemInfoOrder tmp = new ItemInfoOrder();
+                    ItemOrder tmp = new ItemOrder();
 
                     tmp.code = item.code;
                     tmp.group.code = item.group!.code;
@@ -2388,9 +2209,8 @@ namespace ServerWater2.APIs
                         tmp.state = state;
                     }
 
-                    //ItemOrderRequest m_log = getLogOrder(item.ID.ToString());
+                    tmp.action = getActionUpdate(item.code);
                     //tmp.logActions.Add(m_log);
-                    //tmp.logActions = getOrderLogs(item.ID.ToString());
                     tmp.createTime = item.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
                     tmp.lastestTime = item.lastestTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
 
@@ -2400,33 +2220,10 @@ namespace ServerWater2.APIs
             }
 
         }
-
-        public class ItemOrder
-        {
-            public string code { get; set; } = "";
-            public MyItemGroup group { get; set; } = new MyItemGroup();
-            public MyItemArea area { get; set; } =  new MyItemArea();
-            public ItemProfile profile { get; set; } = new ItemProfile();
-            public List<ItemCertificate> documents { get; set; } = new List<ItemCertificate>();
-            public ItemUser receiver { get; set; } = new ItemUser();
-            public ItemUser manager { get; set; } = new ItemUser();
-            public ItemUser survey { get; set; } = new ItemUser();
-            public ItemUser worker { get; set; } = new ItemUser();
-            public ItemCustomer customer { get; set; } = new ItemCustomer();
-            public string note { get; set; } = "";
-            public ItemType type { get; set; } = new ItemType();
-            public ItemService service { get; set; } = new ItemService();
-            public ItemStateOrder state { get; set; } = new ItemStateOrder();
-            public ItemOrderRequest logAction { get; set; } = new ItemOrderRequest();
-            public string createTime { get; set; } = "";
-            public string lastestTime { get; set; } = "";
-
-        }
-
         public class ItemLogOrder
         {
-            public ItemOrder order { get; set; } = new ItemOrder();
-            public ItemOrderRequest logAction { get; set; } = new ItemOrderRequest();
+            public ItemInfoOrder order { get; set; } = new ItemInfoOrder();
+            public ItemAction action { get; set; } = new ItemAction();
             public string time { get; set; } = "";
         }
 
@@ -2456,7 +2253,7 @@ namespace ServerWater2.APIs
                 {
                     ItemLogOrder m_info = new ItemLogOrder();
 
-                    ItemOrder tmp = new ItemOrder();
+                    ItemInfoOrder tmp = new ItemInfoOrder();
                     tmp.code = item.code;
                     tmp.group.code = item.group!.code;
                     tmp.group.name = item.group!.name;
@@ -2497,7 +2294,7 @@ namespace ServerWater2.APIs
                             {
                                 foreach (ItemCertificate m_item in certificates)
                                 {
-                                    tmp.documents.Add(m_item);
+                                    tmp.filesCustomer.Add(m_item);
                                 }
                             }
                         }
@@ -2517,7 +2314,7 @@ namespace ServerWater2.APIs
                                     myItem.code = temp.code;
                                     myItem.name = temp.name;
 
-                                    tmp.documents.Add(myItem);
+                                    tmp.filesCustomer.Add(myItem);
                                 }
                             }
                         }
@@ -2597,7 +2394,7 @@ namespace ServerWater2.APIs
 
                     m_info.order = tmp;
 
-                    m_info.logAction = getLogOrder(item.ID.ToString());
+                    m_info.action = getActionUpdate(item.code);
 
                     m_info.time = item.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
                     list.Add(m_info);
@@ -2626,285 +2423,5 @@ namespace ServerWater2.APIs
 
             return info;
         }
-
-        public async Task startThreadTimeChecking()
-        {
-            using (DataContext context = new DataContext())
-            {
-                List<SqlOrder> orders = context.orders!.Where(s => s.isFinish == false && s.isDelete == false)
-                                                      .Include(s => s.customer)
-                                                      .Include(s => s.receiver)
-                                                      .Include(s => s.manager)
-                                                      .Include(s => s.survey)
-                                                      .Include(s => s.worker)
-                                                      .Include(s => s.service)
-                                                      .Include(s => s.type)
-                                                      .Include(s => s.state)
-                                                      .Include(s => s.group)
-                                                      .Include(s => s.area)
-                                                      .OrderByDescending(s => s.createdTime)
-                                                      .ToList();
-
-                //bool flag = false;
-                //foreach (SqlOrder m_order in orders)
-                //{
-
-                //    string title = "LuxJapanCare";
-                //    string image = "https://i.stack.imgur.com/snaix.png";
-                //    Dictionary<string, string> data = new Dictionary<string, string> {
-                //                                {"codeOrder", m_order.code},
-                //                                {"state", m_order.state!.code.ToString()},
-                //                        };
-                //    int tmp = await syncAlertToCustomerAsync(m_order.user!.UID, m_order.code);
-                //    List<string>? ids = m_order.user!.notifyID;
-                //    if (ids != null)
-                //    {
-                //        string name = string.IsNullOrEmpty(m_order.user.Name) ? m_order.user.DisplayName : m_order.user.Name;
-
-                //        List<string> tmp_remove = new List<string>();
-                //        foreach (string id in ids)
-                //        {
-                //            switch (tmp)
-                //            {
-                //                case 10:
-                //                    {
-                //                        //check clean air
-
-
-                //                        string body = string.Format("You have an appointment to detect for {0} order at {1}", m_order.code, m_order.cleanHouseOrder!.timeToCheck.ToLocalTime().ToString("HH:mm:ss dd/MM/yyyy"));
-
-                //                        //api_firebase.SendPushNotification("dc7H9RoTR6-NM19bN0QAyL:APA91bHEM8dzock3kJpMRtxp5DszslMD5FVcXnK5GeWeqcHqew7HEW1HsMCgOILOLG0Y_Bw0FJY7tROxUIBPZX_wtb1My3FfwdWqSnmgHBac0DGK8EO1U1gNtoKJWOth5f_IECQS_g1M");
-                //                        flag = await Program.api_firebase.SendPushNotificationAsync(id, title, body, image, data);
-                //                        if (flag == false)
-                //                        {
-                //                            tmp_remove.Add(id);
-                //                        }
-
-                //                        break;
-
-                //                    }
-                //                case 11:
-                //                    {
-                //                        //begin clean house
-
-                //                        string body = string.Format("You have an appointment to work for {0} order at {1}", m_order.code, m_order.cleanHouseOrder!.timeToCleaning.ToLocalTime().ToString("HH:mm:ss dd/MM/yyyy"));
-
-                //                        //api_firebase.SendPushNotification("dc7H9RoTR6-NM19bN0QAyL:APA91bHEM8dzock3kJpMRtxp5DszslMD5FVcXnK5GeWeqcHqew7HEW1HsMCgOILOLG0Y_Bw0FJY7tROxUIBPZX_wtb1My3FfwdWqSnmgHBac0DGK8EO1U1gNtoKJWOth5f_IECQS_g1M");
-                //                        flag = await Program.api_firebase.SendPushNotificationAsync(id, title, body, image, data);
-                //                        if (flag == false)
-                //                        {
-                //                            tmp_remove.Add(id);
-
-                //                        }
-                //                        break;
-                //                    }
-                //                case 20:
-                //                    {
-                //                        //check clean air
-
-                //                        string body = string.Format("You have an appointment to detect for {0} order at {1}", m_order.code, m_order.cleanAirConditioner!.timeToCheck.ToLocalTime().ToString("HH:mm:ss dd/MM/yyyy"));
-
-                //                        //api_firebase.SendPushNotification("dc7H9RoTR6-NM19bN0QAyL:APA91bHEM8dzock3kJpMRtxp5DszslMD5FVcXnK5GeWeqcHqew7HEW1HsMCgOILOLG0Y_Bw0FJY7tROxUIBPZX_wtb1My3FfwdWqSnmgHBac0DGK8EO1U1gNtoKJWOth5f_IECQS_g1M");
-                //                        flag = await Program.api_firebase.SendPushNotificationAsync(id, title, body, image, data);
-                //                        if (flag == false)
-                //                        {
-                //                            tmp_remove.Add(id);
-                //                        }
-                //                        break;
-                //                    }
-                //                case 21:
-                //                    {
-                //                        //begin clean air
-
-                //                        string body = string.Format("You have an appointment to work for {0} order at {1}", m_order.code, m_order.cleanAirConditioner!.timeToCleaning.ToLocalTime().ToString("HH:mm:ss dd/MM/yyyy"));
-
-                //                        //api_firebase.SendPushNotification("dc7H9RoTR6-NM19bN0QAyL:APA91bHEM8dzock3kJpMRtxp5DszslMD5FVcXnK5GeWeqcHqew7HEW1HsMCgOILOLG0Y_Bw0FJY7tROxUIBPZX_wtb1My3FfwdWqSnmgHBac0DGK8EO1U1gNtoKJWOth5f_IECQS_g1M");
-                //                        flag = await Program.api_firebase.SendPushNotificationAsync(id, title, body, image, data);
-                //                        if (flag == false)
-                //                        {
-                //                            tmp_remove.Add(id);
-                //                        }
-                //                        break;
-                //                    }
-                //                default:
-                //                    {
-                //                        //Console.WriteLine(m_order.user!.UID + ": Chưa có order nào cần hẹn nhắc " );
-                //                        break;
-                //                    }
-                //            }
-
-                //        }
-                //        if (tmp_remove.Count > 0)
-                //        {
-                //            foreach (string tmp_id in tmp_remove)
-                //            {
-                //                ids.Remove(tmp_id);
-                //            }
-
-                //            flag = true;
-                //        }
-                //        //if (tmp != -1)
-                //        //{
-                //        //    Console.WriteLine(string.Format("----------********----------"));
-                //        //    foreach (string id in ids)
-                //        //    {
-                //        //        Console.WriteLine(string.Format("Send notification to {0} :", name));
-                //        //        Console.WriteLine("{0} : ", m_order.code);
-                //        //        string id_temp = id.Split(':')[0];
-                //        //        Console.WriteLine(string.Format("{0} - (Token_id : {1}) : {2}", name, id_temp, tmp));
-
-                //        //    }
-                //        //}
-                //    }
-
-                //    if (m_order.survey != null)
-                //    {
-                //        Thread.Sleep(1000);
-                //        tmp = await syncAlertToUserAsync(m_order.survey!.token, m_order.code);
-                //        ids = m_order.survey!.notifyID;
-                //        if (ids != null)
-                //        {
-                //            List<string> tmp_remove = new List<string>();
-                //            foreach (string id in ids)
-                //            {
-                //                switch (tmp)
-                //                {
-                //                    case 12:
-                //                        {
-                //                            //check clean house
-
-                //                            string body = string.Format("You are going to detect for {0} order at {1}", m_order.code, m_order.cleanHouseOrder!.timeToCheck.ToLocalTime().ToString("HH:mm:ss dd/MM/yyyy"));
-
-                //                            //api_firebase.SendPushNotification("dc7H9RoTR6-NM19bN0QAyL:APA91bHEM8dzock3kJpMRtxp5DszslMD5FVcXnK5GeWeqcHqew7HEW1HsMCgOILOLG0Y_Bw0FJY7tROxUIBPZX_wtb1My3FfwdWqSnmgHBac0DGK8EO1U1gNtoKJWOth5f_IECQS_g1M");
-                //                            flag = await Program.api_firebase.SendPushNotificationAsync(id, title, body, image, data);
-                //                            if (flag == false)
-                //                            {
-                //                                tmp_remove.Add(id);
-                //                            }
-
-                //                            break;
-                //                        }
-                //                    case 22:
-                //                        {
-                //                            //check clean air
-
-                //                            //api_firebase.SendPushNotification("dc7H9RoTR6-NM19bN0QAyL:APA91bHEM8dzock3kJpMRtxp5DszslMD5FVcXnK5GeWeqcHqew7HEW1HsMCgOILOLG0Y_Bw0FJY7tROxUIBPZX_wtb1My3FfwdWqSnmgHBac0DGK8EO1U1gNtoKJWOth5f_IECQS_g1M");
-                //                            string body = string.Format("You are going to detect for {0} order at {1}", m_order.code, m_order.cleanAirConditioner!.timeToCheck.ToLocalTime().ToString("HH:mm:ss dd/MM/yyyy"));
-
-                //                            flag = await Program.api_firebase.SendPushNotificationAsync(id, title, body, image, data);
-                //                            if (flag == false)
-                //                            {
-                //                                tmp_remove.Add(id);
-                //                            }
-                //                            break;
-                //                        }
-                //                    default:
-                //                        {
-                //                            //Console.WriteLine(m_order.survey!.displayName + ": Chưa có order nào cần hẹn nhắc ");
-                //                            break;
-                //                        }
-                //                }
-                //            }
-
-                //            if (tmp_remove.Count > 0)
-                //            {
-                //                foreach (string tmp_id in tmp_remove)
-                //                {
-                //                    ids.Remove(tmp_id);
-                //                }
-
-                //                flag = true;
-                //            }
-                //            //if (tmp != -1)
-                //            //{
-                //            //    foreach (string id in ids)
-                //            //    {
-                //            //        Console.WriteLine(string.Format("Send notification to {0} :", m_order.survey!.displayName));
-                //            //        Console.WriteLine("{0} : ", m_order.code);
-                //            //        string id_temp = id.Split(':')[0];
-                //            //        Console.WriteLine(string.Format("{0} - (Token_id : {1}) : {2} ", m_order.survey!.displayName, id_temp, tmp));
-
-                //            //    }
-                //            //}
-                //        }
-
-
-                //    }
-                //    if (m_order.worker != null)
-                //    {
-                //        Thread.Sleep(1000);
-                //        tmp = await syncAlertToUserAsync(m_order.worker!.token, m_order.code);
-                //        ids = m_order.worker!.notifyID;
-                //        if (ids != null)
-                //        {
-
-                //            List<string> tmp_remove = new List<string>();
-                //            foreach (string id in ids)
-                //            {
-                //                switch (tmp)
-                //                {
-                //                    case 13:
-                //                        {
-                //                            //Begin clean house
-
-                //                            string body = string.Format("You are going to begin work for {0} order at {1}", m_order.code, m_order.cleanHouseOrder!.timeToCleaning.ToLocalTime().ToString("HH:mm:ss dd/MM/yyyy"));
-
-                //                            //api_firebase.SendPushNotification("dc7H9RoTR6-NM19bN0QAyL:APA91bHEM8dzock3kJpMRtxp5DszslMD5FVcXnK5GeWeqcHqew7HEW1HsMCgOILOLG0Y_Bw0FJY7tROxUIBPZX_wtb1My3FfwdWqSnmgHBac0DGK8EO1U1gNtoKJWOth5f_IECQS_g1M");
-                //                            flag = await Program.api_firebase.SendPushNotificationAsync(id, title, body, image, data);
-
-                //                            break;
-                //                        }
-                //                    case 23:
-                //                        {
-                //                            //Work clean air
-
-                //                            string body = string.Format("You are going to begin work for {0} order at {1}", m_order.code, m_order.cleanAirConditioner!.timeToCleaning.ToLocalTime().ToString("HH:mm:ss dd/MM/yyyy"));
-
-                //                            //api_firebase.SendPushNotification("dc7H9RoTR6-NM19bN0QAyL:APA91bHEM8dzock3kJpMRtxp5DszslMD5FVcXnK5GeWeqcHqew7HEW1HsMCgOILOLG0Y_Bw0FJY7tROxUIBPZX_wtb1My3FfwdWqSnmgHBac0DGK8EO1U1gNtoKJWOth5f_IECQS_g1M");
-                //                            flag = await Program.api_firebase.SendPushNotificationAsync(id, title, body, image, data);
-                //                            if (flag == false)
-                //                            {
-                //                                tmp_remove.Add(id);
-                //                            }
-                //                            break;
-                //                        }
-                //                    default:
-                //                        {
-                //                            //Console.WriteLine(m_order.survey!.displayName + ": Chưa có order nào cần hẹn nhắc ");
-                //                            break;
-                //                        }
-                //                }
-                //            }
-
-                //            if (tmp_remove.Count > 0)
-                //            {
-                //                foreach (string tmp_id in tmp_remove)
-                //                {
-                //                    ids.Remove(tmp_id);
-                //                }
-                //                flag = true;
-                //            }
-                //            //if (tmp != -1)
-                //            //{
-                //            //    foreach (string id in ids)
-                //            //    {
-                //            //        Console.WriteLine(string.Format("Send notification to {0}", m_order.worker!.displayName));
-                //            //        Console.WriteLine("{0} : ", m_order.code);
-                //            //        string id_temp = id.Split(':')[0];
-                //            //        Console.WriteLine(string.Format("{0} - (Token_id : {1}) : {2}", m_order.worker!.displayName, id_temp, tmp));
-
-                //            //    }
-                //            //}
-                //        }
-                //    }
-                //    if (flag)
-                //    {
-                //        int rows = await context.SaveChangesAsync();
-                //    }
-                //    Thread.Sleep(1000);
-                //}
-            }
-        }
-
     }
 }

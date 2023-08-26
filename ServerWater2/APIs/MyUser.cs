@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Serilog;
 using ServerWater2.Models;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using static ServerWater2.APIs.MyOrder;
 
 namespace ServerWater2.APIs
@@ -104,50 +106,58 @@ namespace ServerWater2.APIs
             
         }
 
-        //public async void checkNotification(string token, bool flag, List<string> messagers)
-        //{
-        //    using (DataContext context = new DataContext())
-        //    {
-        //        try
-        //        {
-        //            SqlUser? m_user = context.users!.Where(s => s.token.CompareTo(token) == 0 && s.isdeleted == false).FirstOrDefault();
-        //            if (m_user != null)
-        //            {
-        //                m_user.isClear = true;
-        //                if (!string.IsNullOrEmpty(m_user.notifications))
-        //                {
-        //                    List<ItemNotifyOrder>? items = JsonConvert.DeserializeObject<List<ItemNotifyOrder>>(m_user.notifications);
-        //                    if (items != null)
-        //                    {
-        //                        if (items.Count > 0)
-        //                        {
+        public async Task<bool> checkNotification(string token, bool flag)
+        {
+            List<string> messagers = new List<string>();
 
-        //                            foreach (ItemNotifyOrder m_item in items)
-        //                            {
-        //                                messagers.Add(JsonConvert.SerializeObject(m_item));
-        //                            }
-        //                        }
-        //                    }
+            using (DataContext context = new DataContext())
+            {
+                try
+                {
+                    SqlUser? m_user = context.users!.Where(s => s.token.CompareTo(token) == 0 && s.isdeleted == false).FirstOrDefault();
+                    if (m_user == null)
+                    {
+                        return false;
+                    }
 
-        //                }
+                    if (!string.IsNullOrEmpty(m_user.notification))
+                    {
+                        Log.Information(string.Format("{0} - {1}", m_user.user, m_user.notification));
 
-        //                m_user.notifications = "";
-        //                if (flag)
-        //                {
-        //                    m_user.isClear = false;
+                        Program.HttpNotification? notification = Program.httpNotifications.Where(s => s.token.CompareTo(token) == 0).FirstOrDefault();
+                        if (notification == null)
+                        {
+                            return false;
+                        }
+                        List<ItemNotifyOrder>? items = JsonConvert.DeserializeObject<List<ItemNotifyOrder>>(m_user.notification);
+                        if (items != null)
+                        {
+                            if (items.Count > 0)
+                            {
 
-        //                }
+                                foreach (ItemNotifyOrder m_item in items)
+                                {
+                                    notification.messagers.Add(JsonConvert.SerializeObject(m_item));
+                                }
+                            }
+                        }
 
-        //                await context.SaveChangesAsync();
-        //            }
-        //        }
-        //        catch(Exception ex)
-        //        {
-        //            Log.Error(ex.ToString());
-        //        }
-        //    }
+                    }
+                    m_user.notification = "";
+                    m_user.isClear = flag;
 
-        //}
+                    int rows = await context.SaveChangesAsync();
+
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex.ToString());
+                    return false;
+                }
+            }
+
+        }
 
         public long checkAdmin(string token)
         {
@@ -194,6 +204,39 @@ namespace ServerWater2.APIs
                 }
 
                 return user.ID;
+            }
+        }
+        public string checkUserNotification(string token)
+        {
+            string person = "";
+            using (DataContext context = new DataContext())
+            {
+                SqlUser? user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role).FirstOrDefault();
+                if (user == null)
+                {
+                    return "";
+                }
+                if(user.role!.code.CompareTo("admin") == 0 || user.role!.code.CompareTo("receiver") == 0)
+                {
+                    person = "0";
+                }   
+                else if (user.role!.code.CompareTo("manager") == 0)
+                {
+                    person = "1";
+
+                }
+                else if (user.role!.code.CompareTo("survey") == 0)
+                {
+                    person = "2";
+
+                }
+                else
+                {
+                    person = "3";
+
+                }
+
+                return person;
             }
         }
 
@@ -276,6 +319,7 @@ namespace ServerWater2.APIs
                 new_user.isdeleted = false;
                 new_user.displayName = displayName;
                 new_user.phoneNumber = phoneNumber;
+                new_user.notification = "";
                 new_user.token = createToken();
 
                 context.users!.Add(new_user);

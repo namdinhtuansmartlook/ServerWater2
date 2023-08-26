@@ -74,5 +74,94 @@ namespace ServerWater2.APIs
             }
         }
 
+        public async Task<bool> createAsync(string code, string name, string des)
+        {
+            if (string.IsNullOrEmpty(code) || string.IsNullOrEmpty(name))
+            {
+                return false;
+            }
+            using (DataContext context = new DataContext())
+            {
+                SqlCertificate? certificate = context.certificates!.Where(s => s.code.CompareTo(code) == 0 && s.isdeleted == false).FirstOrDefault();
+                if (certificate != null)
+                {
+                    return false;
+                }
+
+                SqlCertificate item = new SqlCertificate();
+                item.ID = DateTime.Now.Ticks;
+                item.code = code;
+                item.name = name;
+                item.des = des;
+                context.certificates!.Add(item);
+
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public async Task<bool> editAsync(string code, string name, string des)
+        {
+            using (DataContext context = new DataContext())
+            {
+                SqlCertificate? certificate = context.certificates!.Where(s => s.code.CompareTo(code) == 0 && s.isdeleted == false).FirstOrDefault();
+                if (certificate == null)
+                {
+                    return false;
+                }
+
+                if (!string.IsNullOrEmpty(name))
+                {
+                    certificate.name = name;
+                }
+                if (!string.IsNullOrEmpty(des))
+                {
+                    certificate.des = des;
+                }
+                
+
+
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public async Task<bool> deleteAsync(string code)
+        {
+            using (DataContext context = new DataContext())
+            {
+                SqlCertificate? certificate = context.certificates!.Where(s => s.code.CompareTo(code) == 0 && s.isdeleted == false).FirstOrDefault();
+                if (certificate == null)
+                {
+                    return false;
+                }
+
+                certificate.isdeleted = true;
+
+                int rows = await context.SaveChangesAsync();
+                if (rows > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
     }
 }

@@ -128,7 +128,7 @@ namespace ServerWater2.APIs
                 item.index = index;
                 item.label = label;
 
-                if(string.IsNullOrEmpty(state))
+                if(!string.IsNullOrEmpty(state))
                 {
                     item.stateImage = state;
                 }
@@ -242,8 +242,7 @@ namespace ServerWater2.APIs
                 {
                     return new List<ItemJson>();
                 }    
-                
-                
+
                 return tmps;
             }
         }

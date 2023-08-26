@@ -24,6 +24,7 @@ namespace ServerWater2.Controllers
             public string x { get; set; } = "";
             public string y { get; set; } = "";
         }
+        
         [HttpPost]
         [Route("createCustomer")]
         public async Task<IActionResult> createCustomerAsync([FromHeader] string token, ItemCustomer customer)
@@ -165,6 +166,14 @@ namespace ServerWater2.Controllers
             }
         }
 
+        public class ItemHttpCertificate
+        {
+            public string code { get; set; } = "";
+            public string name { get; set; } = "";
+            public string des { get; set; } = "";
+
+        }
+
         [HttpGet]
         [Route("getListCertificate")]
         public IActionResult GetListCertificate()
@@ -172,5 +181,78 @@ namespace ServerWater2.Controllers
             return Ok(Program.api_certificate.getList());
         }
 
+        [HttpPost]
+        [Route("createCertificate")]
+        public async Task<IActionResult> CreateCertificateAsync([FromHeader] string token, ItemHttpCertificate item)
+        {
+
+            long id = Program.api_user.checkAdmin(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_certificate.createAsync(item.code, item.name, item.des);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+
+        }
+        [HttpPut]
+        [Route("editCertificate")]
+        public async Task<IActionResult> EditCertificateAsync([FromHeader] string token, ItemHttpCertificate item)
+        {
+
+            long id = Program.api_user.checkAdmin(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_certificate.editAsync(item.code, item.name, item.des);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+
+        }
+
+        [HttpDelete]
+        [Route("{code}/deleteCertificate")]
+        public async Task<IActionResult> DeleteCertificateAsync([FromHeader] string token, string code)
+        {
+            long id = Program.api_user.checkAdmin(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_certificate.deleteAsync(code);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            else
+            {
+                return Unauthorized();
+            }
+        }
     }
 }
