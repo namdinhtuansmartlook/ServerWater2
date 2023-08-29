@@ -42,48 +42,48 @@ namespace ServerWater2.APIs
             }
         }
 
-        public async Task<bool> testNotificationOrder(string user, string code, string action)
-        {
-            using (DataContext context = new DataContext())
-            {
-                SqlOrder? order = context.orders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).Include(s => s.group).ThenInclude(s => s!.areas).Include(s => s.area).Include(s => s.state).Include(s => s.service).Include(s => s.type).Include(s => s.worker).FirstOrDefault();
-                if (order == null)
-                {
-                    return false;
-                }
-                if (order.group!.areas == null)
-                {
-                    return false;
-                }
+        //public async Task<bool> testNotificationOrder(string user, string code, string action)
+        //{
+        //    using (DataContext context = new DataContext())
+        //    {
+        //        SqlOrder? order = context.orders!.Where(s => s.isDelete == false && s.code.CompareTo(code) == 0).Include(s => s.group).ThenInclude(s => s!.areas).Include(s => s.area).Include(s => s.state).Include(s => s.service).Include(s => s.type).Include(s => s.worker).FirstOrDefault();
+        //        if (order == null)
+        //        {
+        //            return false;
+        //        }
+        //        if (order.group!.areas == null)
+        //        {
+        //            return false;
+        //        }
 
-                SqlUser? muser = context.users!.Where(s => s.isdeleted == false && s.user.CompareTo(user) == 0).FirstOrDefault();
-                if (muser == null)
-                {
-                    return false;
-                }
+        //        SqlUser? muser = context.users!.Where(s => s.isdeleted == false && s.user.CompareTo(user) == 0).FirstOrDefault();
+        //        if (muser == null)
+        //        {
+        //            return false;
+        //        }
 
-                if (action.CompareTo("Moi") == 0)
-                {
-                    string tmp = await createNewOrderAsync(order.name, order.phone, order.persons, order.addressCustomer, order.group.code, order.area!.code, order.addressWater, order.addressContract, order.service!.code, order.type!.code, order.certificates, order.note);
+        //        if (action.CompareTo("Moi") == 0)
+        //        {
+        //            string tmp = await createNewOrderAsync(order.name, order.phone, order.persons, order.addressCustomer, order.group.code, order.area!.code, order.addressWater, order.addressContract, order.service!.code, order.type!.code, order.certificates, order.note);
 
-                }
-                if (action.CompareTo("TN") == 0)
-                {
-                    await setAction(muser.token, code, "XN", "", "", "");
-                    await setAction(muser.token, code, "DTN", "", "", "");
-                }
-                if (action.CompareTo("KS") == 0)
-                {
-                    bool check = await setAssginSurveyOrder(muser.token, code, "CT");
-                }
-                if (action.CompareTo("DL") == 0)
-                {
-                    await setAction(muser.token, code, "HTKS", "", "", "");
-                    bool check = await setAssginWorkerOrder(muser.token, code, "staff");
-                }
-                return true;
-            }
-        }
+        //        }
+        //        if (action.CompareTo("TN") == 0)
+        //        {
+        //            await setAction(muser.token, code, "XN", "", "", "");
+        //            await setAction(muser.token, code, "DTN", "", "", "");
+        //        }
+        //        if (action.CompareTo("KS") == 0)
+        //        {
+        //            bool check = await setAssginSurveyOrder(muser.token, code, "CT");
+        //        }
+        //        if (action.CompareTo("DL") == 0)
+        //        {
+        //            await setAction(muser.token, code, "HTKS", "", "", "");
+        //            bool check = await setAssginWorkerOrder(muser.token, code, "staff");
+        //        }
+        //        return true;
+        //    }
+        //}
 
 
         public class ItemNotifyOrder
@@ -206,7 +206,7 @@ namespace ServerWater2.APIs
                 }
 
                 SqlOrder? m_order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(order) == 0)
-                                                   .Include(s => s.state).Include(s => s.worker)
+                                                   .Include(s => s.state)
                                                    .Include(s => s.service)
                                                    .FirstOrDefault();
                 if (m_order == null)
@@ -246,26 +246,28 @@ namespace ServerWater2.APIs
 
                         break;
                     case "DTN":
+
                         if (m_order.state!.code != 1)
                         {
                             return "";
                         }
-                        if (m_order.manager != null)
+                        if(m_order.manager != null)
                         {
                             return "";
-                        }
-
+                        }    
+                        
                         m_order.manager = m_user;
                         m_order.state = states.Where(s => s.code == 2).FirstOrDefault();
                         m_order.lastestTime = DateTime.Now.ToUniversalTime();
 
                         break;
                     case "PCKS":
+
                         if (m_order.state!.code != 2)
                         {
                             return "";
                         }
-
+                        
                         m_order.survey = m_user;
                         m_order.state = states.Where(s => s.code == 3).FirstOrDefault();
                         m_order.lastestTime = DateTime.Now.ToUniversalTime();
@@ -273,29 +275,36 @@ namespace ServerWater2.APIs
                         person = "2";
 
                         break;
-                    case "KS":
+                    case "PCKSL":
+
                         if (m_order.state!.code > 3)
                         {
                             return "";
                         }
-                        if (m_order.survey == null)
-                        {
-                            m_order.survey = m_user;
-                        }
 
+                        m_order.survey = m_user;
+                        m_order.lastestTime = DateTime.Now.ToUniversalTime();
+                        writeFlag = true;
+                        person = "2";
+
+                        break;
+                    case "KS":
+
+                        if (m_order.state!.code > 3)
+                        {
+                            return "";
+                        }
+                        
                         m_order.state = states.Where(s => s.code == 4).FirstOrDefault();
                         m_order.lastestTime = DateTime.Now.ToUniversalTime();
                         break;
                     case "HTKS":
+
                         if (m_order.state!.code > 4)
                         {
                             return "";
                         }
-                        if(m_order.survey == null)
-                        {
-                            m_order.survey = m_user;
-                        }
-                       
+                        
                         m_order.state = states.Where(s => s.code == 5).FirstOrDefault();
                         m_order.lastestTime = DateTime.Now.ToUniversalTime();
                         writeFlag = true;
@@ -303,15 +312,12 @@ namespace ServerWater2.APIs
 
                         break;
                     case "DPC":
+
                         if(m_order.state!.code > 5)
                         {
                             return "";
                         }    
-                        if(m_order.worker == null)
-                        {
-                            m_order.worker = m_user;
-                        }
-
+                        
                         m_order.worker = m_user;
                         m_order.state = states.Where(s => s.code == 6).FirstOrDefault();
                         m_order.lastestTime = DateTime.Now.ToUniversalTime();
@@ -319,175 +325,54 @@ namespace ServerWater2.APIs
                         person = "3";
 
                         break;
+                    case "PCCVL":
+
+                        if (m_order.state!.code < 5)
+                        {
+                            return "";
+                        }
+
+                        m_order.worker = m_user;
+                        m_order.lastestTime = DateTime.Now.ToUniversalTime();
+                        writeFlag = true;
+                        person = "3";
+
+                        break;
                     case "ABDCV":
-                        
-                        if (m_user.role!.code.CompareTo("staff") == 0)
+
+                        if (m_order.state!.code != 6)
                         {
-                            m_order = m_user.workerOrders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(order) == 0).FirstOrDefault();
-                            if (m_order == null)
-                            {
-                                return "";
-                            }
-                            if (m_order.state!.code != 6)
-                            {
-                                return "";
-                            }
-                        }
-                        else if (m_user.role!.code.CompareTo("manager") == 0)
-                        {
-                            m_order = m_user.managerOrders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(order) == 0).FirstOrDefault();
-                            if (m_order == null)
-                            {
-                                return "";
-                            }
-                            if (m_order.state!.code != 6)
-                            {
-                                return "";
-                            }
-                        }
-                        else
-                        {
-                            m_order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(order) == 0).Include(s => s.state).FirstOrDefault();
-                            if (m_order == null)
-                            {
-                                return "";
-                            }
-                            if (m_order.state!.code != 6)
-                            {
-                                return "";
-                            }
+                            return "";
                         }
 
                         m_order.state = states.Where(s => s.code == 7).FirstOrDefault();
                         m_order.lastestTime = DateTime.Now.ToUniversalTime();
                         break;
                     case "AKTCV":
-                        if (m_user.role!.code.CompareTo("staff") == 0)
+
+                        if (m_order.state!.code != 7)
                         {
-                            m_order = m_user.workerOrders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(order) == 0).FirstOrDefault();
-                            if (m_order == null)
-                            {
-                                return "";
-                            }
-                            if (m_order.state!.code != 7)
-                            {
-                                return "";
-                            }
-                        }
-                        else if (m_user.role!.code.CompareTo("manager") == 0)
-                        {
-                            m_order = m_user.managerOrders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(order) == 0).FirstOrDefault();
-                            if (m_order == null)
-                            {
-                                return "";
-                            }
-                            if (m_order.state!.code != 7)
-                            {
-                                return "";
-                            }
-                        }
-                        else
-                        {
-                            m_order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(order) == 0).Include(s => s.state).FirstOrDefault();
-                            if (m_order == null)
-                            {
-                                return "";
-                            }
-                            if (m_order.state!.code != 7)
-                            {
-                                return "";
-                            }
+                            return "";
                         }
 
                         m_order.state = states.Where(s => s.code == 8).FirstOrDefault();
                         m_order.lastestTime = DateTime.Now.ToUniversalTime();
                         break;
-                    case "NT":                       
-                        if (m_user.role!.code.CompareTo("staff") == 0)
-                        {
-                            m_order = m_user.workerOrders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(order) == 0).FirstOrDefault();
-                            if (m_order == null)
-                            {
-                                return "";
-                            }
-                            if (m_order.state!.code != 8)
-                            {
-                                return "";
-                            }
-                        }
-                        else if (m_user.role!.code.CompareTo("manager") == 0)
-                        {
-                            m_order = m_user.managerOrders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(order) == 0).FirstOrDefault();
-                            if (m_order == null)
-                            {
-                                return "";
-                            }
-                            if (m_order.state!.code != 8)
-                            {
-                                return "";
-                            }
-                        }
-                        else
-                        {
-                            m_order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(order) == 0).Include(s => s.state).Include(s => s.customer).FirstOrDefault();
-                            if (m_order == null)
-                            {
-                                return "";
-                            }
-                            if (m_order.state!.code != 8)
-                            {
-                                return "";
-                            }
-                        }
+                    case "NT":
 
+                        if (m_order.state!.code != 8)
+                        {
+                            return "";
+                        }
 
                         m_order.state = states.Where(s => s.code == 9).FirstOrDefault();
                         m_order.lastestTime = DateTime.Now.ToUniversalTime();
                         break;
                     case "KT":
-                        if (m_user.role!.code.CompareTo("staff") == 0)
+
+                        if (m_order.state!.code != 9)
                         {
-                            m_order = m_user.workerOrders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(order) == 0).FirstOrDefault();
-                            if (m_order == null)
-                            {
-                                return "";
-                            }
-                            if (m_order.state!.code != 9)
-                            {
-                                return "";
-                            }
-                        }
-                        else if (m_user.role!.code.CompareTo("manager") == 0)
-                        {
-                            m_order = m_user.managerOrders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(order) == 0).FirstOrDefault();
-                            if (m_order == null)
-                            {
-                                return "";
-                            }
-                            if (m_order.state!.code != 9)
-                            {
-                                return "";
-                            }
-                            if (m_order.customer == null)
-                            {
-                                return "";
-                            }
-                        }
-                        else
-                        {
-                            m_order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(order) == 0).Include(s => s.state).Include(s => s.customer).FirstOrDefault();
-                            if (m_order == null)
-                            {
-                                return "";
-                            }
-                            if (m_order.state!.code != 9)
-                            {
-                                return "";
-                            }
-                            if (m_order.customer == null)
-                            {
-                                return "";
-                            }
+                            return "";
                         }
 
                         m_order.state = states.Where(s => s.code == 10).FirstOrDefault();
@@ -495,29 +380,10 @@ namespace ServerWater2.APIs
                         m_order.isFinish = true;
                         break;
                     case "DH":
-                        if (m_user.role!.code.CompareTo("manager") == 0)
+
+                        if (m_order.state!.code > 3)
                         {
-                            m_order = m_user.managerOrders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(order) == 0).FirstOrDefault();
-                            if (m_order == null)
-                            {
-                                return "";
-                            }
-                            if (m_order.state!.code > 3)
-                            {
-                                return "";
-                            }
-                        }
-                        else
-                        {
-                            m_order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(order) == 0).Include(s => s.state).FirstOrDefault();
-                            if (m_order == null)
-                            {
-                                return "";
-                            }
-                            if (m_order.state!.code > 3)
-                            {
-                                return "";
-                            }
+                            return "";
                         }
 
                         m_order.state = states.Where(s => s.code == 11).FirstOrDefault();
@@ -910,10 +776,6 @@ namespace ServerWater2.APIs
                     {
                         return false;
                     }
-                    if (order.state!.code > 3)
-                    {
-                        return false;
-                    }
                     if (order.manager == null)
                     {
                         await setAction(token, code, "DTN", "", "", "");
@@ -929,10 +791,7 @@ namespace ServerWater2.APIs
                     {
                         return false;
                     }
-                    if (order.state!.code > 3)
-                    {
-                        return false;
-                    }
+                    
 
                 }
                 else
@@ -942,10 +801,7 @@ namespace ServerWater2.APIs
                     {
                         return false;
                     }
-                    if (order.state!.code > 3)
-                    {
-                        return false;
-                    }
+                    
                 }
 
                 SqlUser? servey = context.users!.Where(s => s.isdeleted == false && s.user.CompareTo(user) == 0).Include(s => s.role).FirstOrDefault();
@@ -953,7 +809,12 @@ namespace ServerWater2.APIs
                 {
                     return false;
                 }
-                await setAction(servey.token, code, "PCKS", "", "", "");
+                string tmp = await setAction(servey.token, code, "PCKS", "", "", "");
+                if(string.IsNullOrEmpty(tmp))
+                {
+                    return false;
+                }
+
                 return true;
             }
         }
@@ -1042,6 +903,7 @@ namespace ServerWater2.APIs
                 return false;
             }
         }
+
         public async Task<string> addImageSerrveyAsync(string token, string code, byte[] data)
         {
             try
@@ -1098,6 +960,7 @@ namespace ServerWater2.APIs
                 return "";
             }
         }
+
         public async Task<bool> removeImageServeyAsync(string token, string order, string code)
         {
             try
@@ -1146,6 +1009,7 @@ namespace ServerWater2.APIs
                 return false;
             }
         }
+
         public async Task<bool> removeImageFinishServeyAsync(string token, string order, string code)
         {
             try
@@ -1203,6 +1067,85 @@ namespace ServerWater2.APIs
             }
         }
 
+        public async Task<bool> replaceAssignOrderAsync(string token, string code, string user)
+        {
+            using (DataContext context = new DataContext())
+            {
+                SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.managerOrders!).ThenInclude(s => s.state).Include(s => s.receiverOrders!).ThenInclude(s => s.state).Include(s => s.role).FirstOrDefault();
+                if (m_user == null)
+                {
+                    return false;
+                }
+
+                SqlOrder? order = null;
+
+
+                if (m_user.role!.code.CompareTo("admin") == 0)
+                {
+                    order = context.orders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).Include(s => s.state).Include(s => s.service).FirstOrDefault();
+                    if (order == null)
+                    {
+                        return false;
+                    }
+                }
+                else if (m_user.role!.code.CompareTo("receiver") == 0)
+                {
+
+                    order = m_user.receiverOrders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).FirstOrDefault();
+                    if (order == null)
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    order = m_user.managerOrders!.Where(s => s.isDelete == false && s.isFinish == false && s.code.CompareTo(code) == 0).FirstOrDefault();
+                    if (order == null)
+                    {
+                        return false;
+                    }
+                }
+
+                SqlUser? staff = context.users!.Where(s => s.isdeleted == false && s.user.CompareTo(user) == 0).Include(s => s.role).FirstOrDefault();
+                if (staff == null)
+                {
+                    return false;
+                }
+
+                if (order.state!.code < 4)
+                {
+                    if (staff.role!.code.CompareTo("staff") == 0)
+                    {
+                        return false;
+                    }
+
+                    string tmp = await setAction(staff.token, code, "PCKSL", "", "", "");
+                    if (string.IsNullOrEmpty(tmp))
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (staff.role!.code.CompareTo("survey") == 0)
+                    {
+                        return false;
+                    }
+
+                    string tmp = await setAction(staff.token, code, "PCCVL", "", "", "");
+                    if (string.IsNullOrEmpty(tmp))
+                    {
+                        return false;
+                    }
+                }
+
+                    
+
+                return true;
+            }
+
+        }
+
         public async Task<bool> setAssginWorkerOrder(string token, string code, string user)
         {
             using (DataContext context = new DataContext())
@@ -1223,10 +1166,6 @@ namespace ServerWater2.APIs
                     {
                         return false;
                     }
-                    if (order.state!.code > 5)
-                    {
-                        return false;
-                    }
                     if (order.manager == null)
                     {
                         await setAction(token, code, "DTN", "", "", "");
@@ -1242,11 +1181,6 @@ namespace ServerWater2.APIs
                     {
                         return false;
                     }
-                    if (order.state!.code > 5)
-                    {
-                        return false;
-                    }
-
                 }
                 else
                 {
@@ -1266,12 +1200,18 @@ namespace ServerWater2.APIs
                 {
                     return false;
                 }
-                await setAction(worker.token, code, "DPC", "", "", "");
+
+                string tmp = await setAction(worker.token, code, "DPC", "", "", "");
+                if(string.IsNullOrEmpty(tmp))
+                {
+                    return false;
+                }    
+
                 return true;
             }
         }
 
-        public async Task<string> addImageWorkingAsync(string token, string code, byte[] data)
+        public async Task<string> addImageAsync(string token, string code, byte[] data)
         {
             try
             {
@@ -1335,7 +1275,7 @@ namespace ServerWater2.APIs
             }
         }
 
-        public async Task<bool> removeImageWorkingAsync(string token, string order, string code)
+        public async Task<bool> removeImageAsync(string token, string order, string code)
         {
             try
             {
@@ -1391,250 +1331,6 @@ namespace ServerWater2.APIs
                 return false;
             }
         }
-
-        public async Task<string> addImageFinishAsync(string token, string code, byte[] data)
-        {
-            try
-            {
-                string codefile = "";
-                SqlUser? user = null;
-                SqlLogOrder? m_log = null;
-                long id = long.Parse(code);
-                if (id > 0)
-                {
-                    using (DataContext context = new DataContext())
-                    {
-                        user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).FirstOrDefault();
-                        if (user == null)
-                        {
-                            return "";
-                        }
-
-                        m_log = context.logs!.Where(s => s.ID == id).Include(s => s.order).ThenInclude(s => s!.state).FirstOrDefault();
-                        if (m_log == null)
-                        {
-                            return "";
-                        }
-                        if (m_log.order!.state!.code > 6)
-                        {
-                            return "";
-                        }
-
-                        codefile = await Program.api_file.saveFileAsync(DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss.image"), data);
-                        if (string.IsNullOrEmpty(codefile))
-                        {
-                            return "";
-                        }
-                        if (m_log.images == null)
-                        {
-                            m_log.images = new List<string>();
-                        }
-                        m_log.images.Add(codefile);
-
-                        int rows = await context.SaveChangesAsync();
-                        if (rows > 0)
-                        {
-                            return codefile;
-                        }
-                        else
-                        {
-                            return "";
-                        }
-                    }
-                }
-                else
-                {
-                    return "";
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                return "";
-            }
-
-        }
-
-        public async Task<bool> removeImageFinishAsync(string token, string order, string code)
-        {
-            try
-            {
-                long id = long.Parse(order);
-                if (id > 0)
-                {
-                    using (DataContext context = new DataContext())
-                    {
-                        SqlUser? user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).FirstOrDefault();
-                        if (user == null)
-                        {
-                            return false;
-                        }
-
-                        SqlLogOrder? m_log = context.logs!.Include(s => s.order).Where(s => s.ID == id).Include(s => s.order).ThenInclude(s => s!.state).OrderByDescending(s => s.time).FirstOrDefault();
-                        if (m_log == null)
-                        {
-                            return false;
-                        }
-                        if (m_log.order!.state!.code > 6)
-                        {
-                            return false;
-                        }
-
-                        if (string.IsNullOrEmpty(code))
-                        {
-                            return false;
-                        }
-                        if (m_log.images != null)
-                        {
-                            m_log.images.Remove(code);
-                        }
-
-                        int rows = await context.SaveChangesAsync();
-                        if (rows > 0)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                }
-                else
-                {
-                    return false;
-                }
-
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
-        }
-
-        public async Task<string> addImageSignAsync(string token, string code, byte[] data)
-        {
-            try
-            {
-                string codefile = "";
-                SqlUser? user = null;
-                SqlLogOrder? m_log = null;
-                long id = long.Parse(code);
-                if (id > 0)
-                {
-                    using (DataContext context = new DataContext())
-                    {
-                        user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).FirstOrDefault();
-                        if (user == null)
-                        {
-                            return "";
-                        }
-
-                        m_log = context.logs!.Where(s => s.ID == id).Include(s => s.order).ThenInclude(s => s!.state).FirstOrDefault();
-                        if (m_log == null)
-                        {
-                            return "";
-                        }
-                        if (m_log.order!.state!.code < 3)
-                        {
-                            return "";
-                        }
-                        //Console.WriteLine(data.Length);
-                        codefile = await Program.api_file.saveFileAsync(DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss.image"), data);
-                        if (string.IsNullOrEmpty(codefile))
-                        {
-                            return "";
-                        }
-                        if (m_log.images == null)
-                        {
-                            m_log.images = new List<string>();
-                        }
-                        m_log.images.Add(codefile);
-
-                        // bool flag = await setStateOrder(user.ID, code, "Add image before", m_log.latitude, m_log.longitude);
-                        int rows = await context.SaveChangesAsync();
-                        if (rows > 0)
-                        {
-                            return codefile;
-                        }
-                        else
-                        {
-                            return "";
-                        }
-                    }
-                }
-                else
-                {
-                    return "";
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                return "";
-            }
-
-        }
-
-        public async Task<bool> removeImageSignAsync(string token, string order, string code)
-        {
-            try
-            {
-                long id = long.Parse(order);
-                if (id > 0)
-                {
-                    using (DataContext context = new DataContext())
-                    {
-                        SqlUser? user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).FirstOrDefault();
-                        if (user == null)
-                        {
-                            return false;
-                        }
-
-                        SqlLogOrder? m_log = context.logs!.Include(s => s.order).Where(s => s.ID == id).Include(s => s.order).ThenInclude(s => s!.state).OrderByDescending(s => s.time).FirstOrDefault();
-                        if (m_log == null)
-                        {
-                            return false;
-                        }
-                        if (m_log.order!.state!.code < 3)
-                        {
-                            return false;
-                        }
-
-                        if (string.IsNullOrEmpty(code))
-                        {
-                            return false;
-                        }
-                        if (m_log.images != null)
-                        {
-                            m_log.images.Remove(code);
-                        }
-
-                        int rows = await context.SaveChangesAsync();
-                        if (rows > 0)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                }
-                else
-                {
-                    return false;
-                }
-
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
-        }
-
 
         public class ItemUser
         {
@@ -2014,16 +1710,48 @@ namespace ServerWater2.APIs
             {
                 List<SqlCertificate> sqlCertificates = context.certificates!.Where(s => s.isdeleted == false).ToList();
 
-                SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role)
-                                                .Include(s => s.workerOrders!).ThenInclude(s => s.receiver).Include(s => s.workerOrders!).ThenInclude(s => s.manager).Include(s => s.workerOrders!).ThenInclude(s => s.customer).Include(s => s.workerOrders!).ThenInclude(s => s.type).Include(s => s.workerOrders!).ThenInclude(s => s.service).Include(s => s.workerOrders!).ThenInclude(s => s.state).Include(s => s.workerOrders!).ThenInclude(s => s.group).Include(s => s.workerOrders!).ThenInclude(s => s.area)
-                                                .Include(s => s.surveyOrders!).ThenInclude(s => s.receiver).Include(s => s.surveyOrders!).ThenInclude(s => s.manager).Include(s => s.surveyOrders!).ThenInclude(s => s.customer).Include(s => s.surveyOrders!).ThenInclude(s => s.type).Include(s => s.surveyOrders!).ThenInclude(s => s.service).Include(s => s.surveyOrders!).ThenInclude(s => s.state).Include(s => s.surveyOrders!).ThenInclude(s => s.group).Include(s => s.surveyOrders!).ThenInclude(s => s.area)
+                SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0)
+                                                .Include(s => s.role)
+                                                .Include(s => s.workerOrders!).ThenInclude(s => s.receiver)
+                                                .Include(s => s.workerOrders!).ThenInclude(s => s.manager)
+                                                .Include(s => s.workerOrders!).ThenInclude(s => s.customer)
+                                                .Include(s => s.workerOrders!).ThenInclude(s => s.type)
+                                                .Include(s => s.workerOrders!).ThenInclude(s => s.service)
+                                                .Include(s => s.workerOrders!).ThenInclude(s => s.state)
+                                                .Include(s => s.workerOrders!).ThenInclude(s => s.group)
+                                                .Include(s => s.workerOrders!).ThenInclude(s => s.area)
+                                                .Include(s => s.surveyOrders!).ThenInclude(s => s.receiver)
+                                                .Include(s => s.surveyOrders!).ThenInclude(s => s.manager)
+                                                .Include(s => s.surveyOrders!).ThenInclude(s => s.customer)
+                                                .Include(s => s.surveyOrders!).ThenInclude(s => s.type)
+                                                .Include(s => s.surveyOrders!).ThenInclude(s => s.service)
+                                                .Include(s => s.surveyOrders!).ThenInclude(s => s.state)
+                                                .Include(s => s.surveyOrders!).ThenInclude(s => s.group)
+                                                .Include(s => s.surveyOrders!).ThenInclude(s => s.area)
                                                 .FirstOrDefault();
                 if (m_user == null)
                 {
                     return new List<ItemOrder>();
                 }
 
-                List<SqlOrder> orders = context.orders!.Where(s => DateTime.Compare(m_begin.ToUniversalTime(), s.createdTime) <= 0 && DateTime.Compare(m_end.ToUniversalTime(), s.createdTime) > 0)
+                
+                //C)
+                List<SqlOrder> mOrders = new List<SqlOrder>();
+                if (m_user.role!.code.CompareTo("staff") == 0 || m_user.role.code.CompareTo("survey") == 0)
+                {
+                    if(m_user.role!.code.CompareTo("staff") == 0)
+                    {
+                        mOrders = m_user.workerOrders!.Where(s => DateTime.Compare(m_begin.ToUniversalTime(), s.createdTime) <= 0 && DateTime.Compare(m_end.ToUniversalTime(), s.createdTime) > 0 && s.isDelete == false).OrderByDescending(s => s.createdTime).ToList();
+                    }
+                    else
+                    {
+                        mOrders = m_user.surveyOrders!.Where(s => DateTime.Compare(m_begin.ToUniversalTime(), s.createdTime) <= 0 && DateTime.Compare(m_end.ToUniversalTime(), s.createdTime) > 0 && s.isDelete == false).OrderByDescending(s => s.createdTime).ToList();
+                    }
+
+                }
+                else
+                {
+                    List<SqlOrder> orders = context.orders!.Where(s => DateTime.Compare(m_begin.ToUniversalTime(), s.createdTime) <= 0 && DateTime.Compare(m_end.ToUniversalTime(), s.createdTime) > 0)
                                                        .Include(s => s.customer)
                                                        .Include(s => s.receiver)
                                                        .Include(s => s.manager)
@@ -2036,31 +1764,14 @@ namespace ServerWater2.APIs
                                                        .Include(s => s.area)
                                                        .OrderByDescending(s => s.createdTime)
                                                        .ToList();
-                if (orders.Count < 1)
-                {
-                    return new List<ItemOrder>();
-                }
-                //Console.WriteLine("Version : 22-05-2023");
-                
-                List<SqlOrder> mOrders = new List<SqlOrder>();
-                if (m_user.role!.code.CompareTo("staff") == 0 || m_user.role.code.CompareTo("survey") == 0)
-                {
-                    if(m_user.role!.code.CompareTo("staff") == 0)
+                    if (orders.Count < 1)
                     {
-                        mOrders = m_user.workerOrders!.Where(s => DateTime.Compare(m_begin.ToUniversalTime(), s.createdTime) <= 0 && DateTime.Compare(m_end.ToUniversalTime(), s.createdTime) > 0 && s.isDelete == false).OrderByDescending(s => s.createdTime).ToList();
-                    }
-                    else
-                    {
-                        mOrders = m_user.surveyOrders!.Where(s => DateTime.Compare(m_begin.ToUniversalTime(), s.createdTime) <= 0 && DateTime.Compare(m_end.ToUniversalTime(), s.createdTime) > 0 && s.isDelete == false).OrderByDescending(s => s.createdTime).ToList();
-
+                        return new List<ItemOrder>();
                     }
 
-                }
-                else
-                {
                     if (m_user.role!.code.CompareTo("manager") == 0)
                     {
-                        mOrders = orders.Where(s => s.service!.code.CompareTo("LM") == 0 && s.state!.code != 0).ToList();
+                        mOrders = orders.Where(s => s.service!.code.CompareTo("LM") == 0 && s.state!.code > 0).ToList();
                     }
                     else
                     {

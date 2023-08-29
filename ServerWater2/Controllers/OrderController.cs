@@ -200,7 +200,7 @@ namespace ServerWater2.Controllers
 
 
         [HttpPut]
-        [Route("{id}/addImageWorkOrder")]
+        [Route("{id}/addImageOrder")]
         public async Task<IActionResult> AddImageWorkOrder([FromHeader] string token, string id, IFormFile image)
         {
             long ID = Program.api_user.checkUser(token);
@@ -209,7 +209,7 @@ namespace ServerWater2.Controllers
                 using (MemoryStream ms = new MemoryStream())
                 {
                     image.CopyTo(ms);
-                    string tmp = await Program.api_order.addImageWorkingAsync(token, id, ms.ToArray());
+                    string tmp = await Program.api_order.addImageAsync(token, id, ms.ToArray());
                     if (!string.IsNullOrEmpty(tmp))
                     {
                         return Ok(tmp);
@@ -229,13 +229,13 @@ namespace ServerWater2.Controllers
         }
 
         [HttpDelete]
-        [Route("{id}/removeImageWorkOrder")]
+        [Route("{id}/removeImageOrder")]
         public async Task<IActionResult> RemoveImageWorkOrder([FromHeader] string token, string id, string image)
         {
             long ID = Program.api_user.checkUser(token);
             if (ID >= 0)
             {
-                bool flag = await Program.api_order.removeImageWorkingAsync(token, id, image);
+                bool flag = await Program.api_order.removeImageAsync(token, id, image);
                 if (flag)
                 {
                     return Ok();
@@ -251,111 +251,6 @@ namespace ServerWater2.Controllers
                 return Unauthorized();
             }
 
-        }
-
-        [HttpPut]
-        [Route("{id}/addImageFinishOrder")]
-        public async Task<IActionResult> AddImageFinishOrder([FromHeader] string token, string id, IFormFile image)
-        {
-            long ID = Program.api_user.checkUser(token);
-            if (ID >= 0)
-            {
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    image.CopyTo(ms);
-                    string tmp = await Program.api_order.addImageFinishAsync(token, id, ms.ToArray());
-                    if (!string.IsNullOrEmpty(tmp))
-                    {
-                        return Ok(tmp);
-                    }
-                    else
-                    {
-                        return BadRequest();
-                    }
-                }
-            }
-            else
-            {
-                return Unauthorized();
-            }
-
-        }
-
-        [HttpDelete]
-        [Route("{id}/removeImageFinishOrder")]
-        public async Task<IActionResult> RemoveImageFinishOrder([FromHeader] string token, string id, string image)
-        {
-            long ID = Program.api_user.checkUser(token);
-            if (ID >= 0)
-            {
-                bool flag = await Program.api_order.removeImageFinishAsync(token, id, image);
-                if (flag)
-                {
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest();
-                }
-
-            }
-            else
-            {
-                return Unauthorized();
-            }
-
-        }
-
-        [HttpPut]
-        [Route("{id}/addImageSign")]
-        public async Task<IActionResult> addImageCustomer([FromHeader] string token, string id, IFormFile image)
-        {
-            long ID = Program.api_user.checkUser(token);
-            if (ID >= 0)
-            {
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    image.CopyTo(ms);
-                    string tmp = await Program.api_order.addImageSignAsync(token, id, ms.ToArray());
-                    if (!string.IsNullOrEmpty(tmp))
-                    {
-                        return Ok(tmp);
-
-                    }
-                    else
-                    {
-                        return BadRequest();
-                    }
-                }
-            }
-            else
-            {
-                return Unauthorized();
-            }
-        }
-
-        [HttpDelete]
-        [Route("{id}/removeImageSign")]
-        public async Task<IActionResult> removeImageCustomer([FromHeader] string token, string id, string image)
-        {
-            long ID = Program.api_user.checkUser(token);
-            if (ID >= 0)
-            {
-                bool flag = await Program.api_order.removeImageSignAsync(token, id, image);
-                if (flag)
-                {
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest();
-                }
-
-            }
-            else
-            {
-                return Unauthorized();
-            }
         }
 
         [HttpPut]
@@ -452,6 +347,30 @@ namespace ServerWater2.Controllers
 
         }
 
+        [HttpPut]
+        [Route("{code}/setReplaceAssginOrder")]
+        public async Task<IActionResult> SetReplaceAssginOrder([FromHeader] string token, string code, string user)
+        {
+            long id = Program.api_user.checkSystem(token);
+            if (id >= 0)
+            {
+                bool flag = await Program.api_order.replaceAssignOrderAsync(token, code, user);
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            else
+            {
+                return Unauthorized();
+            }
+
+        }
         [HttpGet]
         [Route("getListService")]
         public IActionResult GetListService()

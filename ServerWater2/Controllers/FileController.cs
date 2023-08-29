@@ -188,7 +188,7 @@ namespace ServerWater2.Controllers
         [Route("getListItems")]
         public IActionResult getListAction([FromHeader] string token)
         {
-            long id = Program.api_user.checkSystem(token);
+            long id = Program.api_user.checkUser(token);
             if (id >= 0)
             {
                 return Ok(Program.api_calc.getList());
@@ -204,7 +204,7 @@ namespace ServerWater2.Controllers
         [Route("createItems")]
         public async Task<IActionResult> CreateActionAsync([FromHeader] string token, ItemHttpCalcItems item)
         {
-            long id = Program.api_user.checkSystem(token);
+            long id = Program.api_user.checkUser(token);
             if (id >= 0)
             {
                 bool flag = await Program.api_calc.createAsync(item.code, item.name, item.des, item.unit);

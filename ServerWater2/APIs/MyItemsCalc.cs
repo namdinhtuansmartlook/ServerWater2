@@ -301,6 +301,7 @@ namespace ServerWater2.APIs
         {
             public string code { get; set; } = "";
             public string name { get; set; } = "";
+            public string des { get; set; } = "";
             public string unit { get; set; } = "";
         }
 
@@ -317,6 +318,7 @@ namespace ServerWater2.APIs
                         ItemCalcItems tmp = new ItemCalcItems();
                         tmp.code = item.code;
                         tmp.name = item.name;
+                        tmp.des = item.des;
                         tmp.unit = item.unit;
 
                         list.Add(tmp);
