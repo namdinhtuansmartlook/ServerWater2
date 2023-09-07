@@ -1931,6 +1931,208 @@ namespace ServerWater2.APIs
             }
 
         }
+
+        public List<ItemOrder> getListOrderByGroups(string token, DateTime begin, DateTime end)
+        {
+            DateTime m_begin = new DateTime(begin.Year, begin.Month, begin.Day, 0, 0, 0);
+            DateTime m_end = new DateTime(end.Year, end.Month, end.Day, 23, 59, 59);
+
+            List<ItemOrder> list = new List<ItemOrder>();
+
+            using (DataContext context = new DataContext())
+            {
+                List<SqlCertificate> sqlCertificates = context.certificates!.Where(s => s.isdeleted == false).ToList();
+
+                SqlUser? m_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0)
+                                                .Include(s => s.groups)
+                                                .FirstOrDefault();
+                if (m_user == null)
+                {
+                    return new List<ItemOrder>();
+                }
+
+
+                //C)
+                List<SqlOrder> mOrders = new List<SqlOrder>();
+                mOrders = context.orders!.Where(s => DateTime.Compare(m_begin.ToUniversalTime(), s.createdTime) <= 0 && DateTime.Compare(m_end.ToUniversalTime(), s.createdTime) > 0)
+                                                       .Include(s => s.customer)
+                                                       .Include(s => s.receiver)
+                                                       .Include(s => s.manager)
+                                                       .Include(s => s.survey)
+                                                       .Include(s => s.worker)
+                                                       .Include(s => s.service)
+                                                       .Include(s => s.type)
+                                                       .Include(s => s.state)
+                                                       .Include(s => s.group)
+                                                       .Include(s => s.area)
+                                                       .OrderByDescending(s => s.createdTime)
+                                                       .ToList();
+
+                if (api_user.checkAdmin(token) < 0) {
+                    List<SqlGroup> grps = m_user.groups;
+                    if (grps == null || grps.Count() < 1) return new List<ItemOrder>();
+                    /*mOrders = mOrders.Where(ord => grps.Where(grp => ord.group.code.CompareTo(grp.code) == 0).Count() > 0).ToList();*/
+                    mOrders = mOrders.Where(ord => grps.Any(grp => ord.group.code.CompareTo(grp.code) == 0)).ToList();
+                }
+
+
+                if (mOrders.Count < 1)
+                {
+                    return new List<ItemOrder>();
+                }
+
+                foreach (SqlOrder item in mOrders)
+                {
+                    ItemOrder tmp = new ItemOrder();
+
+                    tmp.code = item.code;
+                    tmp.group.code = item.group!.code;
+                    tmp.group.name = item.group!.name;
+                    tmp.area.code = item.area!.code;
+                    tmp.area.name = item.area!.name;
+                    tmp.profile.name = item.name;
+                    tmp.profile.phone = item.phone;
+                    tmp.profile.persons = item.persons;
+                    tmp.profile.addressCustomer = item.addressCustomer;
+                    tmp.profile.addressWater = item.addressWater;
+                    tmp.profile.addressContract = item.addressContract;
+                    if (item.customer != null)
+                    {
+                        if (item.customer.isdeleted == false)
+                        {
+                            ItemCustomer customer = new ItemCustomer();
+                            customer.maDB = item.customer.code;
+                            customer.route = string.IsNullOrEmpty(item.customer.route) ? "Coming Soon !!!" : item.customer.route;
+                            customer.sdt = item.customer.phone;
+                            customer.tenkh = item.customer.name;
+                            customer.diachi = item.customer.address;
+                            customer.note = item.customer.note;
+                            customer.x = item.customer.latitude;
+                            customer.y = item.customer.longitude;
+                            if (item.customer.images != null)
+                            {
+                                customer.images = item.customer.images;
+                            }
+
+                            tmp.customer = customer;
+                        }
+
+                    }
+
+                    if (item.certificates != null)
+                    {
+                        if (!string.IsNullOrEmpty(item.document))
+                        {
+                            List<ItemCertificate>? certificates = JsonConvert.DeserializeObject<List<ItemCertificate>>(item.document);
+                            if (certificates != null)
+                            {
+                                foreach (ItemCertificate m_item in certificates)
+                                {
+                                    tmp.filesCustomer.Add(m_item);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (sqlCertificates.Count > 0)
+                            {
+                                foreach (string m_item in item.certificates)
+                                {
+                                    SqlCertificate? temp = sqlCertificates.Where(s => s.code.CompareTo(m_item) == 0).FirstOrDefault();
+                                    if (temp == null)
+                                    {
+                                        continue;
+                                    }
+
+                                    ItemCertificate myItem = new ItemCertificate();
+                                    myItem.code = temp.code;
+                                    myItem.name = temp.name;
+
+                                    tmp.filesCustomer.Add(myItem);
+                                }
+                            }
+                        }
+                    }
+
+                    if (item.receiver != null)
+                    {
+                        ItemUser receiver = new ItemUser();
+                        receiver.user = item.receiver.user;
+                        receiver.displayName = item.receiver.displayName;
+                        receiver.numberPhone = item.receiver.phoneNumber;
+
+                        tmp.receiver = receiver;
+                    }
+
+                    if (item.manager != null)
+                    {
+                        ItemUser manager = new ItemUser();
+                        manager.user = item.manager.user;
+                        manager.displayName = item.manager.displayName;
+                        manager.numberPhone = item.manager.phoneNumber;
+
+                        tmp.manager = manager;
+                    }
+
+                    if (item.survey != null)
+                    {
+                        ItemUser survey = new ItemUser();
+                        survey.user = item.survey.user;
+                        survey.displayName = item.survey.displayName;
+                        survey.numberPhone = item.survey.phoneNumber;
+
+                        tmp.survey = survey;
+                    }
+
+                    if (item.worker != null)
+                    {
+                        ItemUser worker = new ItemUser();
+                        worker.user = item.worker.user;
+                        worker.displayName = item.worker.displayName;
+                        worker.numberPhone = item.worker.phoneNumber;
+
+                        tmp.worker = worker;
+                    }
+
+                    tmp.note = item.note;
+                    if (item.type != null)
+                    {
+                        ItemType type = new ItemType();
+
+                        type.code = item.type.code;
+                        type.name = item.type.name;
+                        type.des = item.type.des;
+                        tmp.type = type;
+                    }
+
+                    if (item.service != null)
+                    {
+                        ItemService service = new ItemService();
+                        service.code = item.service.code;
+                        service.name = item.service.name;
+                        service.des = item.service.des;
+                        tmp.service = service;
+                    }
+                    if (item.state != null)
+                    {
+                        ItemStateOrder state = new ItemStateOrder();
+                        state.code = item.state.code;
+                        state.name = item.state.name;
+                        state.des = item.state.des;
+                        tmp.state = state;
+                    }
+
+                    tmp.action = getActionUpdate(item.code);
+                    //tmp.logActions.Add(m_log);
+                    tmp.createTime = item.createdTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
+                    tmp.lastestTime = item.lastestTime.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss");
+
+                    list.Add(tmp);
+                }
+                return list;
+            }
+
+        }
         public class ItemLogOrder
         {
             public ItemInfoOrder order { get; set; } = new ItemInfoOrder();
