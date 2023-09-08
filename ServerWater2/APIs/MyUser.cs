@@ -483,6 +483,8 @@ namespace ServerWater2.APIs
             public string avatar { get; set; } = "";
             public string des { get; set; } = "";
             public string role { get; set; } = "";
+
+            public List<GroupItem> groups { get; set; }
         }
 
         public List<ItemUser> listUser(string token)
@@ -493,7 +495,10 @@ namespace ServerWater2.APIs
             }
             using (DataContext context = new DataContext())
             {
-                SqlUser? own_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role).FirstOrDefault();
+                SqlUser? own_user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0)
+                    .Include(s => s.role)
+                    .Include(s => s.groups)
+                    .FirstOrDefault();
                 if (own_user == null)
                 {
                     return new List<ItemUser>();
@@ -502,11 +507,15 @@ namespace ServerWater2.APIs
 
                 if (own_user.role!.code.CompareTo("admin") == 0)
                 {
-                    users = context.users!.Where(s => s.isdeleted == false).Include(s => s.role).ToList();
+                    users = context.users!.Where(s => s.isdeleted == false)
+                        .Include(s => s.groups)
+                        .Include(s => s.role).ToList();
                 }
                 else
                 {
-                    users = context.users!.Include(s => s.role).Where(s => s.isdeleted == false && s.role!.code.CompareTo("admin") != 0).Include(s => s.role).ToList();
+                    users = context.users!.Include(s => s.role).Where(s => s.isdeleted == false && s.role!.code.CompareTo("admin") != 0)
+                        .Include(s => s.groups)
+                        .Include(s => s.role).ToList();
                 }
                 
                 List<ItemUser> items = new List<ItemUser>();
@@ -520,6 +529,16 @@ namespace ServerWater2.APIs
                     item.numberPhone = user.phoneNumber;
                     item.avatar = user.avatar;
                     item.role = user.role!.name;
+
+                    List<GroupItem> grps = new List<GroupItem>();
+                    foreach (var x in user.groups) { 
+                        GroupItem grp = new GroupItem();
+                        grp.code = x.code;
+                        grp.name = x.name;
+
+                        grps.Add(grp);
+                    }
+                    item.groups = grps;
 
                     items.Add(item);
                 }
