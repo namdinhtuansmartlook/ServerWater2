@@ -48,7 +48,7 @@ namespace ServerWater2.Controllers
         [Route("createUser")]
         public async Task<IActionResult> CreateUserAsync([FromHeader] string token, HttpItemUser user)
         {
-            long id = Program.api_user.checkSystem(token);
+            long id = Program.api_user.checkOnlyAdmin(token);
             if (id >= 0)
             {
                 bool flag = await Program.api_user.createUserAsync(token, user.user, user.username, user.password, user.displayName, user.numberPhone, user.des, user.role);

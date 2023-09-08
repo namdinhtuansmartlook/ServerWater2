@@ -179,6 +179,24 @@ namespace ServerWater2.APIs
             }
         }
 
+        public long checkOnlyAdmin(string token)
+        {
+            using (DataContext context = new DataContext())
+            {
+                SqlUser? user = context.users!.Where(s => s.isdeleted == false && s.token.CompareTo(token) == 0).Include(s => s.role).FirstOrDefault();
+                if (user == null)
+                {
+                    return -1;
+                }
+                if (user.role!.code.CompareTo("admin") == 0)
+                {
+                    return user.ID;
+                }
+
+                return -1;
+            }
+        }
+
         public long checkSystem(string token)
         {
             using (DataContext context = new DataContext())
