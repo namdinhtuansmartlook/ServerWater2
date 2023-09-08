@@ -13,3 +13,5 @@
 2023-09-08 09:45:18.553 +07:00 [INF] Connected to Server at : 9/8/2023 9:45:18 AM with : Host=192.168.1.30:30000;Database=db_stvg_ServerWater2;Username=postgres;Password=stvg 
 2023-09-08 09:48:27.973 +07:00 [INF] Connected to Server at : 9/8/2023 9:48:27 AM with : Host=192.168.1.30:30000;Database=db_stvg_ServerWater2;Username=postgres;Password=stvg 
 2023-09-08 09:59:02.233 +07:00 [INF] Connected to Server at : 9/8/2023 9:59:02 AM with : Host=192.168.1.30:30000;Database=db_stvg_ServerWater2;Username=postgres;Password=stvg 
+2023-09-08 10:14:24.967 +07:00 [INF] Connected to Server at : 9/8/2023 10:14:24 AM with : Host=192.168.1.30:30000;Database=db_stvg_ServerWater2;Username=postgres;Password=stvg 
+2023-09-08 10:17:39.010 +07:00 [INF] Connected to Server at : 9/8/2023 10:17:38 AM with : Host=192.168.1.30:30000;Database=db_stvg_ServerWater2;Username=postgres;Password=stvg 
