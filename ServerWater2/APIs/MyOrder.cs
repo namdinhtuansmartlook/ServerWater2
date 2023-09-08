@@ -1953,28 +1953,56 @@ namespace ServerWater2.APIs
 
 
                 //C)
-                List<SqlOrder> mOrders = new List<SqlOrder>();
-                mOrders = context.orders!.Where(s => DateTime.Compare(m_begin.ToUniversalTime(), s.createdTime) <= 0 && DateTime.Compare(m_end.ToUniversalTime(), s.createdTime) > 0)
-                                                       .Include(s => s.customer)
-                                                       .Include(s => s.receiver)
-                                                       .Include(s => s.manager)
-                                                       .Include(s => s.survey)
-                                                       .Include(s => s.worker)
-                                                       .Include(s => s.service)
-                                                       .Include(s => s.type)
-                                                       .Include(s => s.state)
-                                                       .Include(s => s.group)
-                                                       .Include(s => s.area)
-                                                       .OrderByDescending(s => s.createdTime)
-                                                       .ToList();
+                /* List<SqlOrder> mOrders = new List<SqlOrder>();
+                 mOrders = context.orders!.Where(s => DateTime.Compare(m_begin.ToUniversalTime(), s.createdTime) <= 0 && DateTime.Compare(m_end.ToUniversalTime(), s.createdTime) > 0)
+                                                        .Include(s => s.customer)
+                                                        .Include(s => s.receiver)
+                                                        .Include(s => s.manager)
+                                                        .Include(s => s.survey)
+                                                        .Include(s => s.worker)
+                                                        .Include(s => s.service)
+                                                        .Include(s => s.type)
+                                                        .Include(s => s.state)
+                                                        .Include(s => s.group)
+                                                        .Include(s => s.area)
+                                                        .OrderByDescending(s => s.createdTime)
+                                                        .ToList();
 
-                if (api_user.checkAdmin(token) < 0) {
+                 if (api_user.checkAdmin(token) < 0) {
+                     List<SqlGroup> grps = m_user.groups;
+                     if (grps == null || grps.Count() < 1) return new List<ItemOrder>();
+                     *//*mOrders = mOrders.Where(ord => grps.Where(grp => ord.group.code.CompareTo(grp.code) == 0).Count() > 0).ToList();*//*
+                     mOrders = mOrders.Where(ord => grps.Any(grp => ord.group.code.CompareTo(grp.code) == 0)).ToList();
+                 }*/
+                IQueryable<SqlOrder> query = context.orders!
+                                            .Include(s => s.customer)
+                                            .Include(s => s.receiver)
+                                            .Include(s => s.manager)
+                                            .Include(s => s.survey)
+                                            .Include(s => s.worker)
+                                            .Include(s => s.service)
+                                            .Include(s => s.type)
+                                            .Include(s => s.state)
+                                            .Include(s => s.group)
+                                            .Include(s => s.area)
+                                            .OrderByDescending(s => s.createdTime);
+
+                if (api_user.checkAdmin(token) < 0)
+                {
                     List<SqlGroup> grps = m_user.groups;
-                    if (grps == null || grps.Count() < 1) return new List<ItemOrder>();
-                    /*mOrders = mOrders.Where(ord => grps.Where(grp => ord.group.code.CompareTo(grp.code) == 0).Count() > 0).ToList();*/
-                    mOrders = mOrders.Where(ord => grps.Any(grp => ord.group.code.CompareTo(grp.code) == 0)).ToList();
+                    if (grps == null || grps.Count() < 1)
+                        return new List<ItemOrder>();
+                    List<string> groupCodes = grps.Select(grp => grp.code).ToList();
+                    query = query.Where(s => DateTime.Compare(m_begin.ToUniversalTime(), s.createdTime) <= 0 &&
+                                             DateTime.Compare(m_end.ToUniversalTime(), s.createdTime) > 0 &&
+                                             groupCodes.Contains(s.group.code));
+                }
+                else
+                {
+                    query = query.Where(s => DateTime.Compare(m_begin.ToUniversalTime(), s.createdTime) <= 0 && DateTime.Compare(m_end.ToUniversalTime(), s.createdTime) > 0);
                 }
 
+                List<SqlOrder> mOrders = query.ToList();
 
                 if (mOrders.Count < 1)
                 {
