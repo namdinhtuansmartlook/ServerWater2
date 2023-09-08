@@ -412,6 +412,39 @@ namespace ServerWater2.Controllers
         }
 
         [HttpGet]
+        [Route("getListOrderByGroups")]
+        public IActionResult getListOrderByGroup([FromHeader] string token, string begin, string end)
+        {
+            DateTime time_begin = DateTime.MinValue;
+            try
+            {
+                time_begin = DateTime.ParseExact(begin, "dd-MM-yyyy", null);
+            }
+            catch (Exception e)
+            {
+                time_begin = DateTime.MinValue;
+            }
+            DateTime time_end = DateTime.MinValue;
+            try
+            {
+                time_end = DateTime.ParseExact(end, "dd-MM-yyyy", null);
+            }
+            catch (Exception e)
+            {
+                time_end = DateTime.MaxValue;
+            }
+            long id = Program.api_user.checkUser(token);
+            if (id >= 0)
+            {
+                return Ok(Program.api_order.getListOrderByGroups(token, time_begin, time_end));
+            }
+            else
+            {
+                return Unauthorized();
+            }
+        }
+
+        [HttpGet]
         [Route("getInfoOrder")]
         public IActionResult GetInfoOrder([FromHeader] string token, string code)
         {

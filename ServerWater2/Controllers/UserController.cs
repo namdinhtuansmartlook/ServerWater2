@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
+using ServerWater2.Models;
 using static ServerWater2.Controllers.ActionController;
 
 namespace ServerWater2.Controllers
@@ -219,6 +221,54 @@ namespace ServerWater2.Controllers
             if (id >= 0)
             {
                 return Ok(Program.api_user.getInfoUser(token));
+            }
+            else
+            {
+                return Unauthorized();
+            }
+        }
+
+
+        [HttpPut]
+        [Route("setGroupUser")]
+        public IActionResult setGroupUser([FromHeader] string token, string user, string codeGroup)
+        {
+            long id = Program.api_user.checkAdmin(token);
+            if (id >= 0)
+            {
+                bool flag = Program.api_user.setGroup(user, codeGroup);
+
+                if (flag)
+                {
+                    return Ok();
+                }
+                else {
+                    return BadRequest();
+                }
+            }
+            else
+            {
+                return Unauthorized();
+            }
+        }
+
+        [HttpPut]
+        [Route("removeGroupUser")]
+        public IActionResult removeGroupUser([FromHeader] string token, string user, string codeGroup)
+        {
+            long id = Program.api_user.checkAdmin(token);
+            if (id >= 0)
+            {
+                bool flag = Program.api_user.removeGroup(user, codeGroup);
+
+                if (flag)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
             }
             else
             {

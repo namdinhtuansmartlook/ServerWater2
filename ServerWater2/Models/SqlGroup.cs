@@ -11,6 +11,8 @@ namespace ServerWater2.Models
         public string code { get; set; } = "";
         public string name { get; set; } = "";
         public string des { get; set; } = "";
+
+        public List<SqlUser>? users { get; set; }
         public List<SqlArea>? areas { get; set; }
         public bool isdeleted { get; set; } = false;
     }

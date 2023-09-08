@@ -1,10 +1,12 @@
 ﻿
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Serilog;
 using ServerWater2.Models;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.Eventing.Reader;
 using static ServerWater2.APIs.MyOrder;
 
 namespace ServerWater2.APIs
@@ -240,18 +242,28 @@ namespace ServerWater2.APIs
             }
         }
 
+        public class GroupItem {
+            public string code { get; set; } = "";
+            public string name { get; set; } = "";
+        }
+
         public class InfoUserSystem
         {
             public string user { get; set; } = "";
             public string token { get; set; } = "";
             public string role { get; set; } = "";
+
+            public List<GroupItem> groups { get; set; }
         }
 
         public InfoUserSystem login(string username, string password)
         {
             using (DataContext context = new DataContext())
             {
-                SqlUser? user = context.users!.Where(s => s.isdeleted == false && s.username.CompareTo(username) == 0 && s.password.CompareTo(password) == 0).Include(s => s.role).AsNoTracking().FirstOrDefault();
+                SqlUser? user = context.users!.Where(s => s.isdeleted == false && s.username.CompareTo(username) == 0 && s.password.CompareTo(password) == 0)
+                    .Include(s => s.role)
+                    .Include(s => s.groups)
+                    .AsNoTracking().FirstOrDefault();
                 if (user == null)
                 {
                     return new InfoUserSystem();
@@ -261,6 +273,18 @@ namespace ServerWater2.APIs
                 info.user = user.user;
                 info.token = user.token;
                 info.role = user.role!.code;
+
+                var grps = new List<GroupItem>();
+                foreach (var x in user.groups) {
+                    GroupItem grp = new GroupItem();
+                    grp.code = x.code;
+                    grp.name = x.name;
+
+                    grps.Add(grp);
+                }
+
+                info.groups = grps;
+
                 return info;
             }
         }
@@ -571,6 +595,78 @@ namespace ServerWater2.APIs
             temp.role = m_user.role!.name;
 
             return temp;
+        }
+
+        public bool setGroup(string user, string codeGroup)
+        {
+            using (DataContext context = new DataContext())
+            {
+                SqlUser? currUser = context.users!.Where(x => x.user.CompareTo(user) == 0 && !x.isdeleted)
+                    .Include(x => x.groups)
+                    .FirstOrDefault();
+
+                //k thay user
+                if (currUser == null)
+                {
+                    return false;
+                }
+
+                SqlGroup grp = context.groups.Where(x => x.code.CompareTo(codeGroup) == 0 && !x.isdeleted).FirstOrDefault();
+
+                //k thay group
+                if (grp == null)
+                {
+                    return false;
+                }
+
+                //check user da co group
+                var duplicatedGroup = currUser.groups.Where(x => x.code == codeGroup).FirstOrDefault();
+                if (duplicatedGroup != null)
+                {
+                    return false;
+                }
+
+                currUser.groups.Add(grp);
+                int rows = context.SaveChanges();
+
+                return rows > 0;
+            }
+        }
+
+        public bool removeGroup(string user, string codeGroup)
+        {
+            using (DataContext context = new DataContext())
+            {
+                SqlUser? currUser = context.users!.Where(x => x.user.CompareTo(user) == 0 && !x.isdeleted)
+                    .Include(x => x.groups)
+                    .FirstOrDefault();
+
+                //k thay user
+                if (currUser == null)
+                {
+                    return false;
+                }
+
+                SqlGroup grp = context.groups.Where(x => x.code.CompareTo(codeGroup) == 0 && !x.isdeleted).FirstOrDefault();
+
+                //k thay group
+                if (grp == null)
+                {
+                    return false;
+                }
+
+                //check user chua co group do
+                var existedGroup = currUser.groups.Where(x => x.code == codeGroup).FirstOrDefault();
+                if (existedGroup == null)
+                {
+                    return false;
+                }
+
+                currUser.groups.Remove(grp);
+                int rows = context.SaveChanges();
+
+                return rows > 0;
+            }
         }
     }
 }

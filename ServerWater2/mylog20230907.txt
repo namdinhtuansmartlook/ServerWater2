@@ -1,0 +1,21 @@
+2023-09-07 14:06:27.129 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in D:\H\stvg\projects\ServerWater2\ServerWater2\Program.cs:line 114
+2023-09-07 14:08:06.968 +07:00 [ERR] Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException: Exception of type 'Microsoft.Extensions.Hosting.HostFactoryResolver+HostingListener+HostAbortedException' was thrown.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at ServerWater2.Program.Main(String[] args) in D:\H\stvg\projects\ServerWater2\ServerWater2\Program.cs:line 114
+2023-09-07 14:30:31.240 +07:00 [INF] Connected to Server at : 07/09/2023 2:30:31 PM with : Host=192.168.1.30:30000;Database=db_stvg_ServerWater2;Username=postgres;Password=stvg 
+2023-09-07 14:55:14.763 +07:00 [INF] Connected to Server at : 07/09/2023 2:55:14 PM with : Host=192.168.1.30:30000;Database=db_stvg_ServerWater2;Username=postgres;Password=stvg 
+2023-09-07 15:22:00.731 +07:00 [INF] Connected to Server at : 07/09/2023 3:22:00 PM with : Host=192.168.1.30:30000;Database=db_stvg_ServerWater2;Username=postgres;Password=stvg 
+2023-09-07 15:35:26.924 +07:00 [INF] Connected to Server at : 07/09/2023 3:35:26 PM with : Host=192.168.1.30:30000;Database=db_stvg_ServerWater2;Username=postgres;Password=stvg 
+2023-09-07 15:37:06.430 +07:00 [INF] Connected to Server at : 07/09/2023 3:37:06 PM with : Host=192.168.1.30:30000;Database=db_stvg_ServerWater2;Username=postgres;Password=stvg 
+2023-09-07 16:01:54.643 +07:00 [INF] Connected to Server at : 07/09/2023 4:01:54 PM with : Host=192.168.1.30:30000;Database=db_stvg_ServerWater2;Username=postgres;Password=stvg 
+2023-09-07 16:25:01.645 +07:00 [INF] Connected to Server at : 07/09/2023 4:25:01 PM with : Host=192.168.1.30:30000;Database=db_stvg_ServerWater2;Username=postgres;Password=stvg 
